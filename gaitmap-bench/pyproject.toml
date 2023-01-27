@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gaitmap_bench"
+name = "gaitmap-bench"
 version = "0.1.0"
 description = "Repo to collect reproducible benchmarks for human gait analysis"
 authors = ["Arne Küderle <arne.kuederle@fau.de>"]
@@ -8,8 +8,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-
-[tool.poetry.dev-dependencies]
+gaitmap-challenges = {path = "../gaitmap-challenges", develop = true, extras = ["visualization"]}
+matplotlib = "^3.6.3"
+gaitmap-datasets = {path = "../../../private/gaitmap-datasets"}
+tpcp = {path = "../../../private/tpcp"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
@@ -17,14 +19,11 @@ poethepoet = "^0.16.5"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
 prospector = "^1.8.3"
-ipykernel = "^6.19.2"
-numpydoc = "^1.5.0"
-sphinx = "^5.3.0"
-sphinx-gallery = "^0.11.1"
-recommonmark = "^0.7.1"
-memory-profiler = "^0.61.0"
-matplotlib = "^3.6.2"
 toml = "^0.10.2"
+isort = "^5.11.1"
+ipython = "^8.8.0"
+ipympl = "^0.9.2"
+ipykernel = "^6.20.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -67,3 +66,6 @@ _check_isort = "isort . --check"
 check = { sequence = ["_check_black", "_check_isort", "lint"], help = "Check all potential format and linting issues." }
 test = { cmd = "pytest --cov=gaitmap_bench --cov-report=term-missing --cov-report=xml", help = "Run Pytest with coverage." }
 version = { script = "_tasks:task_update_version()" }
+bump_dev = { script = "_tasks:task_bump_all_dev()" }
+conf_jupyter = { cmd = "python -m ipykernel install --user --name gaitmap_bench", help = "Add a new jupyter kernel for the project." }
+

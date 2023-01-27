@@ -4,7 +4,7 @@
 API Reference
 =============
 
-This is the API Reference for ``gaitmap_bench``.
+This is the API Reference for ``gaitmap-challenges``.
 
 .. toctree::
     :maxdepth: 1

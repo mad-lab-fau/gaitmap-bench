@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "gaitmap_algos"
+version = "0.1.0"
+description = "The reference entries using the gaitmap algorithms"
+authors = ["Arne Küderle <arne.kuederle@fau.de>"]
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+gaitmap-bench = {path = "../..", develop = true}
+gaitmap = {git = "https://github.com/mad-lab-fau/gaitmap.git", rev = "master", extras = ["hmm"]}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

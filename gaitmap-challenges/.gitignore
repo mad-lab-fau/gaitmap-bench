@@ -236,8 +236,3 @@ $RECYCLE.BIN/
 
 # pyenv
 .python-version
-
-# debug
-_debug
-
-**/.cache

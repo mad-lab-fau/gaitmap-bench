@@ -5,7 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+import toml
+
 HERE = Path(__file__).parent
+
 
 def task_docs():
     """Build the html docs using Sphinx."""
@@ -16,7 +19,19 @@ def task_docs():
         subprocess.run([HERE / "docs/make.bat", "html"], shell=False, check=True)
     else:
         subprocess.run(["make", "-C", HERE / "docs", "html"], shell=False, check=True)
-        
+
+
+def task_bump_all_dev():
+    """Bump all dev dependencies."""
+    pyproject = toml.load(HERE.joinpath("pyproject.toml"))
+    try:
+        dev_dependencies = pyproject["tool"]["poetry"]["dev-dependencies"]
+    except KeyError:
+        dev_dependencies = pyproject["tool"]["poetry"]["group"]["dev"]["dependencies"]
+    dev_deps = dev_dependencies.keys()
+    new_dev_deps = [f"{dep}@latest" for dep in dev_deps]
+    subprocess.run(["poetry", "add", "--group", "dev", *new_dev_deps], shell=False, check=True)
+
 
 def update_version_strings(file_path, new_version):
     # taken from:
@@ -25,7 +40,13 @@ def update_version_strings(file_path, new_version):
     with open(file_path, "r+") as f:
         content = f.read()
         f.seek(0)
-        f.write(re.sub(version_regex, lambda match: '{}{}"'.format(match.group(1), new_version), content,))
+        f.write(
+            re.sub(
+                version_regex,
+                lambda match: '{}{}"'.format(match.group(1), new_version),
+                content,
+            )
+        )
         f.truncate()
 
 
@@ -37,9 +58,8 @@ def update_version(version):
         .strip()
         .split(" ", 1)[1]
     )
-    update_version_strings(HERE.joinpath("gaitmap_bench/__init__.py"), new_version)
+    update_version_strings(HERE.joinpath("gaitmap-challenges/__init__.py"), new_version)
 
 
 def task_update_version():
     update_version(sys.argv[1])
-

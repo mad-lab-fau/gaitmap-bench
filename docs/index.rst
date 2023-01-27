@@ -1,6 +1,6 @@
-.. gaitmap_bench documentation master file
+.. gaitmap-challenges documentation master file
 
-gaitmap_bench Docu Overview
+gaitmap-challenges Docu Overview
 ==================
 
 .. toctree::
