@@ -25,7 +25,7 @@ sys.path.insert(0, str(HERE.parent))
 sys.path.insert(0, str(HERE.parent.parent))
 
 
-URL = "https://github.com/mad-lab-fau/gaitmap-challenges"
+URL = "https://github.com/mad-lab-fau/gaitmap-bench"
 
 # -- Project information -----------------------------------------------------
 
@@ -36,7 +36,7 @@ project = info["name"]
 author = ", ".join(info["authors"])
 release = info["version"]
 
-copyright = "2021 - {}, MaD Lab, FAU".format(datetime.now().year)
+copyright = "2023 - {}, MaD Lab, FAU".format(datetime.now().year)
 
 # -- Copy the README and Changelog and fix image path --------------------------------------
 HERE = Path(__file__).parent
@@ -63,8 +63,10 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     # "sphinx.ext.imgconverter",
-    "sphinx_gallery.gen_gallery",
-    "recommonmark",
+    # "sphinx_gallery.gen_gallery",
+    "myst_nb",
+    "sphinx_design",
+    "myst_nb_bokeh"
 ]
 
 # this is needed for some reason...
@@ -111,10 +113,10 @@ add_function_parentheses = False
 # a list of builtin themes.
 #
 # Activate the theme.
-html_theme = "pydata_sphinx_theme"
+html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "github_url": URL,
-    "show_prev_next": False,
+    "repository_url": URL,
+    "use_repository_button": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -142,17 +144,17 @@ intersphinx_mapping = {
 }
 
 # Sphinx Gallary
-sphinx_gallery_conf = {
-    "examples_dirs": ["../examples"],
-    "gallery_dirs": ["./auto_examples"],
-    "reference_url": {"gaitmap-challenges": None, **{k: v[0] for k, v in intersphinx_module_mapping.items()}},
-    # 'default_thumb_file': 'fig/logo.png',
-    "backreferences_dir": "modules/generated/backreferences",
-    "doc_module": ("gaitmap-challenges",),
-    "filename_pattern": re.escape(os.sep),
-    "remove_config_comments": True,
-    "show_memory": True,
-}
+# sphinx_gallery_conf = {
+#     "examples_dirs": ["../examples"],
+#     "gallery_dirs": ["./auto_examples"],
+#     "reference_url": {"gaitmap-challenges": None, **{k: v[0] for k, v in intersphinx_module_mapping.items()}},
+#     # 'default_thumb_file': 'fig/logo.png',
+#     "backreferences_dir": "modules/generated/backreferences",
+#     "doc_module": ("gaitmap-challenges",),
+#     "filename_pattern": re.escape(os.sep),
+#     "remove_config_comments": True,
+#     "show_memory": True,
+# }
 
 
 from sphinxext.githublink import make_linkcode_resolve

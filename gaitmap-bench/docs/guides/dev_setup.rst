@@ -1,3 +1,6 @@
+Development Setup
+=================
+
 Both gaitmap-bench and gaitmap-challenges have their own venv (that is just how poetry works).
 
 However, we basically only use the venv for gaitmap-bench, as gaitmap-challenges is a dependency of gaitmap-bench.

@@ -1,16 +1,15 @@
 .. gaitmap-challenges documentation master file
 
-gaitmap-challenges Docu Overview
-==================
+gaitmap-bench Docu Overview
+===========================
 
 .. toctree::
    :maxdepth: 1
    :caption: Content:
 
    Getting Started <README.md>
+   Challenges <challenges/index.md>
    guides/index.rst
-   modules/index.rst
-   auto_examples/index.rst
    Changelog <CHANGELOG.md>
 
 Indices and Tables
