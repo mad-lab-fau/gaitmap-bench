@@ -1,72 +1,16 @@
-import contextlib
+import importlib
 import inspect
 import json
 import os
+import sys
 from collections import namedtuple
-from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, Type, Union, cast, ClassVar
+from typing import Any, Dict, Optional, Tuple, Type, Union, cast
 
-import numpy as np
-import pkg_resources
-import sys
-import time
 from cpuinfo import cpuinfo
-from tpcp import BaseTpcpObject, Dataset
-from tpcp.optimize import BaseOptimize
 
-
-@dataclass(repr=False)
-class BaseChallenge(BaseTpcpObject):
-    run_start_datetime_utc_timestamp_: float = field(init=False)
-    run_start_datetime_: str = field(init=False)
-    end_start_datetime_utc_timestamp_: float = field(init=False)
-    end_start_datetime_: str = field(init=False)
-    runtime_: float = field(init=False)
-    dataset_: Dataset = field(init=False)
-
-    optimizer: BaseOptimize = field(init=False)
-
-    NAME: ClassVar[str]
-    VERSION: ClassVar[str]
-
-    @property
-    def _measure_time(self) -> Callable[[], Generator[None, None, None]]:
-        @contextlib.contextmanager
-        def timer() -> Generator[None, None, None]:
-            self.run_start_datetime_utc_timestamp_ = datetime.utcnow().timestamp()
-            self.run_start_datetime_ = datetime.now().astimezone().isoformat()
-            start_time = time.perf_counter()
-            yield
-            end_time = time.perf_counter()
-            self.end_start_datetime_utc_timestamp_ = datetime.utcnow().timestamp()
-            self.end_start_datetime_ = datetime.now().astimezone().isoformat()
-            self.runtime_ = end_time - start_time
-
-        return timer
-
-    def run(self, optimizer: BaseOptimize):
-        raise NotImplementedError()
-
-    def get_core_results(self) -> Dict[str, Any]:
-        raise NotImplementedError()
-
-    def save_core_results(self, folder_path):
-        raise NotImplementedError()
-
-    @classmethod
-    def load_core_results(cls, folder_path) -> Dict[str, Any]:
-        """Load the core results from a folder that have been stored using `save_core_results`.
-
-        When implementing this method, make sure that it remains compatible with results saved using older versions
-        of the challenge_class.
-        """
-        raise NotImplementedError()
-
-    @property
-    def __version__(self):
-        raise NotImplementedError()
+from gaitmap_challenges.challenge_base import BaseChallenge
 
 
 def save_run(
@@ -98,8 +42,8 @@ def save_run(
             "python_version": sys.version,
             "python_implementation": sys.implementation.name,
             "packages_info": {
-                d.project_name: d.version
-                for d in sorted(pkg_resources.working_set, key=lambda x: x.project_name.lower())
+                d.metadata["Name"]: d.version
+                for d in sorted(importlib.metadata.distributions(), key=lambda x: x.metadata["Name"].lower())
             },
             "cpu": {
                 k: v for k, v in cpuinfo.get_cpu_info().items() if k not in ["flags", "hz_advertised", "hz_actual"]
@@ -173,6 +117,7 @@ def load_run_metadata(path: Union[str, Path]) -> Dict[str, Any]:
 
     return metadata
 
+
 def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], path: Union[str, Path]) -> ResultReturn:
     challenge_class: Type[BaseChallenge] = cast(
         Type[BaseChallenge], challenge_class if isinstance(challenge_class, type) else challenge_class.__class__
@@ -189,14 +134,3 @@ def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], path: U
     with open(path / "custom_metadata.json", "r", encoding="utf8") as f:
         custom_metadata = json.load(f)
     return ResultReturn(metadata, results, custom_metadata)
-
-
-class NpEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)

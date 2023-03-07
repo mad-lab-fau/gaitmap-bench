@@ -3,6 +3,8 @@
 
 __version__ = "0.1.0"
 
-__all__ = ["BaseChallenge", "save_run"]
+__all__ = ["save_run", "load_run", "load_run_metadata"]
 
-from gaitmap_challenges._base import BaseChallenge, save_run, load_run, load_run_metadata
+from gaitmap_challenges._base import save_run, load_run, load_run_metadata
+
+# from gaitmap_challenges._config import Config, DatasetsConfig
