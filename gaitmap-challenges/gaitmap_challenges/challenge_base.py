@@ -10,7 +10,7 @@ from typing import ClassVar, Callable, Generator, Dict, Any, List, Optional, Uni
 import numpy as np
 import pandas as pd
 from tpcp import BaseTpcpObject, Dataset
-from tpcp._optimize import BaseOptimize
+from tpcp.optimize import BaseOptimize
 
 
 @dataclass(repr=False)
