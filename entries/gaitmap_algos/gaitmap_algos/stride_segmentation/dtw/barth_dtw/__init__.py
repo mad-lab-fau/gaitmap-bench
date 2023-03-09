@@ -1,6 +1,5 @@
 metadata = {
-    "name": "roth_hmm",
-    "description": "Hierarchical Hidden Markov Model for gait segmentation",
+    "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
     "citations": [],
     "code_authors": [],
     "algorithm_authors": [],

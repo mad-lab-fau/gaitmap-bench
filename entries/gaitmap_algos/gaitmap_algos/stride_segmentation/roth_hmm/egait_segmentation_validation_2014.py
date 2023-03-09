@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict
+from pathlib import Path
+from typing import Dict, cast
 
 import pandas as pd
 from gaitmap.stride_segmentation.hmm import (
@@ -8,50 +8,55 @@ from gaitmap.stride_segmentation.hmm import (
     HmmStrideSegmentation,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap_algos.entries.stride_segmentation.roth_hmm._shared import metadata
-from gaitmap_bench import save
-from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import (
-    Challenge, ChallengeDataset
-)
 from joblib import Memory
 from sklearn.model_selection import KFold
-from tpcp import make_action_safe
+from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
-from typing_extensions import Literal, Self
+from typing_extensions import Self
 
-SensorNames = Literal["left_sensor", "right_sensor"]
-
-dataset = ChallengeDataset(
-    data_folder=Path(
-        "/home/arne/Documents/repos/work/datasets/eGaIT_database_segmentation"
-    ),
-    memory=Memory("../.cache"),
-)
-
-challenge = Challenge(
-    dataset=dataset, cv_iterator=KFold(3, shuffle=True), cv_params={"n_jobs": 3}
+from gaitmap_algos.stride_segmentation.roth_hmm import metadata
+from gaitmap_bench import save_run
+from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import (
+    Challenge,
+    ChallengeDataset,
+    SensorNames,
 )
 
 
-@dataclass(repr=False)
-class Entry(PipelineInterface):
+class Entry(Pipeline[ChallengeDataset]):
     # Result objects
-    stride_list_: Dict[SensorNames, pd.DataFrame] = field(init=False)
+    stride_list_: Dict[SensorNames, pd.DataFrame]
 
     @make_action_safe
     def run(self, datapoint: ChallengeDataset) -> Self:
-        bf_data = convert_to_fbf(challenge.get_imu_data(datapoint), left_like="l", right_like="r")
-        self.stride_list_ = (
+        bf_data = convert_to_fbf(
+            Challenge.get_imu_data(datapoint), left_like="l", right_like="r"
+        )
+        self.stride_list_ = cast(
+            Dict[SensorNames, pd.DataFrame],
             HmmStrideSegmentation(PreTrainedRothSegmentationModel())
             .segment(bf_data, sampling_rate_hz=datapoint.sampling_rate_hz)
-            .stride_list_
+            .stride_list_,
         )
         return self
 
 
-metadata = {**metadata, "name": "roth_hmm_pretrained"}
-
-
 if __name__ == "__main__":
+    dataset = ChallengeDataset(
+        data_folder=Path(
+            "/home/arne/Documents/repos/work/datasets/eGaIT_database_segmentation"
+        ),
+        memory=Memory("../.cache"),
+    )
+
+    challenge = Challenge(
+        dataset=dataset, cv_iterator=KFold(3, shuffle=True), cv_params={"n_jobs": 3}
+    )
+
     challenge.run(DummyOptimize(Entry()))
-    save(metadata, challenge)
+    save_run(
+        challenge=challenge,
+        entry_name=("gaitmap", "roth_hmm", "default"),
+        custom_metadata=metadata,
+        path=Path("../"),
+    )
