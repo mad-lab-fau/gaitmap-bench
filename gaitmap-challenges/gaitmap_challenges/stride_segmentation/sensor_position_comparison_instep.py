@@ -23,6 +23,8 @@ from gaitmap_challenges.challenge_base import (
 )
 from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 
+SensorNames = Literal["left_sensor", "right_sensor"]
+
 
 def _get_data_subset(
     datapoint_data: Union[pd.DataFrame, Dict[str, pd.DataFrame]], sensor="instep"
@@ -138,4 +140,4 @@ class Challenge(BaseChallenge):
         }
 
 
-__all__ = ["Challenge", "ChallengeDataset", "ResultType"]
+__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames"]

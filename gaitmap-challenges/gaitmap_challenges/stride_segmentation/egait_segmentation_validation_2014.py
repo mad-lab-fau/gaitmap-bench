@@ -22,6 +22,8 @@ from gaitmap_challenges.challenge_base import (
 )
 from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 
+SensorNames = Literal["left_sensor", "right_sensor"]
+
 
 def _final_scorer(pipeline: Pipeline, datapoint: EgaitSegmentationValidation2014, tolerance_s: float = 0.03):
     results = pipeline.safe_run(datapoint)
@@ -123,4 +125,4 @@ class Challenge(BaseChallenge):
         }
 
 
-__all__ = ["Challenge", "ChallengeDataset", "ResultType"]
+__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames"]
