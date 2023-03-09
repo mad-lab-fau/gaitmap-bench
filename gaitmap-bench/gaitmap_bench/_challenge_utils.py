@@ -8,8 +8,10 @@ from gaitmap_challenges.challenge_base import BaseChallenge
 def save_run(
     challenge: BaseChallenge,
     entry_name: Union[str, Tuple[str, ...]],
+    *,
     custom_metadata: Dict[str, Any],
     path: Union[str, Path],
+    debug_run: bool = True,
     stored_filenames_relative_to: Optional[Union[str, Path]] = None,
     use_git: bool = True,
 ):
@@ -17,8 +19,7 @@ def save_run(
     #  In the future, this will chaeck the config and overwrite certain values e.g. the path to point to the correct
     #  location.
     #  Further, it will validate that specific custom metadata is present.
-    #  IDEA: When in dev mode, warn that values will be overwritten. Then silently overwrite them in prod mode.
-    #        Or should we actually raise in prod mode?
+    #  If this is not given, we will set the reun to debug and warn about it (this way results are still saved).
     return challenge_save_run(
         challenge=challenge,
         entry_name=entry_name,
@@ -26,4 +27,7 @@ def save_run(
         path=path,
         stored_filenames_relative_to=stored_filenames_relative_to,
         use_git=use_git,
+        git_dirty_ignore=("results",),
+        debug_run=debug_run,
+        debug_folder_prefix="_",
     )

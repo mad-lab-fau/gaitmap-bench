@@ -3,10 +3,11 @@ import inspect
 import json
 import os
 import sys
+import warnings
 from collections import namedtuple
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Type, Union, cast
+from typing import Any, Dict, Optional, Tuple, Type, Union, cast, Sequence
 
 from cpuinfo import cpuinfo
 
@@ -16,10 +17,14 @@ from gaitmap_challenges.challenge_base import BaseChallenge
 def save_run(
     challenge: BaseChallenge,
     entry_name: Union[str, Tuple[str, ...]],
+    *,
     custom_metadata: Dict[str, Any],
     path: Union[str, Path],
+    debug_run: bool = True,
     stored_filenames_relative_to: Optional[Union[str, Path]] = None,
     use_git: bool = True,
+    git_dirty_ignore: Sequence[str] = (),
+    debug_folder_prefix: str = "_",
 ):
     # We use the import path of the challenge class as the name of the challenge
     challenge_name = challenge.__class__.__module__ + "." + challenge.__class__.__name__
@@ -29,6 +34,7 @@ def save_run(
         "entry_name": entry_name,
         "challenge_name": challenge_name,
         "challenge_version": challenge_version,
+        "is_debug_run": debug_run,
         # Ideally this contains some info about the run, as all parameters should be part of the repr
         "repr_challenge": repr(challenge),
         "repr_pipeline": repr(challenge.optimizer),
@@ -67,8 +73,22 @@ def save_run(
         repo_base_dir = repo.git.rev_parse("--show-toplevel")
         if stored_filenames_relative_to is not None:
             repo_base_dir = str(Path(repo_base_dir).relative_to(stored_filenames_relative_to))
+
+        # TODO: Need to support git_dirty_ignore!
+        repo_is_dirty = repo.is_dirty(untracked_files=True)
+
+        if debug_run is False and repo_is_dirty:
+            warnings.warn("Trying to save results of a non-debug run from a dirty git repo. "
+                          "This is not allowed, as the results cannot be reproduced. "
+                          "We will treat the results as a debug run instead. "
+                          "If you are absolute sure that the results are reproducible, and this warning is an error, "
+                          "manually modify the metadata.json file to set is_debug_run to True and remove the debug "
+                          "folder prefix (if used).")
+            debug_run = True
+            metadata["is_debug_run"] = debug_run
+
         metadata["git_commit_hash"] = repo.head.object.hexsha
-        metadata["git_dirty"] = repo.is_dirty()
+        metadata["git_dirty"] = repo_is_dirty
         metadata["git_base_dir"] = repo_base_dir
 
     # In the target folder we create the folder structure
@@ -81,7 +101,12 @@ def save_run(
         # We create nested folders
         entry_name = os.sep.join(entry_name)
 
-    path = path / challenge_name / challenge_version / entry_name / start_datetime_formatted
+    if debug_run:
+        lowest_folder_name = debug_folder_prefix + start_datetime_formatted
+    else:
+        lowest_folder_name = start_datetime_formatted
+
+    path = path / challenge_name / challenge_version / entry_name / lowest_folder_name
     # If the file already exists, we add a number to the end
     i = 0
     while True:
