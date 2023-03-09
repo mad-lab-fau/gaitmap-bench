@@ -1,21 +1,29 @@
 import shutil
 from pathlib import Path
 
+import pandas as pd
 from tpcp import Dataset, Pipeline
 from tpcp.optimize import BaseOptimize, DummyOptimize
 
-from gaitmap_challenges import BaseChallenge, save_run
-from gaitmap_challenges._base import load_run
+from gaitmap_challenges.challenge_base import BaseChallenge
+from gaitmap_challenges import save_run, load_run
+
+
+class DummyDataset(Dataset):
+    def create_index(self) -> pd.DataFrame:
+        return pd.DataFrame({"id": [1, 2, 3]})
 
 
 class DummyChallenge(BaseChallenge):
 
-    __version__ = "1.0.0"
+    VERSION = "1.0.0"
 
     def run(self, optimizer: BaseOptimize):
+        self.optimizer = optimizer
+        self.dataset_ = DummyDataset()
         with self._measure_time():
-            pipe = optimizer.optimize(Dataset()).optimized_pipeline_
-            pipe.run(Dataset())
+            pipe = optimizer.optimize(self.dataset_).optimized_pipeline_
+            pipe.run(self.dataset_)
             self.dummy_results_ = "dummy_results"
         return self
 
@@ -43,7 +51,7 @@ def test_save_load_run(tmp_path):
     )
     challenge.run(optimizer)
 
-    actual_path = save_run(challenge, "test", {"c_meta": 1}, tmp_path)
+    actual_path = save_run(challenge, "test", custom_metadata={"c_meta": 1}, path=tmp_path)
 
     # Check that path is relative to tmp_path
     assert tmp_path in actual_path.parents
@@ -56,6 +64,11 @@ def test_save_load_run(tmp_path):
     assert loaded_results.custom_metadata == {"c_meta": 1}
     assert loaded_results.results == {"dummy_results": "dummy_results"}
     assert loaded_results.metadata["entry_name"] == "test"
+    assert loaded_results.metadata["challenge_name"] == "tests.test_save_run.DummyChallenge"
+    assert loaded_results.metadata["challenge_version"] == "1.0.0"
+    assert loaded_results.metadata["is_debug_run"] == True
+    # As it is a debug run, the folder name should start with an underscore
+    assert actual_path.name.startswith("_")
 
 
 def test_manual_test():
@@ -69,6 +82,6 @@ def test_manual_test():
     challenge.run(optimizer)
 
     path = Path(__file__).parent / "_results"
-    save_run(challenge, "test", {"c_meta": 1}, path)
+    save_run(challenge, "test", custom_metadata={"c_meta": 1}, path=path)
 
     shutil.rmtree(path)
