@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Any, Union, Tuple, Optional
+from typing import Any, Dict, Optional, Tuple, Union
 
 from gaitmap_challenges import save_run as challenge_save_run
 from gaitmap_challenges.challenge_base import BaseChallenge
