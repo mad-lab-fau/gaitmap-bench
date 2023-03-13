@@ -5,11 +5,10 @@ from typing import Optional, Union
 
 import gaitmap_challenges.config as challenge_config
 
-HERE = Path(__file__).parent
-
-DEFAULT_RESULTS_DIR = HERE.parent.parent / Path("results")
 MAIN_REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+DEFAULT_RESULTS_DIR = MAIN_REPO_ROOT / Path("results")
 DEFAULT_CONFIG_FILE = MAIN_REPO_ROOT / Path(".dev_config.json")
+DEFAULT_ENTRIES_DIR = MAIN_REPO_ROOT / Path("entries")
 
 
 @dataclass(frozen=True)
@@ -57,4 +56,13 @@ def config() -> BenchLocalConfig:
 # We reexport some of the functions from gaitmap_challenges.config for convenience
 reset_config = challenge_config.reset_config
 
-__all__ = ["set_config", "BenchLocalConfig", "config", "reset_config", "create_config_template", "DEFAULT_CONFIG_FILE"]
+__all__ = [
+    "set_config",
+    "BenchLocalConfig",
+    "config",
+    "reset_config",
+    "create_config_template",
+    "DEFAULT_CONFIG_FILE",
+    "DEFAULT_RESULTS_DIR",
+    "DEFAULT_ENTRIES_DIR",
+]

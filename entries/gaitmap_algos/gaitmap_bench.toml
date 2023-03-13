@@ -1,0 +1,17 @@
+# TODO: Add cleanup script that removes venv and required python version
+name = "gaitmap_algos"
+setup = "poetry install"
+command_template = "poetry run python {command}"
+
+[challenge.stride_segmentation.egait_segmentation_validation_2014]
+barth_dtw = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/egait_segmentation_validation_2014.py"
+barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/egait_segmentation_validation_2014_default.py"
+constrained_barth_dtw = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/egait_segmentation_validation_2014.py"
+constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/egait_segmentation_validation_2014_default.py"
+
+
+[challenge.stride_segmentation.sensor_position_comparison_instep]
+barth_dtw = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/sensor_position_comparison_instep.py"
+barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/sensor_position_comparison_instep_default.py"
+constrained_barth_dtw = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/sensor_position_comparison_instep.py"
+constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/sensor_position_comparison_instep_default.py"
