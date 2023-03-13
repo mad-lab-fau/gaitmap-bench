@@ -8,6 +8,8 @@ import gaitmap_challenges.config as challenge_config
 HERE = Path(__file__).parent
 
 DEFAULT_RESULTS_DIR = HERE.parent.parent / Path("results")
+MAIN_REPO_ROOT = Path(__file__).parent.parent.parent
+DEFAULT_CONFIG_FILE = MAIN_REPO_ROOT / Path(".dev_config.json")
 
 
 @dataclass(frozen=True)
@@ -20,14 +22,18 @@ def set_config(config_obj_or_path: Optional[Union[str, Path, BenchLocalConfig]] 
         # In case we actually run results, it is not allowed to set the config via anything else than a env variable.
         if config_obj_or_path is not None:
             warnings.warn(
-                "Config can only be set via environment variable in non-debug mode. "
+                "Config can only be set via environment variable (or by using the default dev-config) in non-debug "
+                "mode. "
                 "At the moment you are trying to set it via a config object or path in `set_config`. "
                 "This will be ignored and we fallback to the environment variable. "
-                "Please remove, the manual config setting before submitting your script to the github repo."
+                "Please remove, the manual config setting (`set_config(None)`) before submitting your script to the "
+                "github repo."
             )
             config_obj_or_path = None
 
-    config_obj = challenge_config.set_config(config_obj_or_path, debug, _config_type=BenchLocalConfig)
+    config_obj = challenge_config.set_config(
+        config_obj_or_path, debug, _config_type=BenchLocalConfig, _default_config_file=DEFAULT_CONFIG_FILE
+    )
     if debug is False:
         # In this case we need to make sure that the results dir is set to the default one.
         # We will do that silently to avoid having a warning every time, as users will have a local version in their
@@ -51,4 +57,4 @@ def config() -> BenchLocalConfig:
 # We reexport some of the functions from gaitmap_challenges.config for convenience
 reset_config = challenge_config.reset_config
 
-__all__ = ["set_config", "BenchLocalConfig", "config", "reset_config", "create_config_template"]
+__all__ = ["set_config", "BenchLocalConfig", "config", "reset_config", "create_config_template", "DEFAULT_CONFIG_FILE"]

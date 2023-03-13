@@ -40,13 +40,24 @@ def set_config(
     config_obj_or_path: Optional[Union[str, Path, _ConfigT]] = None,
     debug: bool = True,
     _config_type: Type[_ConfigT] = LocalConfig,
+    _default_config_file: Optional[Union[str, Path]] = None,
 ) -> _ConfigT:
     """Load the config file."""
     if config_obj_or_path is None:
         # Get the config file from the environment variable
         config_obj_or_path = os.environ.get(_CONFIG_ENV_VAR, None)
         if config_obj_or_path is None:
-            raise ValueError(f"Config file not specified and environment variable {_CONFIG_ENV_VAR} not set.")
+            # In this case we check the default config file
+            if _default_config_file is not None and Path(_default_config_file).exists():
+                config_obj_or_path = _default_config_file
+            else:
+                raise ValueError(
+                    "Could not load the config!"
+                    f"We tried the following things:\n\n"
+                    "Config file path -> not specified\n"
+                    f"environment variable ({_CONFIG_ENV_VAR}) -> not set\n"
+                    f"default config file ({_default_config_file})-> not specified or does not exist"
+                )
     if isinstance(config_obj_or_path, (str, Path)):
         config_obj = _config_type.from_json(config_obj_or_path)
     elif isinstance(config_obj_or_path, _config_type):

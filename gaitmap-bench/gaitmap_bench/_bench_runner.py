@@ -6,8 +6,7 @@ from pathlib import Path
 import click
 
 from gaitmap_bench import create_config_template
-
-MAIN_REPO_ROOT = Path(__file__).parent.parent.parent
+from gaitmap_bench._config import DEFAULT_CONFIG_FILE
 
 
 @click.group()
@@ -26,7 +25,7 @@ def cli():
 
 
 @cli.command()
-@click.argument("path", type=click.Path(exists=False), default=MAIN_REPO_ROOT / ".dev_config.json")
+@click.argument("path", type=click.Path(exists=False), default=DEFAULT_CONFIG_FILE)
 def create_config(path):
     """Create a template config file for the benchmarking suite."""
     create_config_template(path)
