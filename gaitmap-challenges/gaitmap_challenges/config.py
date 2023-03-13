@@ -31,7 +31,7 @@ class LocalConfig:
             config_dict = {
                 **json_config["gaitmap_challenges"],
                 # TODO: Update when gaitmap_datasets is updated
-                "datasets": DatasetsConfig.from_json(config_file),
+                "datasets": DatasetsConfig.from_json_file(config_file),
             }
             return cls(**config_dict)
 
