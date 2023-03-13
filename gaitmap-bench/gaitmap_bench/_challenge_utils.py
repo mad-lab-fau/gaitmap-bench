@@ -11,7 +11,6 @@ def save_run(
     *,
     custom_metadata: Dict[str, Any],
     path: Union[str, Path],
-    debug_run: bool = True,
     stored_filenames_relative_to: Optional[Union[str, Path]] = None,
     use_git: bool = True,
 ):
