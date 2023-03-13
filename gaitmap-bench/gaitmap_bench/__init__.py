@@ -2,6 +2,7 @@
 
 __version__ = "0.1.0"
 
-__all__ = ["save_run"]
+__all__ = ["save_run", "set_config", "config", "reset_config", "create_config_template"]
 
 from gaitmap_bench._challenge_utils import save_run
+from gaitmap_bench._config import set_config, config, reset_config, create_config_template
