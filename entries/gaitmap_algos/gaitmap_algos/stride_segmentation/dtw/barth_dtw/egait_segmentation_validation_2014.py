@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from gaitmap.stride_segmentation import BarthDtw
 from joblib import Memory
 from optuna import Trial, create_study
@@ -9,7 +7,7 @@ from gaitmap_algos.stride_segmentation.dtw._egait_segmentation_validation_2014 i
     Egait2014DtwBase,
 )
 from gaitmap_algos.stride_segmentation.dtw.barth_dtw import metadata
-from gaitmap_challenges import save_run
+from gaitmap_bench import set_config, save_run
 from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import (
     Challenge,
     ChallengeDataset,
@@ -29,14 +27,13 @@ def get_study():
 
 
 if __name__ == "__main__":
+    config = set_config()
+
     dataset = ChallengeDataset(
-        data_folder=Path(
-            "/home/arne/Documents/repos/work/datasets/eGaIT_database_segmentation"
-        ),
-        memory=Memory("../.cache"),
+        memory=Memory(config.cache_dir),
     )
 
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": 3})
+    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
 
     challenge.run(
         OptunaSearch(
@@ -54,5 +51,4 @@ if __name__ == "__main__":
         challenge=challenge,
         entry_name=("gaitmap", "barth_dtw", "optimized"),
         custom_metadata=metadata,
-        path=Path("../"),
     )

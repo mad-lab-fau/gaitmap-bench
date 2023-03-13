@@ -9,7 +9,7 @@ from gaitmap_algos.stride_segmentation.dtw._sensor_position_comparison_instep im
     SensorPosDtwBase,
 )
 from gaitmap_algos.stride_segmentation.dtw.constrained_barth_dtw import metadata
-from gaitmap_challenges import save_run
+from gaitmap_bench import set_config, save_run
 from gaitmap_challenges.stride_segmentation.sensor_position_comparison_instep import (
     Challenge,
     ChallengeDataset,
@@ -30,14 +30,13 @@ def get_study():
 
 
 if __name__ == "__main__":
+    config = set_config()
+
     dataset = ChallengeDataset(
-        data_folder=Path(
-            "/home/arne/Documents/repos/work/datasets/eGaIT_database_segmentation"
-        ),
-        memory=Memory("../.cache"),
+        memory=Memory(config.cache_dir),
     )
 
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": 3})
+    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
 
     challenge.run(
         OptunaSearch(
@@ -55,5 +54,4 @@ if __name__ == "__main__":
         challenge=challenge,
         entry_name=("gaitmap", "constrained_barth_dtw", "optimized"),
         custom_metadata=metadata,
-        path=Path("../"),
     )
