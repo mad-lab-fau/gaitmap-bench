@@ -92,5 +92,4 @@ def box_plot(
     p.y_range.start = lowest_element - plot_range * 0.02
     p.y_range.end = highest_element + plot_range * 0.02
 
-
     return p

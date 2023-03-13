@@ -4,7 +4,9 @@ import pandas as pd
 from gaitmap.evaluation_utils import calculate_parameter_errors
 from tpcp.validate import Aggregator
 
-_AggType = Tuple[str, Dict[Literal["reference", "predicted"], Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]]]
+_AggType = Tuple[
+    str, Dict[Literal["reference", "predicted"], Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]]
+]
 
 
 class SingleValueErrors(Aggregator[_AggType]):
@@ -20,11 +22,16 @@ class SingleValueErrors(Aggregator[_AggType]):
             ref = val["reference"]
             pred = val["predicted"]
             for sensor in ["left_sensor", "right_sensor"]:
-                all_references[f"{i}_{sensor}"] = ref[sensor][[parameter]]
-                all_predictions[f"{i}_{sensor}"] = pred[sensor][[parameter]]
+                try:
+                    all_references[f"{i}_{sensor}"] = ref[sensor][[parameter]]
+                    all_predictions[f"{i}_{sensor}"] = pred[sensor][[parameter]]
+                except KeyError:
+                    # Could be that the sensor is not available for this data
+                    pass
 
         return calculate_parameter_errors(
             reference_parameter=all_references,
             predicted_parameter=all_predictions,
-            calculate_per_sensor=False
+            calculate_per_sensor=False,
+            scoring_errors="ignore",
         )[parameter].to_dict()

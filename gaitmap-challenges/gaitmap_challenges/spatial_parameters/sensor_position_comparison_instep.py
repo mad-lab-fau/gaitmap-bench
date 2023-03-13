@@ -15,7 +15,7 @@ from tpcp import Pipeline
 from tpcp.optimize import BaseOptimize
 from tpcp.validate import cross_validate
 
-from gaitmap_challenges._base import BaseChallenge
+from gaitmap_challenges.challenge_base import BaseChallenge
 from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 
 
@@ -36,17 +36,17 @@ def _final_scorer(
 ):
     results = pipeline.safe_run(datapoint)
 
-    matched_stride_list = calculate_parameter_errors(
-        ground_truth_parameter=datapoint.,
-        segmented_stride_list=results.stride_list_,
-        tolerance=int(tolerance_s * datapoint.sampling_rate_hz),
-    )
-
-    combined_matched_stride_list = pd.concat(matched_stride_list)
-    return {
-        **precision_recall_f1_score(combined_matched_stride_list),
-        "per_sample": SingleValuePrecisionRecallF1(combined_matched_stride_list),
-    }
+    # matched_stride_list = calculate_parameter_errors(
+    #     ground_truth_parameter=datapoint.,
+    #     segmented_stride_list=results.stride_list_,
+    #     tolerance=int(tolerance_s * datapoint.sampling_rate_hz),
+    # )
+    #
+    # combined_matched_stride_list = pd.concat(matched_stride_list)
+    # return {
+    #     **precision_recall_f1_score(combined_matched_stride_list),
+    #     "per_sample": SingleValuePrecisionRecallF1(combined_matched_stride_list),
+    # }
 
 
 ChallengeDataset = SensorPositionComparison2019Mocap
@@ -65,7 +65,7 @@ class Challenge(BaseChallenge):
     sensor_pos: str = "instep"
 
     # Update the version, when the challenge_class is changed in a relevant way
-    __version__ = "1.0.0"
+    VERSION = "1.0.0"
 
     cv_results_: Dict = field(init=False)
 

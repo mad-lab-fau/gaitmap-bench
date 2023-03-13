@@ -10,7 +10,7 @@ def save_run(
     entry_name: Union[str, Tuple[str, ...]],
     *,
     custom_metadata: Dict[str, Any],
-    path: Union[str, Path],
+    path: Optional[Union[str, Path]] = None,
     stored_filenames_relative_to: Optional[Union[str, Path]] = None,
     use_git: bool = True,
 ):
@@ -27,6 +27,5 @@ def save_run(
         stored_filenames_relative_to=stored_filenames_relative_to,
         use_git=use_git,
         git_dirty_ignore=("results",),
-        debug_run=debug_run,
         debug_folder_prefix="_",
     )

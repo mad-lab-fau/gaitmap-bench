@@ -2,7 +2,7 @@ import json
 import os
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Union, Optional, Type, TypeVar
+from typing import Union, Optional, Type, TypeVar, Any
 
 from gaitmap_datasets import DatasetsConfig
 from gaitmap_datasets import set_config as set_datasets_config
@@ -30,10 +30,15 @@ class LocalConfig:
             json_config = json.load(f)
             config_dict = {
                 **json_config["gaitmap_challenges"],
-                # TODO: Update when gaitmap_datasets is updated
                 "datasets": DatasetsConfig.from_json_file(config_file),
             }
             return cls(**config_dict)
+
+    def __post_init__(self):
+        path_fields = ("tmp_dir", "cache_dir", "results_dir")
+        for field in path_fields:
+            if val := getattr(self, field, None) is not None:
+                object.__setattr__(self, field, Path(val))
 
 
 def set_config(
@@ -59,7 +64,7 @@ def set_config(
                     f"default config file ({_default_config_file})-> not specified or does not exist"
                 )
     if isinstance(config_obj_or_path, (str, Path)):
-        config_obj = _config_type.from_json(config_obj_or_path)
+        config_obj = _config_type.from_json_file(config_obj_or_path)
     elif isinstance(config_obj_or_path, _config_type):
         config_obj = config_obj_or_path
     else:
@@ -68,7 +73,7 @@ def set_config(
     if _GLOBAL_CONFIG is not None:
         raise ValueError("Config already set.")
     _GLOBAL_CONFIG = config_obj
-    set_datasets_config(config_obj.datasets_config)
+    set_datasets_config(config_obj.datasets)
     return config_obj
 
 
@@ -89,10 +94,17 @@ def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] 
     if path.exists():
         raise ValueError(f"Config file {path} already exists.")
 
+    def sanitize_path(p: Any) -> str:
+        if isinstance(p, Path):
+            return str(p.resolve())
+        return p
+
     with path.open("w", encoding="utf8") as f:
         config_dict = {
-            "gaitmap_challenges": {k.name: None for k in fields(_config_type) if k.name != "datasets"},
-            "datasets": {k.name: None for k in fields(DatasetsConfig)},
+            "gaitmap_challenges": {
+                k.name: sanitize_path(k.default) for k in fields(_config_type) if k.name != "datasets"
+            },
+            "datasets": {k.name: sanitize_path(k.default) for k in fields(DatasetsConfig)},
         }
         json.dump(config_dict, f, indent=4, sort_keys=True)
 

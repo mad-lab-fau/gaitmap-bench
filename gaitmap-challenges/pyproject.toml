@@ -12,7 +12,7 @@ pandas = ">=1.4.3"
 scikit-learn = ">=1.0"
 gaitmap = {git = "https://github.com/mad-lab-fau/gaitmap.git", rev = "master", extras = ["stats"]}
 optuna = ">=3.0.0"
-gaitmap-datasets = {path = "../../../private/gaitmap-datasets", develop = true}
+gaitmap-datasets = {path = "../../../private/gaitmap-datasets"}
 py-cpuinfo = "^9.0.0"
 pydantic = "^1.10.4"
 toml = "^0.10.2"

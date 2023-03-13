@@ -7,9 +7,9 @@ from typing import Dict, Iterator, Literal, Optional, TypedDict, Union, Any, Lis
 import pandas as pd
 from gaitmap.evaluation_utils import calculate_parameter_errors
 from gaitmap.utils.datatype_helper import set_correct_index
-from gaitmap_datasets import EgaitParameterValidation2013
+from gaitmap_datasets import EgaitAdidas2014
 from itertools import chain
-from sklearn.model_selection import BaseCrossValidator
+from sklearn.model_selection import BaseCrossValidator, GroupKFold
 from tpcp import Pipeline
 from tpcp.optimize import BaseOptimize
 from tpcp.validate import cross_validate, NoAgg
@@ -17,7 +17,7 @@ from tpcp.validate import cross_validate, NoAgg
 from gaitmap_challenges.challenge_base import NpEncoder, BaseChallenge
 from gaitmap_challenges.spatial_parameters._utils import SingleValueErrors
 
-ChallengeDataset = EgaitParameterValidation2013
+ChallengeDataset = EgaitAdidas2014
 
 
 def _final_scorer(
@@ -25,11 +25,14 @@ def _final_scorer(
     datapoint: ChallengeDataset,
 ):
     results = pipeline.safe_run(datapoint)
-    predicted = results.parameters_
-    reference = datapoint.gaitrite_parameters_
+    predicted = {k: v[["stride_length"]] for k, v in results.parameters_.items()}
+    reference = {k: v[["stride_length"]] for k, v in datapoint.mocap_parameters_.items()}
 
     errors = calculate_parameter_errors(
-        reference_parameter=reference, predicted_parameter=predicted, calculate_per_sensor=False
+        reference_parameter=reference,
+        predicted_parameter=predicted,
+        calculate_per_sensor=False,
+        scoring_errors="ignore",
     )["stride_length"]
 
     return {
@@ -53,7 +56,9 @@ class ResultType(TypedDict):
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
     dataset: Optional[Union[str, Path, ChallengeDataset]]
-    cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = 3
+    cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = field(
+        default_factory=lambda: GroupKFold(n_splits=3)
+    )
     cv_params: Optional[Dict] = None
 
     # Update the version, when the challenge_class is changed in a relevant way
@@ -65,11 +70,13 @@ class Challenge(BaseChallenge):
         with self._measure_time():
             self.optimizer = optimizer
             self.dataset_ = self._resolve_dataset()
+            groups = self.dataset_.create_group_labels(["participant"])
             cv_params = {} if self.cv_params is None else self.cv_params
             self.cv_results_ = cross_validate(
                 optimizable=optimizer,
                 dataset=self.dataset_,
                 cv=self.cv_iterator,
+                groups=groups,
                 scoring=self.final_scorer,
                 return_optimizer=True,
                 **cv_params,
@@ -81,9 +88,7 @@ class Challenge(BaseChallenge):
             return ChallengeDataset(data_folder=Path(self.dataset))
         if isinstance(self.dataset, ChallengeDataset):
             return self.dataset
-        raise ValueError(
-            "`dataset` must either be a valid path or a valid instance of `SensorPositionComparison2019Mocap`."
-        )
+        raise ValueError(f"`dataset` must either be a valid path or a valid instance of `{ChallengeDataset.__name__}`.")
 
     @property
     def final_scorer(self):
@@ -101,7 +106,7 @@ class Challenge(BaseChallenge):
     def get_reference_parameter(
         self, datapoint: ChallengeDataset
     ) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
-        return datapoint.gaitrite_parameters_
+        return datapoint.mocap_parameters_
 
     def get_core_results(self) -> ResultType:
         cv_results = copy.copy(self.cv_results_)
@@ -115,10 +120,10 @@ class Challenge(BaseChallenge):
         )
         stride_length = pd.concat({"predicted": raw_predictions, "reference": raw_references}, axis=1)
 
-        cv_results = pd.DataFrame(cv_results)
-
         # This can not be properly serialized
         optimizer = cv_results.pop("optimizer")
+
+        cv_results = pd.DataFrame(cv_results)
 
         opti_results = []
         for opti in optimizer:

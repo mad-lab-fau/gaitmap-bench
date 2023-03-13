@@ -8,7 +8,7 @@ import gaitmap_challenges.config as challenge_config
 HERE = Path(__file__).parent
 
 DEFAULT_RESULTS_DIR = HERE.parent.parent / Path("results")
-MAIN_REPO_ROOT = Path(__file__).parent.parent.parent
+MAIN_REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DEFAULT_CONFIG_FILE = MAIN_REPO_ROOT / Path(".dev_config.json")
 
 

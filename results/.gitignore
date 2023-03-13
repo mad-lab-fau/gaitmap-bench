@@ -1,2 +1,2 @@
-# For now we are not going to add the results to git
+# This will ignore all folders with a leading _ (underscore), which is our indicator for a debug-run
 **/_*/

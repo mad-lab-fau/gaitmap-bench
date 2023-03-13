@@ -6,12 +6,14 @@ import sys
 import warnings
 from collections import namedtuple
 from datetime import datetime
+from importlib.metadata import distributions
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Type, Union, cast, Sequence
 
 from cpuinfo import cpuinfo
 
 from gaitmap_challenges.challenge_base import BaseChallenge
+from gaitmap_challenges.config import config
 
 
 def save_run(
@@ -19,13 +21,24 @@ def save_run(
     entry_name: Union[str, Tuple[str, ...]],
     *,
     custom_metadata: Dict[str, Any],
-    path: Union[str, Path],
+    path: Optional[Union[str, Path]] = None,
     debug_run: bool = True,
     stored_filenames_relative_to: Optional[Union[str, Path]] = None,
     use_git: bool = True,
     git_dirty_ignore: Sequence[str] = (),
     debug_folder_prefix: str = "_",
 ):
+    try:
+        global_config = config()
+    except ValueError:
+        global_config = None
+    if path is None:
+        if global_config is None:
+            raise ValueError("No path was given and no config is available.")
+        path = global_config.results_dir
+        if path is None:
+            raise ValueError("No path was given and no result path is set in the config.")
+
     # We use the import path of the challenge class as the name of the challenge
     challenge_name = challenge.__class__.__module__ + "." + challenge.__class__.__name__
     challenge_version = challenge.VERSION
@@ -49,7 +62,7 @@ def save_run(
             "python_implementation": sys.implementation.name,
             "packages_info": {
                 d.metadata["Name"]: d.version
-                for d in sorted(importlib.metadata.distributions(), key=lambda x: x.metadata["Name"].lower())
+                for d in sorted(distributions(), key=lambda x: x.metadata["Name"].lower())
             },
             "cpu": {
                 k: v for k, v in cpuinfo.get_cpu_info().items() if k not in ["flags", "hz_advertised", "hz_actual"]

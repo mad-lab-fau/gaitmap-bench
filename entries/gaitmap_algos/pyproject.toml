@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-gaitmap-bench = {path = "../..", develop = true}
+gaitmap-bench = {path = "../../gaitmap-bench", develop = true}
 gaitmap = {git = "https://github.com/mad-lab-fau/gaitmap.git", rev = "master", extras = ["hmm"]}
 
 
