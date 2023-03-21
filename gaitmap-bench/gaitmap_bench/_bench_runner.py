@@ -1,4 +1,7 @@
 import hashlib
+import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Set, Sequence, Dict, List
 
@@ -129,11 +132,70 @@ def list_entries(path, group, show_command, show_base_folder):
 
 
 @cli.command()
-@click.argument("path", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR)
+@click.option(
+    "--path", "-p", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR, help="The path to the entries folder."
+)
+@click.option(
+    "--python-path",
+    "-py",
+    type=click.Path(exists=True),
+    required=True,
+    help="The path to the python executable to use.",
+)
 @click.option("--id", "-i", "entry_id", type=str, help="The ID of the entry to run.")
-def run_challenge(entry_id):
+def run_challenge(entry_id, path, python_path):
     """Run a challenge."""
+    path = Path(path)
+    all_entries = pd.DataFrame(find_all_entries(path))
+    # Find the entry whichs hash starts with the given id
+    entry = all_entries[all_entries.hash.str.startswith(entry_id)]
+    if len(entry) == 0:
+        raise ValueError(
+            f"Found no entry with the given ID: {entry_id}\n"
+            "Rerun the `list` command to see all entries and double-check the ID."
+        )
+    if len(entry) > 1:
+        raise ValueError(
+            f"Found multiple entries with the given ID: {entry_id}\n"
+            "Rerun the `list` command to see all entries and double-check the ID."
+        )
+    entry = entry.iloc[0]
 
+    working_path = path / entry.base_folder
+    command = entry.command_template.format(command=entry.command)
+    setup = entry.setup
+    if not isinstance(setup, list):
+        setup = [setup]
+    setup_commands = [s.format(python_path=python_path) for s in setup]
+
+    console = Console()
+    console.print("Executing the following commands:")
+    for s in setup_commands:
+        console.print(f"\t{s}")
+    console.print(f"\t{command}")
+    console.print(f"In the following folder:\n\t{working_path}")
+    console.rule("[bold red]Setup[/bold red]")
+
+    new_env = os.environ.copy()
+    # We unset VIRTUAL_ENV to make sure that the setup commands are executed in the correct environment
+    new_env.pop("VIRTUAL_ENV", None)
+
+    try:
+        for s in setup_commands:
+            console.log(f"Executing: {s}")
+            subprocess.run(
+                s, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
+            )
+
+    except subprocess.CalledProcessError as e:
+        console.print_exception()
+        console.print(f"Setup failed with error code {e.returncode}. See error above.")
+        return
+    console.rule("[bold red]Running[/bold red]")
+    console.log(f"Executing: {command}")
+    subprocess.run(
+        command, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
+    )
 
 cli.add_command(create_config)
 cli.add_command(list_entries, name="list")
