@@ -1,13 +1,14 @@
 import hashlib
-from typing import Set, Sequence
+from typing import Set, Sequence, Dict, List
 
 import click
+import pandas as pd
 from rich.console import Console
 from rich.table import Table
 
 from gaitmap_bench import create_config_template
 from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR
-from gaitmap_bench._utils import find_all_entries
+from gaitmap_bench._utils import find_all_entries, Entry
 
 
 def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Sequence[int]) -> int:
@@ -75,82 +76,55 @@ def list_entries(path, group, show_command):
     console = Console()
 
     if group:
-        tmp_entries = {}
-        # We sort by length of the name level.
-        # This way we make sure that we first include the specific challenges and then the challenge groups
-        # To avoid overwriting entries.
-        # Not sure if this is really required, but seems to work.
-        group_as_parts = sorted([g.split(".") for g in group], key=lambda x: len(x), reverse=True)
-        for group in group_as_parts:
-            if len(group) == 1:
-                if not group[0] in all_entries:
-                    raise ValueError(f"Invalid challenge-group name: {group[0]}")
-                tmp_entries[group[0]] = all_entries[group[0]]
-            elif len(group) == 2:
-                challenge_group, challenge = group
-                if challenge_group not in all_entries:
-                    raise ValueError(f"Invalid challenge-group name: {challenge_group}")
-                if challenge not in all_entries[challenge_group]:
-                    raise ValueError(f"Invalid challenge name: {challenge}")
-                tmp_entries.setdefault(challenge_group, {})[challenge] = all_entries[challenge_group][challenge]
-            else:
-                raise ValueError(f"The challenge name should only contain one `.` at max. But is is: {group}")
+        def filter_group(entry: Entry) -> bool:
+            if entry.challenge_group_name in group:
+                return True
+            if entry.challenge_group_name + "." + entry.challenge_name in group:
+                return True
+            return False
 
-        all_entries = tmp_entries
+        all_entries = [e for e in all_entries if filter_group(e)]
 
-    # We iterate all group and challenge combinations and create sha1 has them
-    challenge_hashes = {}
-    challenge_hashes_list = []
-    for group_name, group_entries in all_entries.items():
-        for challenge_name, entries in group_entries.items():
-            name_hash = hashlib.sha1(f"{group_name}.{challenge_name}".encode("utf-8")).hexdigest()
-            challenge_hashes.setdefault(group_name, {})[challenge_name] = name_hash
-            challenge_hashes_list.append(name_hash)
+    min_hash_length = _determine_shortest_required_length(
+        [e.hash for e in all_entries], [3, 6, 9]
+    )
 
-    # We determine the shortest length of the hash that is unique
-    challenge_hash_length = _determine_shortest_required_length(challenge_hashes_list, [3, 6, 9])
-    del challenge_hashes_list
+    entries_df = pd.DataFrame(all_entries)
 
-    for group_name, group_entries in all_entries.items():
-        for challenge_name, entries in group_entries.items():
+    if len(entries_df) == 0:
+        console.print("No entries found.")
+        return
 
-            # We hash all entry names and determine the shortest length of the hash that is unique
-            entry_hashes = {
-                (name := f"{entry.group_name}.{entry.name}"): hashlib.sha1(name.encode("utf-8")).hexdigest()
-                for entry in entries
-            }
-            entry_hash_length = _determine_shortest_required_length(list(entry_hashes.values()), [3, 6, 9])
+    for group_id, entries in entries_df.groupby(["challenge_group_name", "challenge_name"]):
+        group_name, challenge_name = group_id
+        table = Table(title=f"{group_name}.{challenge_name}  ({len(entries)} entries)")
+        table.add_column("ID", justify="left", style="cyan", no_wrap=True)
+        table.add_column("Entry Group", justify="left", style="cyan", no_wrap=True)
+        table.add_column("Name", justify="left", style="magenta", no_wrap=True)
+        table.add_column("Full Name", justify="left", style="magenta", no_wrap=True)
+        if show_command:
+            table.add_column("Command", justify="left", style="green", no_wrap=True)
 
-            table = Table(title=f"{group_name}.{challenge_name}")
-            table.add_column("Short Hash", justify="left", style="cyan", no_wrap=True)
-            table.add_column("Entry Group", justify="left", style="cyan", no_wrap=True)
-            table.add_column("Name", justify="left", style="magenta", no_wrap=True)
+        for entry in entries.sort_values(["group_name", "name"]).itertuples(name="Entry"):
+            entry: Entry
+            columns = [entry.hash[:min_hash_length], entry.group_name, entry.name, entry.run_name]
             if show_command:
-                table.add_column("Command", justify="left", style="green", no_wrap=True)
+                columns.append(entry.command)
+            table.add_row(*columns)
 
-            for entry in sorted(entries, key=lambda x: (x.group_name, x.name)):
-                short_name = f"{entry.group_name}.{entry.name}"
-                challenge_hash = challenge_hashes[group_name][challenge_name][:challenge_hash_length]
-                entry_hash = entry_hashes[short_name][:entry_hash_length]
-                if show_command:
-                    table.add_row(
-                        f"{challenge_hash}_{entry_hash}",
-                        entry.group_name,
-                        entry.name,
-                        entry.command,
-                    )
-                else:
-                    table.add_row(
-                        f"{challenge_hash}_{entry_hash}",
-                        entry.group_name,
-                        entry.name,
-                    )
+        console.print(table)
 
-            console.print(table)
+
+@cli.command()
+@click.option("--id", "-i", "entry_id", type=str, help="The ID of the entry to run.")
+def run_challenge(entry_id):
+    """Run a challenge."""
+
 
 
 cli.add_command(create_config)
 cli.add_command(list_entries, name="list")
+cli.add_command(run_challenge, name="run")
 
 if __name__ == "__main__":
     cli()
