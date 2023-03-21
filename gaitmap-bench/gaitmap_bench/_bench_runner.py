@@ -1,4 +1,5 @@
 import hashlib
+from pathlib import Path
 from typing import Set, Sequence, Dict, List
 
 import click
@@ -7,7 +8,7 @@ from rich.console import Console
 from rich.table import Table
 
 from gaitmap_bench import create_config_template
-from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR
+from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR, MAIN_REPO_ROOT
 from gaitmap_bench._utils import find_all_entries, Entry
 
 
@@ -60,7 +61,9 @@ def create_config(path):
 
 
 @cli.command()
-@click.argument("path", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR)
+@click.option(
+    "--path", "-p", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR, help="The path to the entries folder."
+)
 @click.option(
     "--group",
     "-g",
@@ -70,12 +73,18 @@ def create_config(path):
     help="Only list entries of the given group. (Can be specified multiple times)",
 )
 @click.option("--show-command", "-c", is_flag=True, help="Show the command that is used to run the entry.")
-def list_entries(path, group, show_command):
+@click.option("--show-base-folder", "-f", is_flag=True, help="Show the base folder of the entry.")
+def list_entries(path, group, show_command, show_base_folder):
     """List all entries that are registered in the `entries` folder."""
+    path = Path(path)
     all_entries = find_all_entries(path)
+
+    min_hash_length = _determine_shortest_required_length([e.hash for e in all_entries], [3, 6, 9])
+
     console = Console()
 
     if group:
+
         def filter_group(entry: Entry) -> bool:
             if entry.challenge_group_name in group:
                 return True
@@ -85,15 +94,16 @@ def list_entries(path, group, show_command):
 
         all_entries = [e for e in all_entries if filter_group(e)]
 
-    min_hash_length = _determine_shortest_required_length(
-        [e.hash for e in all_entries], [3, 6, 9]
-    )
-
     entries_df = pd.DataFrame(all_entries)
 
     if len(entries_df) == 0:
         console.print("No entries found.")
         return
+
+    if path == DEFAULT_ENTRIES_DIR:
+        display_path = path.relative_to(MAIN_REPO_ROOT)
+    else:
+        display_path = path
 
     for group_id, entries in entries_df.groupby(["challenge_group_name", "challenge_name"]):
         group_name, challenge_name = group_id
@@ -102,24 +112,27 @@ def list_entries(path, group, show_command):
         table.add_column("Entry Group", justify="left", style="cyan", no_wrap=True)
         table.add_column("Name", justify="left", style="magenta", no_wrap=True)
         table.add_column("Full Name", justify="left", style="magenta", no_wrap=True)
+        if show_base_folder:
+            table.add_column("Base Folder", justify="left", style="green", no_wrap=True)
         if show_command:
-            table.add_column("Command", justify="left", style="green", no_wrap=True)
-
+            table.add_column("Command", justify="left", style="blue", no_wrap=True)
         for entry in entries.sort_values(["group_name", "name"]).itertuples(name="Entry"):
             entry: Entry
             columns = [entry.hash[:min_hash_length], entry.group_name, entry.name, entry.run_name]
+            if show_base_folder:
+                columns.append(str(display_path / entry.base_folder))
             if show_command:
-                columns.append(entry.command)
+                columns.append(entry.command_template.format(command=entry.command))
             table.add_row(*columns)
 
         console.print(table)
 
 
 @cli.command()
+@click.argument("path", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR)
 @click.option("--id", "-i", "entry_id", type=str, help="The ID of the entry to run.")
 def run_challenge(entry_id):
     """Run a challenge."""
-
 
 
 cli.add_command(create_config)
