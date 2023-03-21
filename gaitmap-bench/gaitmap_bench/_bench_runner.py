@@ -192,10 +192,15 @@ def run_challenge(entry_id, path, python_path):
         console.print(f"Setup failed with error code {e.returncode}. See error above.")
         return
     console.rule("[bold red]Running[/bold red]")
-    console.log(f"Executing: {command}")
-    subprocess.run(
-        command, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
-    )
+    try:
+        console.log(f"Executing: {command}")
+        subprocess.run(
+            command, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
+        )
+    except subprocess.CalledProcessError as e:
+        console.print_exception()
+        console.print(f"Executing the Command failed with error code {e.returncode}. See error above.")
+        return
 
 cli.add_command(create_config)
 cli.add_command(list_entries, name="list")
