@@ -5,14 +5,16 @@ from pathlib import Path
 from typing import Union, Optional, Type, TypeVar, Any
 
 from gaitmap_datasets import DatasetsConfig
-from gaitmap_datasets import set_config as set_datasets_config
 from gaitmap_datasets import reset_config as reset_datasets_config
+from gaitmap_datasets import set_config as set_datasets_config
+from tpcp.parallel import register_global_parallel_callback
 
 _CONFIG_ENV_VAR: str = "GAITMAP_CHALLENGES_CONFIG"
 _GLOBAL_CONFIG: Optional["LocalConfig"] = None
 _DEBUG: bool = True
 
 _ConfigT = TypeVar("_ConfigT", bound="LocalConfig")
+
 
 # Note: Frozen dataclasses can be "overwritten" by using the `replace` method.
 @dataclass(frozen=True)
@@ -126,6 +128,25 @@ def config() -> LocalConfig:
     if _GLOBAL_CONFIG is None:
         raise ValueError("Config not set.")
     return _GLOBAL_CONFIG
+
+
+# This callback (and the register afterwards), works together with a tpcp parallel "hack" that ensures that the config
+# is restored in a worker process spawned by joblib.
+# This will only have an effect if the config is set in the main process and the prallel implementation is using the
+# modified `delayed` function from tpcp.parallel.
+def _config_restore_callback():
+    def setter(config_obj: LocalConfig):
+        reset_config()
+        set_config(config_obj)
+
+    try:
+        returned_config = config()
+    except ValueError:
+        return None, lambda x: None
+    return returned_config, setter
+
+
+register_global_parallel_callback(_config_restore_callback)
 
 
 __all__ = ["set_config", "reset_config", "config", "create_config_template", "LocalConfig"]
