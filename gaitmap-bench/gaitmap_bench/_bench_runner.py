@@ -1,9 +1,8 @@
-import hashlib
 import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Set, Sequence, Dict, List
+from typing import Sequence
 
 import click
 import pandas as pd
@@ -12,7 +11,7 @@ from rich.table import Table
 
 from gaitmap_bench import create_config_template
 from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR, MAIN_REPO_ROOT
-from gaitmap_bench._utils import find_all_entries, Entry
+from gaitmap_bench._utils import Entry, find_all_entries
 
 
 def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Sequence[int]) -> int:
@@ -201,6 +200,7 @@ def run_challenge(entry_id, path, python_path):
         console.print_exception()
         console.print(f"Executing the Command failed with error code {e.returncode}. See error above.")
         return
+
 
 cli.add_command(create_config)
 cli.add_command(list_entries, name="list")

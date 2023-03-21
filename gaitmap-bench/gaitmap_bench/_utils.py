@@ -1,6 +1,7 @@
 from hashlib import sha1
 from pathlib import Path
-from typing import NamedTuple, Dict, Tuple, List, Callable
+from typing import Callable, Dict, List, NamedTuple, Tuple
+
 import toml
 
 
@@ -56,7 +57,5 @@ def find_all_entries(base_folder: Path) -> List[Entry]:
     return entries
 
 
-def filter_entries(
-    entries: List[Entry], filter_func: Callable[[Entry], bool]
-) -> Dict[str, Dict[str, List[Entry]]]:
+def filter_entries(entries: List[Entry], filter_func: Callable[[Entry], bool]) -> Dict[str, Dict[str, List[Entry]]]:
     """Filtere a nested dict of entries based on parameters of the entry."""
