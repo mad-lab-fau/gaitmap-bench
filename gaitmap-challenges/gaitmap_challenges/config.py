@@ -22,7 +22,7 @@ class LocalConfig:
     tmp_dir: Optional[Path] = None
     cache_dir: Optional[Path] = None
     results_dir: Optional[Path] = None
-    n_jobs: int = 1
+    n_jobs: Union[int, str] = 1
     datasets: Optional[DatasetsConfig] = None
 
     @classmethod

@@ -129,7 +129,7 @@ class Challenge(BaseChallenge):
     def save_core_results(self, folder_path) -> None:
         core_results = self.get_core_results()
         save_cv_results(core_results["cv_results"], folder_path)
-        if opti_results := core_results["opti_results"] is not None:
+        if (opti_results := core_results["opti_results"]) is not None:
             save_opti_results(opti_results, folder_path)
 
     @classmethod
