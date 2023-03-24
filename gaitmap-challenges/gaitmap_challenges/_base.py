@@ -15,6 +15,7 @@ from cpuinfo import cpuinfo
 from gaitmap_challenges.challenge_base import BaseChallenge
 from gaitmap_challenges.config import config
 
+# TODO: Add the config to the metadata
 
 def save_run(
     challenge: BaseChallenge,

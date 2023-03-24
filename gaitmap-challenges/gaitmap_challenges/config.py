@@ -90,6 +90,10 @@ def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] 
     ----------
     path : Union[str, Path]
         The path to the file where the config should be created.
+    _config_type : Type[_ConfigT], optional
+        In case you have a custom config structure, you can pass it here, by default LocalConfig.
+        Note, that we don't support arbitrary config structures.
+        So this should be considered an internal parameter with no real use outside gaitmap-challenges/bench.
 
     """
     path = Path(path)
