@@ -55,7 +55,3 @@ def find_all_entries(base_folder: Path) -> List[Entry]:
                     )
                     entries.append(entry_group)
     return entries
-
-
-def filter_entries(entries: List[Entry], filter_func: Callable[[Entry], bool]) -> Dict[str, Dict[str, List[Entry]]]:
-    """Filtere a nested dict of entries based on parameters of the entry."""

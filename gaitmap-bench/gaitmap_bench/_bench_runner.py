@@ -12,6 +12,7 @@ from rich.table import Table
 from gaitmap_bench import create_config_template
 from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR, MAIN_REPO_ROOT
 from gaitmap_bench._utils import Entry, find_all_entries
+from gaitmap_challenges.config import _CONFIG_ENV_VAR
 
 
 def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Sequence[int]) -> int:
@@ -142,7 +143,14 @@ def list_entries(path, group, show_command, show_base_folder):
     help="The path to the python executable to use.",
 )
 @click.option("--id", "-i", "entry_id", type=str, help="The ID of the entry to run.")
-def run_challenge(entry_id, path, python_path):
+@click.option(
+    "--config-path",
+    "-c",
+    type=click.Path(exists=True),
+    help="The path to the config file. "
+    "Will be resolved to an absolut path before passing it as an ENV variable to the child process.",
+)
+def run_challenge(entry_id, path, python_path, config_path):
     """Run a challenge."""
     path = Path(path)
     all_entries = pd.DataFrame(find_all_entries(path))
@@ -160,12 +168,18 @@ def run_challenge(entry_id, path, python_path):
         )
     entry = entry.iloc[0]
 
+    # We make the following run variables available to the setup and command templates
+    run_variables = {
+        "command": entry.command,
+        "python_path": python_path,
+    }
+
     working_path = path / entry.base_folder
-    command = entry.command_template.format(command=entry.command)
+    command = entry.command_template.format(**run_variables)
     setup = entry.setup
     if not isinstance(setup, list):
         setup = [setup]
-    setup_commands = [s.format(python_path=python_path) for s in setup]
+    setup_commands = [s.format(**run_variables) for s in setup]
 
     console = Console()
     console.print("Executing the following commands:")
@@ -178,6 +192,8 @@ def run_challenge(entry_id, path, python_path):
     new_env = os.environ.copy()
     # We unset VIRTUAL_ENV to make sure that the setup commands are executed in the correct environment
     new_env.pop("VIRTUAL_ENV", None)
+    # We set the path to the config file as an environment variable
+    new_env[_CONFIG_ENV_VAR] = str(Path(config_path).resolve())
 
     try:
         for s in setup_commands:
