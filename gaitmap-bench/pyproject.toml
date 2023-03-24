@@ -11,7 +11,7 @@ python = ">=3.8,<3.11"
 gaitmap-challenges = {path = "../gaitmap-challenges", develop = true, extras = ["visualization"]}
 matplotlib = ">=3.6.3"
 gaitmap-datasets = {path = "../../../private/gaitmap-datasets"}
-tpcp = {path = "../../../private/tpcp", develop = true}
+tpcp = ">=0.17.0"
 click = ">=8.1.3"
 toml = ">=0.10.2"
 rich = ">=13.3.2"

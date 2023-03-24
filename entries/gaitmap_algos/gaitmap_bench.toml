@@ -1,6 +1,11 @@
 # TODO: Add cleanup script that removes venv and required python version
 name = "gaitmap_algos"
-setup = ["poetry env use {python_path}", "poetry env info", "poetry install"]
+setup = [
+    "poetry env use {python_path}",
+    "poetry update",
+    "poetry run poe commit_lock_if_changed",
+    "poetry install"
+]
 command_template = "poetry run python {command}"
 
 [challenge.stride_segmentation.egait_segmentation_validation_2014]

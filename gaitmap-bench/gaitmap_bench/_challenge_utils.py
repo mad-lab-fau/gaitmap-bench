@@ -17,10 +17,11 @@ EXPECTED_DEFAULT_SAVE_CONFIG = {
 class CustomMetadata(TypedDict):
     short_description: str
     long_description: str
-    code_authors: Sequence[str, ...]
-    algorithm_authors: Sequence[str, ...]
-    citations: Sequence[str, ...]
+    code_authors: Sequence[str]
+    algorithm_authors: Sequence[str]
+    citations: Sequence[str]
     implementation_url: str
+
 
 def _validate_custom_metadata(value: Dict[str, Any]):
     """Test if the value is a valid CustomMetadata object."""

@@ -14,10 +14,10 @@ gaitmap = {git = "https://github.com/mad-lab-fau/gaitmap.git", rev = "master", e
 optuna = ">=3.0.0"
 gaitmap-datasets = {path = "../../../private/gaitmap-datasets"}
 py-cpuinfo = "^9.0.0"
-pydantic = "^1.10.4"
 toml = "^0.10.2"
 bokeh = {version = "^3.0.3", optional = true}
 jupyter-bokeh = {version = "^3.0.5", optional = true}
+gitpython = "^3.1.31"
 
 [tool.poetry.extras]
 visualization = ["bokeh"]
