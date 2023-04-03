@@ -1,4 +1,3 @@
-import importlib
 import inspect
 import json
 import os
@@ -7,6 +6,7 @@ import warnings
 from collections import namedtuple
 from datetime import datetime
 from importlib.metadata import distributions
+from os.path import relpath
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Type, Union, cast, Sequence
 
@@ -16,7 +16,32 @@ from gaitmap_challenges.challenge_base import BaseChallenge
 from gaitmap_challenges.config import config, is_debug_run
 
 
-# TODO: Add the config to the metadata
+def _check_if_dirty(repo, ignore: Sequence[str] = ()):
+    """Check if the repo is dirty.
+
+    Parameters
+    ----------
+    repo
+        The repo to check.
+    ignore
+        A sequence of paths to ignore.
+        All paths are assumed to be relative to the repo root.
+
+    Returns
+    -------
+    True if the repo is dirty, False otherwise.
+    """
+    if not repo.is_dirty(untracked_files=True):
+        return False
+
+    # changed files including untracked
+    files = repo.untracked_files + repo.index.diff(None)
+    for f in files:
+        # For each file we need to check if it is in the `ignore` list or a subdirectory of a path in the `ignore` list.
+        if any(Path(i) in Path(f).parents or Path(i) == Path(f) for i in ignore):
+            continue
+        else:
+            return True
 
 
 def save_run(
@@ -87,6 +112,12 @@ def save_run(
         },
     }
 
+    # Add config
+    if global_config is not None:
+        metadata["config"] = global_config.to_json_dict(path_relative_to=stored_filenames_relative_to)
+    else:
+        metadata["config"] = None
+
     # Get caller filename
     frame = inspect.stack()[1]
     module = inspect.getmodule(frame[0])
@@ -102,11 +133,9 @@ def save_run(
         repo = git.Repo(search_parent_directories=True)
         repo_base_dir = repo.git.rev_parse("--show-toplevel")
         if stored_filenames_relative_to is not None:
-            repo_base_dir = str(Path(repo_base_dir).relative_to(stored_filenames_relative_to))
+            repo_base_dir = str(relpath(Path(repo_base_dir), stored_filenames_relative_to))
 
-        # TODO: Need to support git_dirty_ignore!
-        repo_is_dirty = repo.is_dirty(untracked_files=True)
-
+        repo_is_dirty = _check_if_dirty(repo, ignore=git_dirty_ignore)
         if debug_run is False and repo_is_dirty:
             warnings.warn(
                 "Trying to save results of a non-debug run from a dirty git repo. "
@@ -122,6 +151,7 @@ def save_run(
         metadata["git_commit_hash"] = repo.head.object.hexsha
         metadata["git_dirty"] = repo_is_dirty
         metadata["git_base_dir"] = repo_base_dir
+        metadata["git_dirty_ignore"] = [str(p) for p in git_dirty_ignore]
 
     # In the target folder we create the folder structure
     # challenge_name/challenge_version/entry_name/(start_datetime _ unique_id)

@@ -1,9 +1,10 @@
 import json
 import os
 import warnings
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, asdict
+from os.path import relpath
 from pathlib import Path
-from typing import Union, Optional, Type, TypeVar, Any, TypedDict, Tuple, Callable
+from typing import Union, Optional, Type, TypeVar, Any, TypedDict, Tuple, Callable, Dict
 
 from gaitmap_datasets import DatasetsConfig
 from gaitmap_datasets import reset_config as reset_datasets_config
@@ -43,6 +44,32 @@ class LocalConfig:
         for field in path_fields:
             if (val := getattr(self, field, None)) is not None:
                 object.__setattr__(self, field, Path(val))
+
+    def to_json_dict(self, path_relative_to: Optional[Path] = None) -> Dict[str, Any]:
+        """Get the config as json-serializable dict.
+
+        Note: This is not meant for round-trip serialization!
+        """
+        config_dict = asdict(self)
+        for name, value in config_dict.items():
+            if isinstance(value, Path):
+                if path_relative_to is None:
+                    config_dict[name] = str(value)
+                else:
+                    config_dict[name] = str(relpath(value, path_relative_to))
+
+        if self.datasets:
+            dataset_config = asdict(self.datasets)
+            for name, value in dataset_config.items():
+                if isinstance(value, Path):
+                    if path_relative_to is None:
+                        dataset_config[name] = str(value)
+                    else:
+                        dataset_config[name] = str(relpath(value, path_relative_to))
+
+            config_dict["datasets"] = dataset_config
+
+        return config_dict
 
 
 def set_config(
