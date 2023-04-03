@@ -1,7 +1,6 @@
 from itertools import chain
 from typing import Dict, Literal
 
-import numpy as np
 import pandas as pd
 from bokeh.models import HoverTool, ColumnDataSource, Whisker
 from bokeh.plotting import figure
@@ -9,22 +8,25 @@ from bokeh.transform import jitter
 
 
 def box_plot(
-    cv_results: Dict[str, pd.DataFrame], metric: str, group_by: Literal["fold", "single"], overlay_scatter: bool = True
+    cv_results: Dict[str, pd.DataFrame],
+    metric: str,
+    group_data_by: Literal["fold", "single"],
+    overlay_scatter: bool = True,
 ):
 
-    if group_by == "fold":
+    if group_data_by == "fold":
         metric_name = "test_" + metric
-    elif group_by == "single":
+    elif group_data_by == "single":
         metric_name = "test_single_" + metric
     else:
-        raise ValueError(f"Invalid value for `group_by`: {group_by}")
+        raise ValueError(f"Invalid value for `{group_data_by=}`.")
 
     all_results = {}
     for k, v in cv_results.items():
-        if group_by == "fold":
+        if group_data_by == "fold":
             data = v[metric_name]
             labels = v.index.astype("str")
-        elif group_by == "single":
+        elif group_data_by == "single":
             data = list(chain(*v[metric_name]))
             labels = [str(e) for e in chain(*v["test_data_labels"])]
         else:
