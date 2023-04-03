@@ -13,7 +13,8 @@ from typing import Any, Dict, Optional, Tuple, Type, Union, cast, Sequence
 from cpuinfo import cpuinfo
 
 from gaitmap_challenges.challenge_base import BaseChallenge
-from gaitmap_challenges.config import config
+from gaitmap_challenges.config import config, is_debug_run
+
 
 # TODO: Add the config to the metadata
 
@@ -23,7 +24,7 @@ def save_run(
     *,
     custom_metadata: Dict[str, Any],
     path: Optional[Union[str, Path]] = None,
-    debug_run: bool = True,
+    debug_run: bool = None,
     stored_filenames_relative_to: Optional[Union[str, Path]] = None,
     use_git: bool = True,
     git_dirty_ignore: Sequence[str] = (),
@@ -35,10 +36,24 @@ def save_run(
         global_config = None
     if path is None:
         if global_config is None:
-            raise ValueError("No path was given and no config is available.")
+            raise ValueError("No path was given and no global config is available.")
         path = global_config.results_dir
         if path is None:
-            raise ValueError("No path was given and no result path is set in the config.")
+            raise ValueError("No path was given and no result path is set in the global config.")
+
+    if (config_debug_run := is_debug_run()) is not None:
+        if debug_run is not None:
+            warnings.warn(
+                f"The debug_run parameter was set ({debug_run=}), but the global config also has a debug_run setting. "
+                f"The config setting ({config_debug_run=}) will be used. "
+                "You should not use the `debug_run` parameter of the `save_run` function if you are using global "
+                "config."
+            )
+
+        debug_run = config_debug_run
+
+    if debug_run is None:
+        debug_run = False
 
     # We use the import path of the challenge class as the name of the challenge
     challenge_name = challenge.__class__.__module__ + "." + challenge.__class__.__name__
@@ -141,7 +156,8 @@ def save_run(
     result_path.mkdir(parents=True, exist_ok=True)
     challenge.save_core_results(result_path)
 
-    print(f"Saved run to {path.resolve()}")
+    debug_str = " (debug)" if debug_run else ""
+    print(f"Saved run{debug_str} to {path.resolve()}")
     return path
 
 

@@ -2,7 +2,7 @@ import json
 import os
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Union, Optional, Type, TypeVar, Any
+from typing import Union, Optional, Type, TypeVar, Any, TypedDict, Tuple, Callable
 
 from gaitmap_datasets import DatasetsConfig
 from gaitmap_datasets import reset_config as reset_datasets_config
@@ -11,7 +11,7 @@ from tpcp.parallel import register_global_parallel_callback
 
 _CONFIG_ENV_VAR: str = "GAITMAP_CHALLENGES_CONFIG"
 _GLOBAL_CONFIG: Optional["LocalConfig"] = None
-_DEBUG: bool = True
+_DEBUG: Optional[bool] = None
 
 _ConfigT = TypeVar("_ConfigT", bound="LocalConfig")
 
@@ -76,6 +76,8 @@ def set_config(
         raise ValueError("Config already set.")
     _GLOBAL_CONFIG = config_obj
     set_datasets_config(config_obj.datasets)
+    global _DEBUG
+    _DEBUG = debug
     return config_obj
 
 
@@ -134,23 +136,33 @@ def config() -> LocalConfig:
     return _GLOBAL_CONFIG
 
 
+def is_debug_run() -> Optional[bool]:
+    """Check if the current run is a debug run."""
+    return _DEBUG
+
+
 # This callback (and the register afterwards), works together with a tpcp parallel "hack" that ensures that the config
 # is restored in a worker process spawned by joblib.
-# This will only have an effect if the config is set in the main process and the prallel implementation is using the
+# This will only have an effect if the config is set in the main process and the parallel implementation is using the
 # modified `delayed` function from tpcp.parallel.
-def _config_restore_callback():
-    def setter(config_obj: LocalConfig):
+class _RestoreConfig(TypedDict):
+    config_obj_or_path: LocalConfig
+    debug: Optional[bool]
+
+
+def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]:
+    def setter(config_obj: _RestoreConfig):
         reset_config()
-        set_config(config_obj)
+        set_config(**config_obj)
 
     try:
         returned_config = config()
     except ValueError:
         return None, lambda x: None
-    return returned_config, setter
+    return {"config_obj_or_path": returned_config, "debug": is_debug_run()}, setter
 
 
 register_global_parallel_callback(_config_restore_callback)
 
 
-__all__ = ["set_config", "reset_config", "config", "create_config_template", "LocalConfig"]
+__all__ = ["set_config", "reset_config", "config", "create_config_template", "LocalConfig", "is_debug_run"]
