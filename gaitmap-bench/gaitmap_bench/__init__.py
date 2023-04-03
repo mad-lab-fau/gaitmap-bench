@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 __version__ = "0.1.0"
 
 __all__ = ["save_run", "set_config", "config", "reset_config", "create_config_template"]

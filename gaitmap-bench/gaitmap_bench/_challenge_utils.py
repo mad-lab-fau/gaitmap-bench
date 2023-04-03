@@ -1,11 +1,12 @@
 import warnings
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union, TypedDict, Sequence
+from typing import Any, Dict, Optional, Sequence, Tuple, TypedDict, Union
 
-from gaitmap_bench._config import MAIN_REPO_ROOT
 from gaitmap_challenges import save_run as challenge_save_run
 from gaitmap_challenges.challenge_base import BaseChallenge
 from gaitmap_challenges.config import is_debug_run
+
+from gaitmap_bench._config import MAIN_REPO_ROOT
 
 EXPECTED_DEFAULT_SAVE_CONFIG = {
     "path": None,
@@ -38,13 +39,13 @@ def _validate_custom_metadata(value: Dict[str, Any]):
     )
 
     for field in str_fields:
-        if not field in value:
+        if field not in value:
             raise ValueError(f"{field} of custom_metadata is required.")
         if not isinstance(value[field], str):
             raise TypeError(f"{field} of custom_metadata must be a string.")
 
     for field in seq_fields:
-        if not field in value:
+        if field not in value:
             raise ValueError(f"{field} of custom_metadata is required.")
         if not isinstance(value[field], (list, tuple)):
             raise TypeError(f"{field} of custom_metadata must be a list or a tuple of strings.")

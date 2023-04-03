@@ -5,7 +5,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar, Callable, Generator, Dict, Any, List, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Union
 
 import numpy as np
 import pandas as pd

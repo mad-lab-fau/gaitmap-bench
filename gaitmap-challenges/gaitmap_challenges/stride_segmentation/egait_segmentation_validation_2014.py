@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
-from typing import Dict, Iterator, Literal, Optional, TypedDict, Union, List, Any, ClassVar
+from typing import Any, ClassVar, Dict, Iterator, List, Literal, Optional, TypedDict, Union
 
 import pandas as pd
 from gaitmap.evaluation_utils import evaluate_segmented_stride_list, precision_recall_f1_score
@@ -12,13 +12,13 @@ from tpcp.optimize import BaseOptimize
 from tpcp.validate import cross_validate
 
 from gaitmap_challenges.challenge_base import (
+    BaseChallenge,
     collect_cv_results,
     collect_opti_results,
-    save_cv_results,
-    save_opti_results,
     load_cv_results,
     load_opti_results,
-    BaseChallenge,
+    save_cv_results,
+    save_opti_results,
 )
 from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 

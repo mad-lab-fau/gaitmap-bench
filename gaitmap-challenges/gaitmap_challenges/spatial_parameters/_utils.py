@@ -1,4 +1,4 @@
-from typing import Dict, Sequence, Literal, Tuple
+from typing import Dict, Literal, Sequence, Tuple
 
 import pandas as pd
 from gaitmap.evaluation_utils import calculate_parameter_errors

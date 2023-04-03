@@ -1,6 +1,6 @@
 from hashlib import sha1
 from pathlib import Path
-from typing import Callable, Dict, List, NamedTuple, Tuple
+from typing import List, NamedTuple
 
 import toml
 

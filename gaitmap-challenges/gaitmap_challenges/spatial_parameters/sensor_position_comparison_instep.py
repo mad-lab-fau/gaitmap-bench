@@ -4,11 +4,9 @@ from pathlib import Path
 from typing import Dict, Iterator, Literal, Optional, TypedDict, Union
 
 import pandas as pd
-from gaitmap.evaluation_utils import precision_recall_f1_score, \
-    calculate_parameter_errors
 from gaitmap_datasets.sensor_position_comparison_2019 import (
-    SensorPositionComparison2019Segmentation,
     SensorPositionComparison2019Mocap,
+    SensorPositionComparison2019Segmentation,
 )
 from sklearn.model_selection import BaseCrossValidator
 from tpcp import Pipeline
@@ -16,7 +14,6 @@ from tpcp.optimize import BaseOptimize
 from tpcp.validate import cross_validate
 
 from gaitmap_challenges.challenge_base import BaseChallenge
-from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 
 
 def _get_data_subset(
@@ -34,7 +31,7 @@ def _final_scorer(
     tolerance_s: float = 0.03,
     sensor_pos: str = "instep",
 ):
-    results = pipeline.safe_run(datapoint)
+    pipeline.safe_run(datapoint)
 
     # matched_stride_list = calculate_parameter_errors(
     #     ground_truth_parameter=datapoint.,
@@ -91,7 +88,6 @@ class Challenge(BaseChallenge):
             "`dataset` must either be a valid path or a valid instance of `SensorPositionComparison2019Mocap`."
         )
 
-
     @classmethod
     def get_final_scorer(self):
         return partial(_final_scorer, tolerance_s=self.match_tolerance_s, sensor_pos=self.sensor_pos)
@@ -100,7 +96,8 @@ class Challenge(BaseChallenge):
         return _get_data_subset(datapoint.data, sensor=self.sensor_pos)
 
     def get_reference_event_list(
-        self, datapoint: ChallengeDataset,
+        self,
+        datapoint: ChallengeDataset,
     ) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
         return {
             k: datapoint.convert_with_padding(v, from_time_axis="mocap", to_time_axis="imu")

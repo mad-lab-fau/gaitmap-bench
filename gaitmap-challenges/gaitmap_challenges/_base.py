@@ -8,7 +8,7 @@ from datetime import datetime
 from importlib.metadata import distributions
 from os.path import relpath
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Type, Union, cast, Sequence
+from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union, cast
 
 from cpuinfo import cpuinfo
 
@@ -163,10 +163,7 @@ def save_run(
         # We create nested folders
         entry_name = os.sep.join(entry_name)
 
-    if debug_run:
-        lowest_folder_name = debug_folder_prefix + start_datetime_formatted
-    else:
-        lowest_folder_name = start_datetime_formatted
+    lowest_folder_name = debug_folder_prefix + start_datetime_formatted if debug_run else start_datetime_formatted
 
     path = path / challenge_name / challenge_version / entry_name / lowest_folder_name
     # If the file already exists, we add a number to the end
@@ -200,7 +197,7 @@ ResultReturn = namedtuple("data_return", ["metadata", "results", "custom_metadat
 def load_run_metadata(path: Union[str, Path]) -> Dict[str, Any]:
     path = Path(path)
 
-    with open(path / "metadata.json", "r", encoding="utf8") as f:
+    with open(path / "metadata.json", encoding="utf8") as f:
         metadata = json.load(f)
 
     return metadata
@@ -219,6 +216,6 @@ def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], path: U
     results = challenge_class.load_core_results(path / "results")
 
     # laad custom metadata
-    with open(path / "custom_metadata.json", "r", encoding="utf8") as f:
+    with open(path / "custom_metadata.json", encoding="utf8") as f:
         custom_metadata = json.load(f)
     return ResultReturn(metadata, results, custom_metadata)

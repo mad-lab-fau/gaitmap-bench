@@ -5,8 +5,8 @@ import pandas as pd
 from tpcp import Dataset, Pipeline
 from tpcp.optimize import BaseOptimize, DummyOptimize
 
+from gaitmap_challenges import load_run, save_run
 from gaitmap_challenges.challenge_base import BaseChallenge
-from gaitmap_challenges import save_run, load_run
 
 
 class DummyDataset(Dataset):
@@ -30,7 +30,7 @@ class DummyChallenge(BaseChallenge):
     @classmethod
     def load_core_results(cls, folder_path, **kwargs):
         folder_path = Path(folder_path)
-        with open(folder_path / "dummy_results.txt", "r") as f:
+        with open(folder_path / "dummy_results.txt") as f:
             return {"dummy_results": f.read()}
 
     def save_core_results(self, folder_path, **kwargs):
@@ -66,7 +66,7 @@ def test_save_load_run(tmp_path):
     assert loaded_results.metadata["entry_name"] == "test"
     assert loaded_results.metadata["challenge_name"] == "tests.test_save_run.DummyChallenge"
     assert loaded_results.metadata["challenge_version"] == "1.0.0"
-    assert loaded_results.metadata["is_debug_run"] == True
+    assert loaded_results.metadata["is_debug_run"] is True
     # As it is a debug run, the folder name should start with an underscore
     assert actual_path.name.startswith("_")
 

@@ -1,10 +1,10 @@
 import json
 import os
 import warnings
-from dataclasses import dataclass, fields, asdict
+from dataclasses import asdict, dataclass, fields
 from os.path import relpath
 from pathlib import Path
-from typing import Union, Optional, Type, TypeVar, Any, TypedDict, Tuple, Callable, Dict
+from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict, TypeVar, Union
 
 from gaitmap_datasets import DatasetsConfig
 from gaitmap_datasets import reset_config as reset_datasets_config

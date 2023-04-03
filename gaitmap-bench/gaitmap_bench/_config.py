@@ -76,5 +76,5 @@ __all__ = [
     "DEFAULT_CONFIG_FILE",
     "DEFAULT_RESULTS_DIR",
     "DEFAULT_ENTRIES_DIR",
-    "MAIN_REPO_ROOT"
+    "MAIN_REPO_ROOT",
 ]

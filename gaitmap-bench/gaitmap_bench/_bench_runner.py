@@ -6,13 +6,13 @@ from typing import Sequence
 
 import click
 import pandas as pd
+from gaitmap_challenges.config import _CONFIG_ENV_VAR, _DEBUG_ENV_VAR
 from rich.console import Console
 from rich.table import Table
 
 from gaitmap_bench import create_config_template
 from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR, MAIN_REPO_ROOT
 from gaitmap_bench._utils import Entry, find_all_entries
-from gaitmap_challenges.config import _CONFIG_ENV_VAR, _DEBUG_ENV_VAR
 
 
 def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Sequence[int]) -> int:
@@ -35,7 +35,7 @@ def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Seq
     if len(set(hashes)) != len(hashes):
         raise ValueError("The given hashes are not unique.")
     for length in test_lengths:
-        if len(set(h[:length] for h in hashes)) == len(hashes):
+        if len({h[:length] for h in hashes}) == len(hashes):
             return length
 
     return len(hashes[0])
@@ -53,7 +53,6 @@ def cli():
     - Run individual benchmarks.
     - (Future) scaffold a new entry to a benchmark.
     """
-    pass
 
 
 @cli.command()
@@ -103,10 +102,7 @@ def list_entries(path, group, show_command, show_base_folder):
         console.print("No entries found.")
         return
 
-    if path == DEFAULT_ENTRIES_DIR:
-        display_path = path.relative_to(MAIN_REPO_ROOT)
-    else:
-        display_path = path
+    display_path = path.relative_to(MAIN_REPO_ROOT) if path == DEFAULT_ENTRIES_DIR else path
 
     for group_id, entries in entries_df.groupby(["challenge_group_name", "challenge_name"]):
         group_name, challenge_name = group_id
@@ -155,7 +151,7 @@ def list_entries(path, group, show_command, show_base_folder):
     "-nd",
     is_flag=True,
     help="If set, the benchmark will be run in non-debug mode (i.e. debug=False). "
-         "This should be used for official results and will enable additional checks to ensure reproducibility."
+    "This should be used for official results and will enable additional checks to ensure reproducibility.",
 )
 def run_challenge(entry_id, path, python_path, config_path, non_debug):
     """Run a challenge."""

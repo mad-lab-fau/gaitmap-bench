@@ -27,7 +27,6 @@ black = "^22.12.0"
 poethepoet = "^0.16.5"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
-prospector = "^1.8.3"
 ipykernel = "^6.19.2"
 numpydoc = "^1.5.0"
 Sphinx = "^5.3.0"
@@ -35,6 +34,7 @@ sphinx-gallery = "^0.11.1"
 recommonmark = "^0.7.1"
 memory-profiler = "^0.61.0"
 matplotlib = "^3.6.2"
+ruff = "^0.0.260"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -69,12 +69,12 @@ skip_gitignore = true
 
 [tool.poe.tasks]
 _format_black = "black ."
-_format_isort = "isort ."
-format = { sequence = ["_format_black", "_format_isort"], help = "Format all files." }
-lint = { cmd = "prospector --no-autodetect", help = "Lint all files with Prospector." }
+_format_ruff = "ruff . --fix-only --exit-zero"
+format = ["_format_black", "_format_ruff", "_format_black"]
+lint = { cmd = "ruff gaitmap_challenges --fix", help = "Lint all files with ruff." }
+_lint_ci = "ruff gaitmap_challenges --format=github"
 _check_black = "black . --check"
-_check_isort = "isort . --check"
-check = { sequence = ["_check_black", "_check_isort", "lint"], help = "Check all potential format and linting issues." }
+ci_check = { sequence = ["_check_black", "_lint_ci"], help = "Check all potential format and linting issues." }
 test = { cmd = "pytest --cov=gaitmap-challenges --cov-report=term-missing --cov-report=xml", help = "Run Pytest with coverage." }
 version = { script = "_tasks:task_update_version()" }
 bump_dev = { script = "_tasks:task_bump_all_dev()" }

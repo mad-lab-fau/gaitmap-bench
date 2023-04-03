@@ -1,20 +1,20 @@
 import copy
 import json
 from dataclasses import dataclass, field
+from itertools import chain
 from pathlib import Path
-from typing import Dict, Iterator, Literal, Optional, TypedDict, Union, Any, List
+from typing import Any, Dict, Iterator, List, Literal, Optional, TypedDict, Union
 
 import pandas as pd
 from gaitmap.evaluation_utils import calculate_parameter_errors
 from gaitmap.utils.datatype_helper import set_correct_index
 from gaitmap_datasets import EgaitAdidas2014
-from itertools import chain
 from sklearn.model_selection import BaseCrossValidator, GroupKFold
 from tpcp import Pipeline
 from tpcp.optimize import BaseOptimize
-from tpcp.validate import cross_validate, NoAgg
+from tpcp.validate import NoAgg, cross_validate
 
-from gaitmap_challenges.challenge_base import NpEncoder, BaseChallenge
+from gaitmap_challenges.challenge_base import BaseChallenge, NpEncoder
 from gaitmap_challenges.spatial_parameters._utils import SingleValueErrors
 
 ChallengeDataset = EgaitAdidas2014
@@ -155,7 +155,7 @@ class Challenge(BaseChallenge):
     @classmethod
     def load_core_results(cls, folder_path) -> ResultType:
         if (folder_path / "opti_results.json").is_file():
-            with open(folder_path / "opti_results.json", "r") as f:
+            with open(folder_path / "opti_results.json") as f:
                 opti_results = json.load(f)
         else:
             opti_results = None

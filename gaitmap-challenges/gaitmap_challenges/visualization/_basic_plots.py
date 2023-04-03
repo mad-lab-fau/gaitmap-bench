@@ -2,7 +2,7 @@ from itertools import chain
 from typing import Dict, Literal
 
 import pandas as pd
-from bokeh.models import HoverTool, ColumnDataSource, Whisker
+from bokeh.models import ColumnDataSource, HoverTool, Whisker
 from bokeh.plotting import figure
 from bokeh.transform import jitter
 
