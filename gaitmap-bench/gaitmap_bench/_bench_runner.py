@@ -43,7 +43,7 @@ def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Seq
 
 @click.group()
 def cli():
-    """Run and configure the benchmark suite.
+    r"""Run and configure the benchmark suite.
 
     It can be used for the following tasks:
 
@@ -115,8 +115,8 @@ def list_entries(path, group, show_command, show_base_folder):
             table.add_column("Base Folder", justify="left", style="green", no_wrap=True)
         if show_command:
             table.add_column("Command", justify="left", style="blue", no_wrap=True)
+        entry: Entry
         for entry in entries.sort_values(["group_name", "name"]).itertuples(name="Entry"):
-            entry: Entry
             columns = [entry.hash[:min_hash_length], entry.group_name, entry.name, entry.run_name]
             if show_base_folder:
                 columns.append(str(display_path / entry.base_folder))

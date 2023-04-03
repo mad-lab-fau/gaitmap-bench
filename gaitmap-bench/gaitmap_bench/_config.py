@@ -23,27 +23,25 @@ def set_config(
     # We manually resolve, how the internal `set_config` will handle the debug flag.
     # We do this, as this method needs to run additional checks depending on if the debug flag is set or not.
     real_debug = challenge_config._resolve_debug(debug)
-    if real_debug is False:
+    if real_debug is False and config_obj_or_path is not None:
         # In case we actually run results, it is not allowed to set the config via anything else than a env variable.
-        if config_obj_or_path is not None:
-            warnings.warn(
-                "Config can only be set via environment variable (or by using the default dev-config) in non-debug "
-                "mode. "
-                "At the moment you are trying to set it via a config object or path in `set_config`. "
-                "This will be ignored and we fallback to the environment variable. "
-                "Please remove, the manual config setting (`set_config(None)`) before submitting your script to the "
-                "github repo."
-            )
-            config_obj_or_path = None
+        warnings.warn(
+            "Config can only be set via environment variable (or by using the default dev-config) in non-debug "
+            "mode. "
+            "At the moment you are trying to set it via a config object or path in `set_config`. "
+            "This will be ignored and we fallback to the environment variable. "
+            "Please remove, the manual config setting (`set_config(None)`) before submitting your script to the "
+            "github repo."
+        )
+        config_obj_or_path = None
 
     config_obj = challenge_config.set_config(
         config_obj_or_path, debug, _config_type=BenchLocalConfig, _default_config_file=DEFAULT_CONFIG_FILE
     )
-    if real_debug is False:
+    if real_debug is False and config_obj.results_dir != DEFAULT_RESULTS_DIR:
         # In this case we need to make sure that the results dir is set to the default one.
         # We will do that silently to avoid having a warning every time, as users will have a local version in their
         # config for debugging purposes.
-        if config_obj.results_dir != DEFAULT_RESULTS_DIR:
             warnings.warn(
                 "Custom result dir specified. "
                 "This is not allowed for non-debug runs. "

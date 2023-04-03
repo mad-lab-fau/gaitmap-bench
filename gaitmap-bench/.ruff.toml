@@ -85,7 +85,8 @@ ignore = [
     # df as varaible name
     "PD901",
     # melt over stack
-    "PD013"
+    "PD013",
+    "TRY003",
 ]
 
 
