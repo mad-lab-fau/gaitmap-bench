@@ -18,6 +18,7 @@ from gaitmap_challenges.config import config, is_debug_run
 
 # TODO: Add the config to the metadata
 
+
 def save_run(
     challenge: BaseChallenge,
     entry_name: Union[str, Tuple[str, ...]],
@@ -29,6 +30,7 @@ def save_run(
     use_git: bool = True,
     git_dirty_ignore: Sequence[str] = (),
     debug_folder_prefix: str = "_",
+    _force_local_debug_run_setting: bool = False,
 ):
     try:
         global_config = config()
@@ -41,7 +43,7 @@ def save_run(
         if path is None:
             raise ValueError("No path was given and no result path is set in the global config.")
 
-    if (config_debug_run := is_debug_run()) is not None:
+    if _force_local_debug_run_setting is False and (config_debug_run := is_debug_run()) is not None:
         if debug_run is not None:
             warnings.warn(
                 f"The debug_run parameter was set ({debug_run=}), but the global config also has a debug_run setting. "
@@ -77,8 +79,7 @@ def save_run(
             "python_version": sys.version,
             "python_implementation": sys.implementation.name,
             "packages_info": {
-                d.metadata["Name"]: d.version
-                for d in sorted(distributions(), key=lambda x: x.metadata["Name"].lower())
+                d.metadata["Name"]: d.version for d in sorted(distributions(), key=lambda x: x.metadata["Name"].lower())
             },
             "cpu": {
                 k: v for k, v in cpuinfo.get_cpu_info().items() if k not in ["flags", "hz_advertised", "hz_actual"]
@@ -107,12 +108,14 @@ def save_run(
         repo_is_dirty = repo.is_dirty(untracked_files=True)
 
         if debug_run is False and repo_is_dirty:
-            warnings.warn("Trying to save results of a non-debug run from a dirty git repo. "
-                          "This is not allowed, as the results cannot be reproduced. "
-                          "We will treat the results as a debug run instead. "
-                          "If you are absolute sure that the results are reproducible, and this warning is an error, "
-                          "manually modify the metadata.json file to set is_debug_run to True and remove the debug "
-                          "folder prefix (if used).")
+            warnings.warn(
+                "Trying to save results of a non-debug run from a dirty git repo. "
+                "This is not allowed, as the results cannot be reproduced. "
+                "We will treat the results as a debug run instead. "
+                "If you are absolute sure that the results are reproducible, and this warning is an error, "
+                "manually modify the metadata.json file to set is_debug_run to True and remove the debug "
+                "folder prefix (if used)."
+            )
             debug_run = True
             metadata["is_debug_run"] = debug_run
 

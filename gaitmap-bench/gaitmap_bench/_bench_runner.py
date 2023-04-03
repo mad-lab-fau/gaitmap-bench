@@ -12,7 +12,7 @@ from rich.table import Table
 from gaitmap_bench import create_config_template
 from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR, MAIN_REPO_ROOT
 from gaitmap_bench._utils import Entry, find_all_entries
-from gaitmap_challenges.config import _CONFIG_ENV_VAR
+from gaitmap_challenges.config import _CONFIG_ENV_VAR, _DEBUG_ENV_VAR
 
 
 def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Sequence[int]) -> int:
@@ -150,7 +150,14 @@ def list_entries(path, group, show_command, show_base_folder):
     help="The path to the config file. "
     "Will be resolved to an absolut path before passing it as an ENV variable to the child process.",
 )
-def run_challenge(entry_id, path, python_path, config_path):
+@click.option(
+    "--non-debug",
+    "-nd",
+    is_flag=True,
+    help="If set, the benchmark will be run in non-debug mode (i.e. debug=False). "
+         "This should be used for official results and will enable additional checks to ensure reproducibility."
+)
+def run_challenge(entry_id, path, python_path, config_path, non_debug):
     """Run a challenge."""
     path = Path(path)
     all_entries = pd.DataFrame(find_all_entries(path))
@@ -182,6 +189,8 @@ def run_challenge(entry_id, path, python_path, config_path):
     setup_commands = [s.format(**run_variables) for s in setup]
 
     console = Console()
+    console.print(f"Running entry: [bold blue]{entry.run_name}[/bold blue] ({entry.hash})")
+    console.rule("[bold red]Run Plan[/bold red]")
     console.print("Executing the following commands:")
     for s in setup_commands:
         console.print(f"\t{s}")
@@ -194,6 +203,8 @@ def run_challenge(entry_id, path, python_path, config_path):
     new_env.pop("VIRTUAL_ENV", None)
     # We set the path to the config file as an environment variable
     new_env[_CONFIG_ENV_VAR] = str(Path(config_path).resolve())
+    # We set the debug flag as an environment variable
+    new_env[_DEBUG_ENV_VAR] = str(not non_debug)
 
     try:
         for s in setup_commands:

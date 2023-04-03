@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Union, Optional, Type, TypeVar, Any, TypedDict, Tuple, Callable
@@ -10,6 +11,7 @@ from gaitmap_datasets import set_config as set_datasets_config
 from tpcp.parallel import register_global_parallel_callback
 
 _CONFIG_ENV_VAR: str = "GAITMAP_CHALLENGES_CONFIG"
+_DEBUG_ENV_VAR: str = "GAITMAP_CHALLENGES_DEBUG"
 _GLOBAL_CONFIG: Optional["LocalConfig"] = None
 _DEBUG: Optional[bool] = None
 
@@ -45,26 +47,26 @@ class LocalConfig:
 
 def set_config(
     config_obj_or_path: Optional[Union[str, Path, _ConfigT]] = None,
-    debug: bool = True,
+    debug: Optional[bool] = None,
     _config_type: Type[_ConfigT] = LocalConfig,
     _default_config_file: Optional[Union[str, Path]] = None,
 ) -> _ConfigT:
     """Load the config file."""
-    if config_obj_or_path is None:
-        # Get the config file from the environment variable
-        config_obj_or_path = os.environ.get(_CONFIG_ENV_VAR, None)
-        if config_obj_or_path is None:
-            # In this case we check the default config file
-            if _default_config_file is not None and Path(_default_config_file).exists():
-                config_obj_or_path = _default_config_file
-            else:
-                raise ValueError(
-                    "Could not load the config!"
-                    f"We tried the following things:\n\n"
-                    "Config file path -> not specified\n"
-                    f"environment variable ({_CONFIG_ENV_VAR}) -> not set\n"
-                    f"default config file ({_default_config_file})-> not specified or does not exist"
-                )
+    if _default_config_file is not None and not Path(_default_config_file).exists():
+        _default_config_file = None
+    look_up_order = (config_obj_or_path, os.environ.get(_CONFIG_ENV_VAR, None), _default_config_file)
+    for config_obj_or_path in look_up_order:
+        if config_obj_or_path is not None:
+            break
+    else:
+        raise ValueError(
+            "Could not load the config!"
+            f"We tried the following things:\n\n"
+            "Config file path -> not specified\n"
+            f"environment variable ({_CONFIG_ENV_VAR}) -> not set\n"
+            f"default config file ({_default_config_file})-> not specified or does not exist"
+        )
+
     if isinstance(config_obj_or_path, (str, Path)):
         config_obj = _config_type.from_json_file(config_obj_or_path)
     elif isinstance(config_obj_or_path, _config_type):
@@ -77,8 +79,30 @@ def set_config(
     _GLOBAL_CONFIG = config_obj
     set_datasets_config(config_obj.datasets)
     global _DEBUG
-    _DEBUG = debug
+    if _DEBUG is not None:
+        raise ValueError("Debug already set.")
+    _DEBUG = _resolve_debug(debug)
     return config_obj
+
+
+def _resolve_debug(debug: Optional[bool]):
+    # Debug from environment variable has precedence over direct setting.
+    debug_from_env = None
+    if os.environ.get(_DEBUG_ENV_VAR, None) is not None:
+        debug_from_env = os.environ.get(_DEBUG_ENV_VAR, None).lower() in ("true", "1")
+    if debug_from_env is not None:
+        if debug is not None:
+            warnings.warn(
+                f"You specified `debug={debug}` directly via `set_config`, but the environmental variable "
+                f"{_DEBUG_ENV_VAR} is also set. "
+                f"The configuration from the environmental variable ({debug_from_env=}) will be used! "
+                "We recommend removing `debug` from the `set_config` call when you are using the environmental "
+                "variable."
+            )
+        debug = debug_from_env
+    if debug is None:
+        debug = True
+    return debug
 
 
 def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] = LocalConfig):
@@ -128,6 +152,9 @@ def reset_config():
     _GLOBAL_CONFIG = None
     reset_datasets_config()
 
+    global _DEBUG
+    _DEBUG = None
+
 
 def config() -> LocalConfig:
     """Get the global config object."""
@@ -153,7 +180,11 @@ class _RestoreConfig(TypedDict):
 def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]:
     def setter(config_obj: _RestoreConfig):
         reset_config()
-        set_config(**config_obj)
+        # We set debug manually here to skip the check in set_config.
+        # We don't need this, as this method is only called if the config is set in the main process.
+        global _DEBUG
+        _DEBUG = config_obj["debug"]
+        set_config(config_obj_or_path=config_obj["config_obj_or_path"])
 
     try:
         returned_config = config()

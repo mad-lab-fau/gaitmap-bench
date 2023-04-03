@@ -16,8 +16,14 @@ class BenchLocalConfig(challenge_config.LocalConfig):
     results_dir: Path = DEFAULT_RESULTS_DIR
 
 
-def set_config(config_obj_or_path: Optional[Union[str, Path, BenchLocalConfig]] = None, debug: bool = True):
-    if debug is False:
+def set_config(
+    config_obj_or_path: Optional[Union[str, Path, BenchLocalConfig]] = None,
+    debug: Optional[bool] = None,
+):
+    # We manually resolve, how the internal `set_config` will handle the debug flag.
+    # We do this, as this method needs to run additional checks depending on if the debug flag is set or not.
+    real_debug = challenge_config._resolve_debug(debug)
+    if real_debug is False:
         # In case we actually run results, it is not allowed to set the config via anything else than a env variable.
         if config_obj_or_path is not None:
             warnings.warn(
@@ -33,11 +39,16 @@ def set_config(config_obj_or_path: Optional[Union[str, Path, BenchLocalConfig]] 
     config_obj = challenge_config.set_config(
         config_obj_or_path, debug, _config_type=BenchLocalConfig, _default_config_file=DEFAULT_CONFIG_FILE
     )
-    if debug is False:
+    if real_debug is False:
         # In this case we need to make sure that the results dir is set to the default one.
         # We will do that silently to avoid having a warning every time, as users will have a local version in their
         # config for debugging purposes.
         if config_obj.results_dir != DEFAULT_RESULTS_DIR:
+            warnings.warn(
+                "Custom result dir specified. "
+                "This is not allowed for non-debug runs. "
+                f"Overwriting with default result dir ({DEFAULT_RESULTS_DIR})."
+            )
             config_obj = replace(config_obj, results_dir=DEFAULT_RESULTS_DIR)
             challenge_config.reset_config()
             config_obj = challenge_config.set_config(config_obj, debug)
@@ -65,4 +76,5 @@ __all__ = [
     "DEFAULT_CONFIG_FILE",
     "DEFAULT_RESULTS_DIR",
     "DEFAULT_ENTRIES_DIR",
+    "MAIN_REPO_ROOT"
 ]
