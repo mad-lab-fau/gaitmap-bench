@@ -6,7 +6,7 @@ from typing import Dict, Iterator, Literal, Optional, TypedDict, Union, List, An
 import pandas as pd
 from gaitmap.evaluation_utils import evaluate_segmented_stride_list, precision_recall_f1_score
 from gaitmap_datasets import EgaitSegmentationValidation2014
-from sklearn.model_selection import BaseCrossValidator
+from sklearn.model_selection import BaseCrossValidator, StratifiedKFold
 from tpcp import Pipeline
 from tpcp.optimize import BaseOptimize
 from tpcp.validate import cross_validate
@@ -52,7 +52,7 @@ class ResultType(TypedDict):
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
     dataset: Optional[Union[str, Path, ChallengeDataset]]
-    cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = 3
+    cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = StratifiedKFold(n_splits=5)
     cv_params: Optional[Dict] = None
 
     # Class level config.
@@ -68,12 +68,17 @@ class Challenge(BaseChallenge):
             self.optimizer = optimizer
             self.dataset_ = self._resolve_dataset()
             cv_params = {} if self.cv_params is None else self.cv_params
+            # This is required to make the StratifiedKFold work
+            mock_labels = self.dataset_.create_group_labels(["test", "cohort"])
+
             self.cv_results_ = cross_validate(
                 optimizable=optimizer,
                 dataset=self.dataset_,
                 cv=self.cv_iterator,
                 scoring=self.get_scorer(),
                 return_optimizer=True,
+                mock_labels=mock_labels,
+                propagate_mock_labels=True,
                 **cv_params,
             )
         return self
