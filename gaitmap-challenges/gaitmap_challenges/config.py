@@ -207,11 +207,12 @@ class _RestoreConfig(TypedDict):
 def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]:
     def setter(config_obj: _RestoreConfig):
         reset_config()
-        # We set debug manually here to skip the check in set_config.
+        # We set the config manually here to skip the check in set_config.
         # We don't need this, as this method is only called if the config is set in the main process.
         global _DEBUG
         _DEBUG = config_obj["debug"]
-        set_config(config_obj_or_path=config_obj["config_obj_or_path"])
+        global _GLOBAL_CONFIG
+        _GLOBAL_CONFIG = config_obj["config_obj_or_path"]
 
     try:
         returned_config = config()
