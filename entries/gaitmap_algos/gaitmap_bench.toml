@@ -13,6 +13,8 @@ barth_dtw = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/egait_segmentation_
 barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/egait_segmentation_validation_2014_default.py"
 constrained_barth_dtw = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/egait_segmentation_validation_2014.py"
 constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/egait_segmentation_validation_2014_default.py"
+roth_hmm_default = "gaitmap_algos/stride_segmentation/hmm/roth_hmm/egait_segmentation_validation_2014_default.py"
+roth_hmm_trained = "gaitmap_algos/stride_segmentation/hmm/roth_hmm/egait_segmentation_validation_2014_trained.py"
 
 
 [challenge.stride_segmentation.sensor_position_comparison_instep]
@@ -20,3 +22,5 @@ barth_dtw = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/sensor_position_com
 barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/sensor_position_comparison_instep_default.py"
 constrained_barth_dtw = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/sensor_position_comparison_instep.py"
 constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/sensor_position_comparison_instep_default.py"
+roth_hmm_default = "gaitmap_algos/stride_segmentation/hmm/roth_hmm/sensor_position_comparison_instep_default.py"
+roth_hmm_trained = "gaitmap_algos/stride_segmentation/hmm/roth_hmm/sensor_position_comparison_instep_trained.py"

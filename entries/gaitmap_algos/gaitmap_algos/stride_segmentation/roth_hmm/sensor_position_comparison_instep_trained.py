@@ -1,6 +1,3 @@
-from dataclasses import dataclass, field
-from itertools import chain
-from pathlib import Path
 from typing import Dict, cast
 
 import pandas as pd
@@ -17,51 +14,41 @@ from tpcp import OptiPara, OptimizablePipeline, cf
 from tpcp.optimize import Optimize
 from typing_extensions import Self
 
-from gaitmap_algos.stride_segmentation.roth_hmm import metadata
-from gaitmap_challenges import save_run
+from gaitmap_algos.stride_segmentation.roth_hmm import metadata, apply_and_flatten
+from gaitmap_bench import set_config, save_run
 from gaitmap_challenges.stride_segmentation.sensor_position_comparison_instep import (
     Challenge,
+    ChallengeDataset,
     SensorNames,
 )
 
 
-@dataclass(repr=False)
-class Entry(OptimizablePipeline[SensorPositionComparison2019Segmentation]):
+class Entry(OptimizablePipeline[ChallengeDataset]):
     segmentation_model: OptiPara[RothSegmentationHmm]
 
     # Result objects
-    stride_list_: Dict[SensorNames, pd.DataFrame] = field(init=False)
+    stride_list_: Dict[SensorNames, pd.DataFrame]
 
     def __init__(
         self, segmentation_model: RothSegmentationHmm = cf(RothSegmentationHmm())
     ):
         self.segmentation_model = segmentation_model
 
-    def self_optimize(
-        self, dataset: SensorPositionComparison2019Segmentation, **kwargs
-    ) -> Self:
-        all_bf_data = list(
-            chain(
-                *(
-                    list(
-                        convert_to_fbf(
-                            Challenge.get_imu_data(datapoint),
-                            left_like="l",
-                            right_like="r",
-                        ).values()
-                    )
-                    for datapoint in dataset
-                )
-            )
+    def self_optimize(self, dataset: ChallengeDataset, **kwargs) -> Self:
+        all_bf_data = apply_and_flatten(
+            dataset,
+            lambda datapoint: convert_to_fbf(
+                Challenge.get_imu_data(datapoint),
+                left_like="l",
+                right_like="r",
+            ).values(),
         )
-        all_ground_truth_stride_borders = list(
-            chain(
-                *(
-                    list(challenge.get_reference_stride_list(datapoint).values())
-                    for datapoint in dataset
-                )
-            )
+
+        all_ground_truth_stride_borders = apply_and_flatten(
+            dataset,
+            lambda datapoint: challenge.get_reference_stride_list(datapoint).values(),
         )
+
         self.segmentation_model.self_optimize(
             all_bf_data,
             all_ground_truth_stride_borders,
@@ -84,20 +71,17 @@ class Entry(OptimizablePipeline[SensorPositionComparison2019Segmentation]):
 
 
 if __name__ == "__main__":
-    dataset = SensorPositionComparison2019Segmentation(
-        data_folder=Path(
-            "/home/arne/Documents/repos/work/projects/sensor_position_comparison/sensor_position_main_analysis/data"
-            "/raw/"
-        ),
-        memory=Memory("../.cache"),
+    config = set_config()
+
+    dataset = ChallengeDataset(
+        memory=Memory(config.cache_dir),
     )
 
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": 3})
+    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
 
     challenge.run(Optimize(Entry()))
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "roth_hmm", "trained_default"),
         custom_metadata=metadata,
-        path=Path("../"),
     )
