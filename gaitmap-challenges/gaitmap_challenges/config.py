@@ -6,6 +6,7 @@ from os.path import relpath
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict, TypeVar, Union
 
+import gaitmap_datasets
 from gaitmap_datasets import DatasetsConfig
 from gaitmap_datasets import reset_config as reset_datasets_config
 from gaitmap_datasets import set_config as set_datasets_config
@@ -44,6 +45,10 @@ class LocalConfig:
         for field in path_fields:
             if (val := getattr(self, field, None)) is not None:
                 object.__setattr__(self, field, Path(val))
+
+    def _register_dataset_config(self):
+        # Register the dataset config
+        set_datasets_config(self.datasets)
 
     def to_json_dict(self, path_relative_to: Optional[Path] = None) -> Dict[str, Any]:
         """Get the config as json-serializable dict.
@@ -104,7 +109,7 @@ def set_config(
     if _GLOBAL_CONFIG is not None:
         raise ValueError("Config already set.")
     _GLOBAL_CONFIG = config_obj
-    set_datasets_config(config_obj.datasets)
+    config_obj._register_dataset_config()
     global _DEBUG
     if _DEBUG is not None:
         raise ValueError("Debug already set.")
@@ -213,7 +218,10 @@ def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_Res
         _DEBUG = config_obj["debug"]
         global _GLOBAL_CONFIG
         _GLOBAL_CONFIG = config_obj["config_obj_or_path"]
-
+        try:
+            set_datasets_config(config_obj["config_obj_or_path"].datasets)
+        except AttributeError:
+            pass
     try:
         returned_config = config()
     except ValueError:
