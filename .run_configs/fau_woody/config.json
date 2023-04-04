@@ -1,0 +1,14 @@
+{
+    "datasets": {
+        "egait_parameter_validation_2013": "/home/woody/iwso/iwso021h/datasets/eGaIT_database",
+        "egait_segmentation_validation_2014": "/home/woody/iwso/iwso021h/datasets/eGaIT_database_segmentation",
+        "egait_adidas_2014": "/home/woody/iwso/iwso021h/datasets/ValidationDatasets-GaitAnalysis/MoCapReference_Adidas/public_version",
+        "pyshoe_2019": "/home/woody/iwso/iwso021h/datasets/2019-pyshoe/",
+        "stair_ambulation_healthy_2021": "/home/woody/iwso/iwso021h/datasets/stair_ambulation_dataset"
+    },
+    "gaitmap_challenges": {
+        "cache_dir": "/home/woody/iwso/iwso021h/caches/gaitmap-bench/",
+        "n_jobs": 5,
+        "tmp_dir": "/home/woody/iwso/iwso021h/tmp/gaitmap-bench/"
+    }
+}
