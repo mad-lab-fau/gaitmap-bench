@@ -41,6 +41,33 @@ def _determine_shortest_required_length(hashes: Sequence[str], test_lengths: Seq
     return len(hashes[0])
 
 
+def _create_run_command(entry, executor, run_variables):
+    command = entry.command_template.format(**run_variables)
+    if executor:
+        resolved_executor = Path(executor).resolve()
+        return f'{resolved_executor} "{command}" "{entry.run_name}"'
+    return command
+
+
+def _create_setup_commands(entry, run_variables):
+    setup = entry.setup
+    if not isinstance(setup, list):
+        setup = [setup]
+    return [s.format(**run_variables) for s in setup]
+
+
+def _create_new_env(config_path, debug):
+    new_env = os.environ.copy()
+    # We unset VIRTUAL_ENV to make sure that the setup commands are executed in the correct environment
+    new_env.pop("VIRTUAL_ENV", None)
+    # We set the path to the config file as an environment variable
+    new_env[_CONFIG_ENV_VAR] = str(Path(config_path).resolve())
+    # We set the debug flag as an environment variable
+    new_env[_DEBUG_ENV_VAR] = str(debug)
+
+    return new_env
+
+
 @click.group()
 def cli():
     r"""Run and configure the benchmark suite.
@@ -62,7 +89,7 @@ def create_config(path):
     create_config_template(path)
 
 
-@cli.command()
+@cli.command(name="list")
 @click.option(
     "--path", "-p", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR, help="The path to the entries folder."
 )
@@ -127,7 +154,7 @@ def list_entries(path, group, show_command, show_base_folder):
         console.print(table)
 
 
-@cli.command()
+@cli.command(name="run")
 @click.option(
     "--path", "-p", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR, help="The path to the entries folder."
 )
@@ -159,9 +186,9 @@ def list_entries(path, group, show_command, show_base_folder):
     type=str,
     default="",
     help="An executor command that will be called with the `command` as the first and the name of entry as "
-         "second argument. "
-         "This should be a path to a script relative to the working directory you started the command in. "
-         "Note, that it requires the right permissions to be executable. "
+    "second argument. "
+    "This should be a path to a script relative to the working directory you started the command in. "
+    "Note, that it requires the right permissions to be executable. ",
 )
 def run_challenge(entry_id, path, python_path, config_path, non_debug, executor):
     """Run a challenge."""
@@ -182,22 +209,19 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug, executor)
     entry = entry.iloc[0]
 
     # We make the following run variables available to the setup and command templates
-    run_variables = {
+    run_variables_command = {
         "command": entry.command,
         "python_path": python_path,
     }
 
+    run_variables_setup = {
+        "python_path": python_path,
+    }
+
     working_path = path / entry.base_folder
-    command = entry.command_template.format(**run_variables)
-    if executor:
-        resolved_executor = Path(executor).resolve()
-        command_with_executor = f'{resolved_executor} "{command}" "{entry.run_name}"'
-    else:
-        command_with_executor = command
-    setup = entry.setup
-    if not isinstance(setup, list):
-        setup = [setup]
-    setup_commands = [s.format(**run_variables) for s in setup]
+    command = _create_run_command(entry, executor, run_variables_command)
+    setup_commands = _create_setup_commands(entry, run_variables_setup)
+    new_env = _create_new_env(config_path, not non_debug)
 
     console = Console()
     console.print(f"Running entry: [bold blue]{entry.run_name}[/bold blue] ({entry.hash})")
@@ -205,17 +229,9 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug, executor)
     console.print("Executing the following commands:")
     for s in setup_commands:
         console.print(f"\t{s}")
-    console.print(f"\t{command_with_executor}")
+    console.print(f"\t{command}")
     console.print(f"In the following folder:\n\t{working_path}")
     console.rule("[bold red]Setup[/bold red]")
-
-    new_env = os.environ.copy()
-    # We unset VIRTUAL_ENV to make sure that the setup commands are executed in the correct environment
-    new_env.pop("VIRTUAL_ENV", None)
-    # We set the path to the config file as an environment variable
-    new_env[_CONFIG_ENV_VAR] = str(Path(config_path).resolve())
-    # We set the debug flag as an environment variable
-    new_env[_DEBUG_ENV_VAR] = str(not non_debug)
 
     try:
         for s in setup_commands:
@@ -232,7 +248,13 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug, executor)
     try:
         console.log(f"Executing: {command}")
         subprocess.run(
-            command_with_executor, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
+            command,
+            cwd=working_path,
+            shell=True,
+            check=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            env=new_env,
         )
     except subprocess.CalledProcessError as e:
         console.print_exception()
@@ -240,9 +262,148 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug, executor)
         return
 
 
-cli.add_command(create_config)
-cli.add_command(list_entries, name="list")
-cli.add_command(run_challenge, name="run")
+@cli.command(name="run-multi")
+@click.option(
+    "--path", "-p", type=click.Path(exists=False), default=DEFAULT_ENTRIES_DIR, help="The path to the entries folder."
+)
+@click.option(
+    "--python-path",
+    "-py",
+    type=click.Path(exists=True),
+    required=True,
+    help="The path to the python executable to use.",
+)
+@click.option(
+    "--id",
+    "-i",
+    "entry_ids",
+    type=str,
+    help="The ID of the entry to run (Can be specified multiple times, but all IDs must be from the same entry).",
+    multiple=True,
+)
+@click.option(
+    "--config-path",
+    "-c",
+    type=click.Path(exists=True),
+    help="The path to the config file. "
+    "Will be resolved to an absolut path before passing it as an ENV variable to the child process.",
+)
+@click.option(
+    "--non-debug",
+    "-nd",
+    is_flag=True,
+    help="If set, the benchmark will be run in non-debug mode (i.e. debug=False). "
+    "This should be used for official results and will enable additional checks to ensure reproducibility.",
+)
+@click.option(
+    "--executor",
+    "-e",
+    type=str,
+    default="",
+    help="An executor command that will be called with the `command` as the first and the name of entry as "
+    "second argument. "
+    "This should be a path to a script relative to the working directory you started the command in. "
+    "Note, that it requires the right permissions to be executable. ",
+)
+def run_multiple_from_group(entry_ids, path, python_path, config_path, non_debug, executor):
+    """Run multiple entries from a single group.
+
+    Compared to `run_challenge`, this command will run multiple entries while running the setup only once.
+    Hence, all entries need to be from the same group.
+    """
+    path = Path(path)
+    all_entries = pd.DataFrame(find_all_entries(path))
+
+    entries = []
+    common_entry_group = None
+    for entry_id in entry_ids:
+        # Find the entry whichs hash starts with the given id
+        entry = all_entries[all_entries.hash.str.startswith(entry_id)]
+        if len(entry) == 0:
+            raise ValueError(
+                f"Found no entry with the given ID: {entry_id}\n"
+                "Rerun the `list` command to see all entries and double-check the ID."
+            )
+        if len(entry) > 1:
+            raise ValueError(
+                f"Found multiple entries with the given ID: {entry_id}\n"
+                "Rerun the `list` command to see all entries and double-check the ID."
+            )
+        if common_entry_group is None:
+            common_entry_group = entry.iloc[0].group_name
+        elif common_entry_group != entry.iloc[0].group_name:
+            raise ValueError(
+                f"Not all IDs are from the same group! "
+                "So far all IDs were from the group: {common_entry_group}, but the ID {entry_id} is from the group "
+                f"{entry.iloc[0].group_name}."
+            )
+
+        entries.append(entry.iloc[0])
+
+    # We make the following run variables available to the setup and command templates
+    run_variables_setup = {
+        "python_path": python_path,
+    }
+
+    working_path = path / entries[0].base_folder
+    setup_commands = _create_setup_commands(entries[0], run_variables_setup)
+    new_env = _create_new_env(config_path, not non_debug)
+
+    commands = [
+        _create_run_command(
+            e,
+            executor,
+            {
+                "command": e.command,
+                "python_path": python_path,
+            },
+        )
+        for e in entries
+    ]
+
+    console = Console()
+    console.print(f"Running multiple entries from group [bold blue]{entries[0].group_name}[/bold blue]:")
+    for entry in entries:
+        console.print(f"\t{entry.run_name} - ({entry.hash})")
+    console.rule("[bold red]Run Plan[/bold red]")
+    console.print("Executing the following commands:")
+    for s in setup_commands:
+        console.print(f"\t{s}")
+    for command in commands:
+        console.print(f"\t{command}")
+    console.print(f"In the following folder:\n\t{working_path}")
+    console.rule("[bold red]Setup[/bold red]")
+
+    try:
+        for s in setup_commands:
+            console.log(f"Executing: {s}")
+            subprocess.run(
+                s, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
+            )
+
+    except subprocess.CalledProcessError as e:
+        console.print_exception()
+        console.print(f"Setup failed with error code {e.returncode}. See error above.")
+        return
+
+    for i, (entry, command) in enumerate(zip(entries, commands)):
+        console.rule(f"[bold red]{i+1}/{len(entries)}[/bold red] - {entry.run_name} - ({entry.hash})")
+        try:
+            console.log(f"Executing: {command}")
+            subprocess.run(
+                command,
+                cwd=working_path,
+                shell=True,
+                check=True,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+                env=new_env,
+            )
+        except subprocess.CalledProcessError as e:
+            console.print_exception()
+            console.print(f"Executing the Command failed with error code {e.returncode}. See error above.")
+            return
+
 
 if __name__ == "__main__":
     cli()
