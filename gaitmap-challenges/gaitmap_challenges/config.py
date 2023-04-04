@@ -92,11 +92,11 @@ def set_config(
             break
     else:
         raise ValueError(
-            "Could not load the config!"
+            "Could not load the config! "
             f"We tried the following things:\n\n"
             "Config file path -> not specified\n"
             f"environment variable ({_CONFIG_ENV_VAR}) -> not set\n"
-            f"default config file ({_default_config_file})-> not specified or does not exist"
+            f"default config file ({_default_config_file}) -> not specified or does not exist"
         )
 
     if isinstance(config_obj_or_path, (str, Path)):
