@@ -785,8 +785,10 @@ scipy = ">=1.8.1"
 tpcp = ">=0.11"
 
 [package.source]
-type = "directory"
-url = "../../../private/gaitmap-datasets"
+type = "git"
+url = "https://github.com/mad-lab-fau/gaitmap-datasets"
+reference = "HEAD"
+resolved_reference = "ea04fae18e52fb4bf24017d201a2cdf3b14db383"
 
 [[package]]
 name = "gitdb"
@@ -3257,4 +3259,4 @@ visualization = ["bokeh"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "e8a004e69896f713a1014ab4fbb3b09582e81e715951cc45c7047e0d19400198"
+content-hash = "df33cbafd97689948fc004d656110d257d693fe20ceb8b04e8be0defda557579"

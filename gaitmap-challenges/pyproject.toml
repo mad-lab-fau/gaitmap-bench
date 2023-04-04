@@ -12,12 +12,12 @@ pandas = ">=1.4.3"
 scikit-learn = ">=1.0"
 gaitmap = {git = "https://github.com/mad-lab-fau/gaitmap.git", rev = "master", extras = ["stats"]}
 optuna = ">=3.0.0"
-gaitmap-datasets = {path = "../../../private/gaitmap-datasets"}
 py-cpuinfo = "^9.0.0"
 toml = "^0.10.2"
 bokeh = {version = "^3.0.3", optional = true}
 jupyter-bokeh = {version = "^3.0.5", optional = true}
 gitpython = "^3.1.31"
+gaitmap-datasets = {git = "https://github.com/mad-lab-fau/gaitmap-datasets"}
 
 [tool.poetry.extras]
 visualization = ["bokeh"]
