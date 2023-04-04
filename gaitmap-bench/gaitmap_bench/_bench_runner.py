@@ -153,7 +153,17 @@ def list_entries(path, group, show_command, show_base_folder):
     help="If set, the benchmark will be run in non-debug mode (i.e. debug=False). "
     "This should be used for official results and will enable additional checks to ensure reproducibility.",
 )
-def run_challenge(entry_id, path, python_path, config_path, non_debug):
+@click.option(
+    "--executor",
+    "-e",
+    type=str,
+    default="",
+    help="An executor command that will be called with the `command` as the first and the name of entry as "
+         "second argument. "
+         "This should be a path to a script relative to the working directory you started the command in. "
+         "Note, that it requires the right permissions to be executable. "
+)
+def run_challenge(entry_id, path, python_path, config_path, non_debug, executor):
     """Run a challenge."""
     path = Path(path)
     all_entries = pd.DataFrame(find_all_entries(path))
@@ -179,6 +189,11 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug):
 
     working_path = path / entry.base_folder
     command = entry.command_template.format(**run_variables)
+    if executor:
+        resolved_executor = Path(executor).resolve()
+        command_with_executor = f'{resolved_executor} "{command}" "{entry.run_name}"'
+    else:
+        command_with_executor = command
     setup = entry.setup
     if not isinstance(setup, list):
         setup = [setup]
@@ -190,7 +205,7 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug):
     console.print("Executing the following commands:")
     for s in setup_commands:
         console.print(f"\t{s}")
-    console.print(f"\t{command}")
+    console.print(f"\t{command_with_executor}")
     console.print(f"In the following folder:\n\t{working_path}")
     console.rule("[bold red]Setup[/bold red]")
 
@@ -217,7 +232,7 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug):
     try:
         console.log(f"Executing: {command}")
         subprocess.run(
-            command, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
+            command_with_executor, cwd=working_path, shell=True, check=True, stdout=sys.stdout, stderr=sys.stderr, env=new_env
         )
     except subprocess.CalledProcessError as e:
         console.print_exception()
