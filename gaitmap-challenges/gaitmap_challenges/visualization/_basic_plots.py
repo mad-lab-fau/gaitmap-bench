@@ -2,6 +2,8 @@ from itertools import chain
 from typing import Dict, Literal
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import pandas as pd
 from bokeh.models import ColumnDataSource, HoverTool, Whisker
@@ -9,13 +11,9 @@ from bokeh.plotting import figure
 from bokeh.transform import jitter
 
 
-def box_plot(
-    cv_results: Dict[str, pd.DataFrame],
-    metric: str,
-    group_data_by: Literal["fold", "single"],
-    overlay_scatter: bool = True,
-):
-
+def _prepare_boxplot_data(
+    cv_results: Dict[str, pd.DataFrame], metric: str, group_data_by: Literal["fold", "single"]
+) -> pd.DataFrame:
     if group_data_by == "fold":
         metric_name = "test_" + metric
     elif group_data_by == "single":
@@ -39,9 +37,48 @@ def box_plot(
             # We should never get here
             raise ValueError()
 
-    all_results = (
-        pd.concat(all_results, axis=0, names=("name", "old_idx")).reset_index("old_idx", drop=True).reset_index()
+    return pd.concat(all_results, axis=0, names=("name", "old_idx")).reset_index("old_idx", drop=True).reset_index()
+
+
+def box_plot_matplotlib(
+    cv_results: Dict[str, pd.DataFrame],
+    metric: str,
+    group_data_by: Literal["fold", "single"],
+    overlay_scatter: bool = True,
+    *,
+    ax=None,
+):
+    all_results = _prepare_boxplot_data(cv_results=cv_results, metric=metric, group_data_by=group_data_by)
+
+    if ax is None:
+        _, ax = plt.subplots()
+
+    sns.boxplot(
+        data=all_results,
+        x="name",
+        y=metric,
+        showfliers=False,
+        ax=ax,
     )
+    if overlay_scatter:
+        sns.swarmplot(
+            data=all_results,
+            x="name",
+            y=metric,
+            color="black",
+            ax=ax,
+        )
+    return ax
+
+
+def box_plot_bokeh(
+    cv_results: Dict[str, pd.DataFrame],
+    metric: str,
+    group_data_by: Literal["fold", "single"],
+    overlay_scatter: bool = True,
+):
+
+    all_results = _prepare_boxplot_data(cv_results=cv_results, metric=metric, group_data_by=group_data_by)
 
     value_table = all_results.pivot(index="label", columns="name", values=metric)
     box_plot_stats = pd.DataFrame(mpl.cbook.boxplot_stats(value_table, labels=value_table.columns))
