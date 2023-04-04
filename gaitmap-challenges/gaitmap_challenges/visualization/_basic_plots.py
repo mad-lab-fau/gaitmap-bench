@@ -1,6 +1,8 @@
 from itertools import chain
 from typing import Dict, Literal
 
+import matplotlib as mpl
+
 import pandas as pd
 from bokeh.models import ColumnDataSource, HoverTool, Whisker
 from bokeh.plotting import figure
@@ -23,34 +25,30 @@ def box_plot(
 
     all_results = {}
     for k, v in cv_results.items():
+        if isinstance(k, tuple):
+            k = "/\n".join(k)
         if group_data_by == "fold":
             data = v[metric_name]
             labels = v.index.astype("str")
+            all_results[k] = pd.DataFrame({metric: data, "label": labels})
         elif group_data_by == "single":
             data = list(chain(*v[metric_name]))
-            labels = [str(e) for e in chain(*v["test_data_labels"])]
+            labels = v["test_data_labels"].explode().astype(str)
+            all_results[k] = pd.DataFrame({metric: data, "label": labels.to_list(), "fold": labels.index.to_list()})
         else:
             # We should never get here
             raise ValueError()
-
-        if isinstance(k, tuple):
-            k = "/\n".join(k)
-        all_results[k] = pd.DataFrame({metric: data, "label": labels})
 
     all_results = (
         pd.concat(all_results, axis=0, names=("name", "old_idx")).reset_index("old_idx", drop=True).reset_index()
     )
 
-    # compute quantiles
-    qs = all_results.groupby("name")[metric].quantile([0.25, 0.5, 0.75])
-    qs = qs.unstack().reset_index()
-    qs.columns = ["name", "q1__", "q2__", "q3__"]
-    all_results = pd.merge(all_results, qs, on="name", how="left")
-
-    # compute IQR outlier bounds
-    iqr = all_results.q3__ - all_results.q1__
-    all_results["upper__"] = all_results.q3__ + 1.5 * iqr
-    all_results["lower__"] = all_results.q1__ - 1.5 * iqr
+    value_table = all_results.pivot(index="label", columns="name", values=metric)
+    box_plot_stats = pd.DataFrame(mpl.cbook.boxplot_stats(value_table, labels=value_table.columns))
+    # Prefix the column names with __ to avoid name clashes with metric names
+    box_plot_stats = box_plot_stats.add_prefix("__").rename(columns={"__label": "name"})
+    # Merge everything back together
+    all_results = all_results.merge(box_plot_stats, on="name")
 
     data = ColumnDataSource(all_results)
 
@@ -60,26 +58,30 @@ def box_plot(
     )
 
     # outlier range
-    whisker = Whisker(base="name", upper="upper__", lower="lower__", source=data)
+    whisker = Whisker(base="name", upper="__whishi", lower="__whislo", source=data)
     whisker.upper_head.size = whisker.lower_head.size = 20
     p.add_layout(whisker)
 
     # quantile boxes
-    p.vbar("name", 0.7, "q2__", "q3__", source=data, line_color="black")
-    p.vbar("name", 0.7, "q1__", "q2__", source=data, line_color="black")
+    p.vbar("name", 0.7, "__med", "__q3", source=data, line_color="black")
+    p.vbar("name", 0.7, "__q1", "__med", source=data, line_color="black")
 
-    lowest_element = all_results["lower__"].min()
-    highest_element = all_results["upper__"].max()
+    lowest_element = all_results["__whislo"].min()
+    highest_element = all_results["__whishi"].max()
 
     # Overlay scatter
     if overlay_scatter:
         points = p.scatter(
             jitter("name", width=0.4, range=p.x_range), metric, source=data, size=5, color="blue", alpha=0.3
         )
+        label_tooltip = [("dp", "@label")]
+        if group_data_by == "single":
+            label_tooltip.append(("fold", "@fold"))
+
         MyHover = HoverTool(
             renderers=[points],
             tooltips=[
-                ("dp", "@label"),
+                *label_tooltip,
                 (metric, f"@{metric}"),
             ],
             point_policy="follow_mouse",
