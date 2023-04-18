@@ -246,7 +246,13 @@ def box_plot_bokeh(
     # Overlay scatter
     if overlay_scatter:
         points = p.scatter(
-            jitter("__factors", width=0.4, range=p.x_range), metric, source=data, size=5, color="black", alpha=0.3
+            jitter("__factors", width=0.4, range=p.x_range),
+            metric,
+            source=data,
+            size=5,
+            line_color="black",
+            fill_color="white",
+            alpha=0.5,
         )
         label_tooltip = [("dp", "@label")]
         if use_aggregation == "single":
