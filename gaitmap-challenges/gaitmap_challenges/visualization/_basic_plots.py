@@ -1,16 +1,45 @@
+from dataclasses import dataclass
 from itertools import chain
-from typing import Dict, Literal, Optional, Callable, Union, List, Tuple, TypeVar, Sequence
+from typing import Callable, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from bokeh.models import ColumnDataSource, HoverTool, Whisker, FactorRange
+from bokeh.models import ColumnDataSource, FactorRange, HoverTool, Whisker
 from bokeh.palettes import Spectral6
 from bokeh.plotting import figure
-from bokeh.transform import jitter, factor_cmap
+from bokeh.transform import factor_cmap, jitter
 
 int_or_str = TypeVar("int_or_str", int, str, float)
+
+
+@dataclass
+class SingleMetricBoxplot:
+    cv_results: Dict[str, pd.DataFrame]
+    metric: str
+    use_aggregation: Literal["fold", "single"] = "single"
+    overlay_scatter: bool = True
+    label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None
+
+    def bokeh(self):
+        return box_plot_bokeh(
+            cv_results=self.cv_results,
+            metric=self.metric,
+            use_aggregation=self.use_aggregation,
+            overlay_scatter=self.overlay_scatter,
+            label_grouper=self.label_grouper,
+        )
+
+    def matplotlib(self, ax: Optional[plt.Axes] = None):
+        return box_plot_matplotlib(
+            cv_results=self.cv_results,
+            metric=self.metric,
+            use_aggregation=self.use_aggregation,
+            overlay_scatter=self.overlay_scatter,
+            label_grouper=self.label_grouper,
+            ax=ax,
+        )
 
 
 def group_by_data_label(level: int, include_all: bool = True, force_order: Optional[Sequence[str]] = None):
@@ -35,12 +64,11 @@ def group_by_data_label(level: int, include_all: bool = True, force_order: Optio
 def _ensure_label_tuple(label: Union[int_or_str, List[int_or_str], Tuple[int_or_str, ...]]) -> Tuple[int_or_str, ...]:
     if isinstance(label, (int, str, float)):
         return (label,)
-    elif isinstance(label, list):
+    if isinstance(label, list):
         return tuple(label)
-    elif isinstance(label, tuple):
+    if isinstance(label, tuple):
         return label
-    else:
-        raise ValueError(f"Invalid type for `{label=}`.")
+    raise TypeError(f"Invalid type for `{label=}`.")
 
 
 def _prepare_boxplot_data(
@@ -65,15 +93,17 @@ def _prepare_boxplot_data(
     all_results = {}
     for k, v in cv_results.items():
         if isinstance(k, tuple):
-            k = "/\n".join(k)
+            name = "/\n".join(k)
+        else:
+            name = k
         if use_aggregation == "fold":
             data = v[metric_name]
             labels = v.index.astype("str")
-            all_results[k] = pd.DataFrame({metric: data, "label": labels})
+            all_results[name] = pd.DataFrame({metric: data, "label": labels})
         elif use_aggregation == "single":
             data = list(chain(*v[metric_name]))
             labels = v["test_data_labels"].explode().map(_ensure_label_tuple)
-            all_results[k] = pd.DataFrame({metric: data, "label": labels.to_list(), "fold": labels.index.to_list()})
+            all_results[name] = pd.DataFrame({metric: data, "label": labels.to_list(), "fold": labels.index.to_list()})
         else:
             # We should never get here
             raise ValueError()
@@ -84,7 +114,7 @@ def _prepare_boxplot_data(
     if label_grouper is not None:
         groups = label_grouper(df["label"].drop_duplicates())
         groups.name = "__group"
-        df = pd.merge(df, groups, left_on="label", right_index=True)
+        df = df.merge(groups, left_on="label", right_index=True)
     return df.reset_index(drop=True)
 
 
@@ -96,7 +126,6 @@ def box_plot_matplotlib(
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
     *,
     ax=None,
-    hue_order: Optional[List[str]] = None,
 ):
     all_results = _prepare_boxplot_data(
         cv_results=cv_results, metric=metric, use_aggregation=use_aggregation, label_grouper=label_grouper
@@ -107,8 +136,10 @@ def box_plot_matplotlib(
 
     if "__group" in all_results.columns:
         hue = "__group"
+        hue_order = all_results["__group"].dtype.categories
     else:
         hue = None
+        hue_order = None
 
     sns.boxplot(
         data=all_results,
@@ -132,6 +163,11 @@ def box_plot_matplotlib(
             hue_order=hue_order,
             size=3,
         )
+
+    if "__group" in all_results.columns:
+        ax.legend(title="group")
+
+    ax.set_xlabel(None)
     return ax
 
 
@@ -216,7 +252,7 @@ def box_plot_bokeh(
         if use_aggregation == "single":
             label_tooltip.append(("fold", "@fold"))
 
-        MyHover = HoverTool(
+        my_hover = HoverTool(
             renderers=[points],
             tooltips=[
                 *label_tooltip,
@@ -227,7 +263,7 @@ def box_plot_bokeh(
 
         lowest_element = min((all_results[metric].min(), lowest_element))
         highest_element = max((all_results[metric].max(), highest_element))
-        p.add_tools(MyHover)
+        p.add_tools(my_hover)
 
     plot_range = highest_element - lowest_element
 
