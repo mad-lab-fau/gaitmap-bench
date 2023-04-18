@@ -6,7 +6,6 @@ from os.path import relpath
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict, TypeVar, Union
 
-import gaitmap_datasets
 from gaitmap_datasets import DatasetsConfig
 from gaitmap_datasets import reset_config as reset_datasets_config
 from gaitmap_datasets import set_config as set_datasets_config
@@ -222,6 +221,7 @@ def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_Res
             set_datasets_config(config_obj["config_obj_or_path"].datasets)
         except AttributeError:
             pass
+
     try:
         returned_config = config()
     except ValueError:
