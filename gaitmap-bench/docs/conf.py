@@ -116,6 +116,7 @@ html_theme = "sphinx_book_theme"
 html_theme_options = {
     "repository_url": URL,
     "use_repository_button": True,
+    "show_prev_next": False
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -8,7 +8,7 @@ from datetime import datetime
 from importlib.metadata import distributions
 from os.path import relpath
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union, cast
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 from cpuinfo import cpuinfo
 
@@ -192,30 +192,3 @@ def save_run(
 
 
 ResultReturn = namedtuple("data_return", ["metadata", "results", "custom_metadata"])
-
-
-def load_run_metadata(path: Union[str, Path]) -> Dict[str, Any]:
-    path = Path(path)
-
-    with open(path / "metadata.json", encoding="utf8") as f:
-        metadata = json.load(f)
-
-    return metadata
-
-
-def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], path: Union[str, Path]) -> ResultReturn:
-    challenge_class: Type[BaseChallenge] = cast(
-        Type[BaseChallenge], challenge_class if isinstance(challenge_class, type) else challenge_class.__class__
-    )
-    path = Path(path)
-
-    metadata = load_run_metadata(path)
-
-    assert metadata["challenge_name"] == challenge_class.__module__ + "." + challenge_class.__name__
-
-    results = challenge_class.load_core_results(path / "results")
-
-    # laad custom metadata
-    with open(path / "custom_metadata.json", encoding="utf8") as f:
-        custom_metadata = json.load(f)
-    return ResultReturn(metadata, results, custom_metadata)
