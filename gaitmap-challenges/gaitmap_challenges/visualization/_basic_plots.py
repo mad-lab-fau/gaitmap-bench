@@ -276,4 +276,7 @@ def box_plot_bokeh(
     p.y_range.start = lowest_element - plot_range * 0.02
     p.y_range.end = highest_element + plot_range * 0.02
 
+    if "__group" in all_results.columns:
+        p.xaxis.major_label_orientation = "vertical"
+
     return p
