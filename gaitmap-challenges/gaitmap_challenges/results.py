@@ -184,12 +184,21 @@ def generate_overview_table(results: Dict[Tuple[str, ...], Path]):
     df = (
         get_metadata_as_df(results)
         .sort_values(by=["entry_name", "run_start_datetime_utc"], ascending=[True, False])
-        .drop(columns=["path", "is_debug_run", "challenge_name", "challenge_version", "run_start_datetime_utc"])
+        .drop(
+            columns=[
+                "path",
+                "is_debug_run",
+                "challenge_name",
+                "challenge_version",
+                "run_start_datetime_utc",
+                "long_description",
+            ]
+        )
         .rename(
             columns={
                 "entry_name": "Entry",
                 "run_start_datetime": "Datetime",
-                "description": "Description",
+                "short_description": "Description",
                 "code_authors": "Code Authors",
                 "algorithm_authors": "Algorithm Authors",
                 "implementation_link": "Implementation",

@@ -2,8 +2,9 @@ from itertools import chain
 from typing import Iterable, Callable, List, TypeVar
 
 metadata = {
-    "description": "Hierarchical Hidden Markov Model for gait segmentation",
-    "citations": [],
+    "short_description": "Hierarchical Hidden Markov Model for gait segmentation",
+    "long_description": "",
+    "references": [],
     "code_authors": [],
     "algorithm_authors": [],
     "implementation_link": "",
