@@ -24,3 +24,8 @@ constrained_barth_dtw = "gaitmap_algos/stride_segmentation/dtw/constrained_barth
 constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/sensor_position_comparison_instep_default.py"
 roth_hmm_default = "gaitmap_algos/stride_segmentation/roth_hmm/sensor_position_comparison_instep_default.py"
 roth_hmm_trained = "gaitmap_algos/stride_segmentation/roth_hmm/sensor_position_comparison_instep_trained.py"
+
+
+[challenge.full_pipeline.kluge_2017]
+mad_default = "gaitmap_algos/full_pipeline/mad_default/kluge_2017.py"
+mad_optimized = "gaitmap_algos/full_pipeline/mad_optimized/kluge_2017.py"
