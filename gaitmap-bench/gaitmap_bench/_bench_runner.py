@@ -6,6 +6,8 @@ from typing import Sequence
 
 import click
 import pandas as pd
+from trogon import tui
+
 from gaitmap_challenges.config import _CONFIG_ENV_VAR, _DEBUG_ENV_VAR
 from rich.console import Console
 from rich.table import Table
@@ -68,6 +70,7 @@ def _create_new_env(config_path, debug):
     return new_env
 
 
+@tui()
 @click.group()
 def cli():
     r"""Run and configure the benchmark suite.
