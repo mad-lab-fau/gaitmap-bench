@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Dict, List, Literal, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Callable, Dict, Literal, Optional, Sequence
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -11,7 +11,7 @@ from bokeh.palettes import Spectral6
 from bokeh.plotting import figure
 from bokeh.transform import factor_cmap, jitter
 
-int_or_str = TypeVar("int_or_str", int, str, float)
+from gaitmap_challenges.visualization._utils import _ensure_label_tuple
 
 
 @dataclass
@@ -63,16 +63,6 @@ def group_by_data_label(level: int, include_all: bool = True, force_order: Optio
         return group_labels.astype(order)
 
     return grouper
-
-
-def _ensure_label_tuple(label: Union[int_or_str, List[int_or_str], Tuple[int_or_str, ...]]) -> Tuple[int_or_str, ...]:
-    if isinstance(label, (int, str, float)):
-        return (label,)
-    if isinstance(label, list):
-        return tuple(label)
-    if isinstance(label, tuple):
-        return label
-    raise TypeError(f"Invalid type for `{label=}`.")
 
 
 def _prepare_boxplot_data(
