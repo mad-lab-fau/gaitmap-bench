@@ -21,6 +21,7 @@ class SingleMetricBoxplot:
     use_aggregation: Literal["fold", "single"] = "single"
     overlay_scatter: bool = True
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None
+    invert_grouping: bool = False
 
     def bokeh(self):
         return box_plot_bokeh(
@@ -29,6 +30,7 @@ class SingleMetricBoxplot:
             use_aggregation=self.use_aggregation,
             overlay_scatter=self.overlay_scatter,
             label_grouper=self.label_grouper,
+            invert_grouping=self.invert_grouping,
         )
 
     def matplotlib(self, ax: Optional[plt.Axes] = None):
@@ -38,6 +40,7 @@ class SingleMetricBoxplot:
             use_aggregation=self.use_aggregation,
             overlay_scatter=self.overlay_scatter,
             label_grouper=self.label_grouper,
+            invert_grouping=self.invert_grouping,
             ax=ax,
         )
 
@@ -49,12 +52,13 @@ def group_by_data_label(level: int, include_all: bool = True, force_order: Optio
         This returns a pd.Series mapping the original label to its group label.
         If `include_all` is True, all group labels are repeated with the groupname "all".
         """
-        group_labels = labels.apply(lambda label: label[level])
+        group_labels = labels.apply(lambda label: label[level]).astype(str)
         group_labels.index = labels
         ordered_names = group_labels.unique().tolist() if force_order is None else force_order
         if include_all:
             group_labels = pd.concat([group_labels, pd.Series("all", index=labels)])
             ordered_names.append("all")
+        ordered_names = [str(name) for name in ordered_names]
         order = pd.CategoricalDtype(categories=ordered_names, ordered=True)
         return group_labels.astype(order)
 
@@ -76,6 +80,7 @@ def _prepare_boxplot_data(
     metric: str,
     use_aggregation: Literal["fold", "single"],
     label_grouper: Optional[Callable[[str], str]] = None,
+    invert_grouping: bool = False,
 ) -> pd.DataFrame:
     if use_aggregation == "fold":
         metric_name = "test_" + metric
@@ -89,6 +94,9 @@ def _prepare_boxplot_data(
             "Cannot use `label_grouper` with `use_aggregation='fold'`. "
             "It only makes sense to use it with `use_aggregation='single'`."
         )
+
+    if invert_grouping and not label_grouper:
+        raise ValueError("Cannot use `invert_grouping` without `label_grouper`.")
 
     all_results = {}
     for k, v in cv_results.items():
@@ -124,11 +132,16 @@ def box_plot_matplotlib(
     use_aggregation: Literal["fold", "single"] = "single",
     overlay_scatter: bool = True,
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
+    invert_grouping: bool = False,
     *,
     ax=None,
 ):
     all_results = _prepare_boxplot_data(
-        cv_results=cv_results, metric=metric, use_aggregation=use_aggregation, label_grouper=label_grouper
+        cv_results=cv_results,
+        metric=metric,
+        use_aggregation=use_aggregation,
+        label_grouper=label_grouper,
+        invert_grouping=invert_grouping,
     )
 
     if ax is None:
@@ -141,9 +154,15 @@ def box_plot_matplotlib(
         hue = None
         hue_order = None
 
+    x = "name"
+
+    if invert_grouping:
+        hue_order = all_results[x].unique()
+        x, hue = hue, x
+
     sns.boxplot(
         data=all_results,
-        x="name",
+        x=x,
         y=metric,
         showfliers=not overlay_scatter,
         hue=hue,
@@ -153,7 +172,7 @@ def box_plot_matplotlib(
     if overlay_scatter:
         sns.swarmplot(
             data=all_results,
-            x="name",
+            x=x,
             y=metric,
             color="black",
             hue=hue,
@@ -165,7 +184,10 @@ def box_plot_matplotlib(
         )
 
     if "__group" in all_results.columns:
-        ax.legend(title="group")
+        if invert_grouping:
+            ax.legend(title="algorithm")
+        else:
+            ax.legend(title="group")
 
     ax.set_xlabel(None)
     return ax
@@ -177,6 +199,7 @@ def box_plot_bokeh(
     use_aggregation: Literal["fold", "single"] = "single",
     overlay_scatter: bool = True,
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
+    invert_grouping: bool = False,
 ):
 
     all_results = _prepare_boxplot_data(
@@ -201,10 +224,16 @@ def box_plot_bokeh(
                 axis=0,
             )
             .reset_index()
-            .assign(__factors=lambda df_: list(zip(df_["name"], df_["__group"])))
             .astype({"__group": all_results["__group"].dtype, "name": all_results["name"].dtype})
         )
-        all_results = all_results.merge(box_plot_stats, on=["__group", "name"]).sort_values(["name", "__group"])
+        if invert_grouping:
+            box_plot_stats = box_plot_stats.assign(__factors=lambda df_: list(zip(df_["__group"], df_["name"])))
+            sort_order = ["__group", "name"]
+        else:
+            box_plot_stats = box_plot_stats.assign(__factors=lambda df_: list(zip(df_["name"], df_["__group"])))
+            sort_order = ["name", "__group"]
+
+        all_results = all_results.merge(box_plot_stats, on=["__group", "name"]).sort_values(sort_order)
     else:
         value_table = all_results.pivot(index="label", columns="name", values=metric)
         box_plot_stats = pd.DataFrame(mpl.cbook.boxplot_stats(value_table, labels=value_table.columns))
@@ -219,8 +248,13 @@ def box_plot_bokeh(
 
     data = ColumnDataSource(all_results)
 
+    try:
+        sorted_factors = all_results["__factors"].drop_duplicates().sort_values()
+    except TypeError:
+        sorted_factors = all_results["__factors"].drop_duplicates().astype(str).sort_values()
+
     p = figure(
-        x_range=FactorRange(factors=all_results["__factors"].drop_duplicates()),
+        x_range=FactorRange(factors=sorted_factors),
         sizing_mode="stretch_width",
         y_axis_label=metric,
     )
@@ -232,8 +266,12 @@ def box_plot_bokeh(
 
     # quantile boxes
     if "__group" in all_results.columns:
+        if invert_grouping:
+            colors = all_results["name"].unique()
+        else:
+            colors = all_results["__group"].dtype.categories
         color = factor_cmap(
-            "__factors", palette=Spectral6, factors=all_results["__group"].dtype.categories, start=1, end=2
+            "__factors", palette=Spectral6, factors=colors, start=1, end=2
         )
     else:
         color = "blue"
