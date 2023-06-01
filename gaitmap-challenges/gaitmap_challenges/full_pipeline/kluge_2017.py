@@ -9,7 +9,9 @@ from gaitmap_datasets import Kluge2017
 from sklearn.model_selection import BaseCrossValidator, StratifiedGroupKFold
 from tpcp import Pipeline
 from tpcp.optimize import BaseOptimize
-from tpcp.validate import cross_validate
+from gaitmap.evaluation_utils import calculate_parameter_errors
+
+from tpcp.validate import cross_validate, NoAgg
 
 from gaitmap_challenges.challenge_base import BaseChallenge, collect_cv_results, save_cv_results, load_cv_results
 from gaitmap_challenges.full_pipeline._utils import ParameterErrors
@@ -23,7 +25,18 @@ def _final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
     aggregated_paras = results.aggregated_gait_parameters_
     aggregated_ground_truth = Challenge.get_aggregated_ground_truth_parameter(datapoint)
 
-    return ParameterErrors({"predicted": aggregated_paras, "reference": aggregated_ground_truth})
+    errors = calculate_parameter_errors(
+        predicted_parameter=aggregated_paras.to_frame().T.rename_axis(index="test"),
+        reference_parameter=aggregated_ground_truth.to_frame().T.rename_axis(index="test"),
+        id_column="test",
+    )[0].iloc[0]
+
+    errors.index = [f"{parameter}__{metric}" for metric, parameter in errors.index]
+
+    return {
+        **{k: NoAgg(v) for k, v in errors.to_dict().items()},
+        "agg": ParameterErrors({"predicted": aggregated_paras, "reference": aggregated_ground_truth}),
+    }
 
 
 class ResultType(TypedDict):
@@ -91,10 +104,7 @@ class Challenge(BaseChallenge):
             stride_event_list=fake_events, sampling_rate_hz=datapoint.mocap_sampling_rate_hz
         )
 
-        per_stride_trajectory = {
-            k: v["ankle"][GF_POS] for k, v in
-                datapoint.marker_position_per_stride_.items()
-        }
+        per_stride_trajectory = {k: v["ankle"][GF_POS] for k, v in datapoint.marker_position_per_stride_.items()}
 
         sp = SpatialParameterCalculation(expected_stride_type="ic").calculate(
             positions=per_stride_trajectory,
@@ -104,7 +114,6 @@ class Challenge(BaseChallenge):
         )
 
         return {k: pd.concat([tp.parameters_[k], sp.parameters_[k]]) for k in ["left", "right"]}
-
 
     @classmethod
     def get_aggregated_ground_truth_parameter(cls, datapoint: ChallengeDataset):

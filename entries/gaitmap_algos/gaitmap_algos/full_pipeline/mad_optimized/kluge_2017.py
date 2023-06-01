@@ -1,19 +1,11 @@
-from ctypes import cast
-
 import pandas as pd
-from gaitmap.event_detection import RamppEventDetection, FilteredRamppEventDetection
+from gaitmap.event_detection import FilteredRamppEventDetection
 from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCalculation
 from gaitmap.trajectory_reconstruction import (
-    StrideLevelTrajectory,
     RegionLevelTrajectory,
     MadgwickRtsKalman,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap_mad.stride_segmentation import (
-    BarthDtw,
-    BarthOriginalTemplate,
-    ConstrainedBarthDtw,
-)
 from gaitmap_mad.stride_segmentation.hmm import (
     HmmStrideSegmentation,
     PreTrainedRothSegmentationModel,
@@ -39,7 +31,6 @@ class MadOptimized(Pipeline[ChallengeDataset]):
         sampling_rate_hz = datapoint.sampling_rate_hz
 
         # preprocess
-        # data_sf = align_dataset_to_gravity(data_sf, sampling_rate_hz)
         bf_data = convert_to_fbf(data_sf, left_like="left_", right_like="right_")
 
         # stride segmentation

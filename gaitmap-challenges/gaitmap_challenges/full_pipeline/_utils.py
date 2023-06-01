@@ -1,7 +1,7 @@
 from typing import Dict, Literal, Sequence
 
 import pandas as pd
-from gaitmap.evaluation_utils import calculate_parameter_errors
+from gaitmap.evaluation_utils import calculate_aggregated_parameter_errors
 from tpcp.validate import Aggregator
 
 _AggType = Dict[Literal["reference", "predicted"], pd.Series]
@@ -9,7 +9,7 @@ _AggType = Dict[Literal["reference", "predicted"], pd.Series]
 
 class ParameterErrors(Aggregator[_AggType]):
 
-    RETURN_RAW_SCORES = True
+    RETURN_RAW_SCORES = False
 
     @classmethod
     def aggregate(cls, /, values: Sequence[_AggType], datapoints) -> Dict[str, float]:
@@ -19,7 +19,7 @@ class ParameterErrors(Aggregator[_AggType]):
         all_references.index.name = "group"
         all_predictions.index.name = "group"
 
-        errors = calculate_parameter_errors(
+        errors = calculate_aggregated_parameter_errors(
             reference_parameter=all_references,
             predicted_parameter=all_predictions,
             calculate_per_sensor=True,

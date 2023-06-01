@@ -4,7 +4,6 @@ from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCal
 from gaitmap.trajectory_reconstruction import StrideLevelTrajectory
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
 from gaitmap_mad.stride_segmentation import (
-    BarthDtw,
     BarthOriginalTemplate,
     ConstrainedBarthDtw,
 )
@@ -29,7 +28,6 @@ class MadDefault(Pipeline[ChallengeDataset]):
         sampling_rate_hz = datapoint.sampling_rate_hz
 
         # preprocess
-        # data_sf = align_dataset_to_gravity(data_sf, sampling_rate_hz)
         bf_data = convert_to_fbf(data_sf, left_like="left_", right_like="right_")
 
         # stride segmentation
@@ -75,10 +73,8 @@ class MadDefault(Pipeline[ChallengeDataset]):
         self.gait_parameters_with_turns_ = pd.concat(
             [all_temporal, all_spatial], axis=1
         )
-        self.gait_parameters_ = (
-            self.gait_parameters_with_turns_.query(
-                "turning_angle.abs() < 20"
-            )
+        self.gait_parameters_ = self.gait_parameters_with_turns_.query(
+            "turning_angle.abs() < 20"
         )
         self.aggregated_gait_parameters_ = self.gait_parameters_.mean()
 
