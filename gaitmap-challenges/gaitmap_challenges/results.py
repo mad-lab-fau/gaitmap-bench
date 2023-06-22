@@ -2,9 +2,10 @@ import json
 import warnings
 from functools import lru_cache
 from pathlib import Path
-from typing import Type, Union, Dict, Tuple, List, Any, cast, Optional, Sequence
+from typing import Type, Union, Dict, Tuple, List, Any, cast, Optional, Sequence, Hashable, Callable
 
 import pandas as pd
+from typing_extensions import Literal
 
 from gaitmap_challenges._base import ResultReturn
 from gaitmap_challenges.challenge_base import BaseChallenge
@@ -192,7 +193,8 @@ def generate_overview_table(results: Dict[Tuple[str, ...], Path]):
                 "challenge_version",
                 "run_start_datetime_utc",
                 "long_description",
-            ]
+            ],
+            errors="ignore",
         )
         .rename(
             columns={
@@ -246,3 +248,49 @@ def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], path: U
     with open(path / "custom_metadata.json", encoding="utf8") as f:
         custom_metadata = json.load(f)
     return ResultReturn(metadata, results, custom_metadata)
+
+
+def rename_keys(
+    in_dict: Dict[Hashable, Any],
+    mapping_or_callable: Union[Dict[Hashable, Hashable], Callable[[Hashable], Hashable]],
+    missing: Literal["ignore", "raise", "remove"] = "raise",
+):
+    """Rename the keys of a dictionary.
+
+    Parameters
+    ----------
+    in_dict
+        The dictionary to rename.
+    mapping_or_callable
+        Either a dictionary mapping the old keys to the new keys or a callable that takes the old key as input and
+        returns the new key.
+    missing
+        What to do if a no new key can be found for a key in the dictionary.
+        If "ignore", the old key is kept with its old name.
+        If "raise", an exception is raised.
+        If "remove", the key is removed from the dictionary.
+
+        To trigger the "missing" case when using a callable, the callable must raise an exception.
+
+    Returns
+    -------
+    renamed_dict
+        The renamed dictionary.
+    """
+    if missing not in ["ignore", "raise", "remove"]:
+        raise ValueError(f"Invalid value for missing: {missing}. Allowed values are 'ignore', 'raise' and 'remove'")
+
+    if isinstance(mapping_or_callable, dict):
+        mapping_or_callable = mapping_or_callable.get
+    new_dict = {}
+    for k, v in in_dict.items():
+        try:
+            new_key = mapping_or_callable(k)
+        except Exception as e:
+            if missing == "raise":
+                raise e
+            elif missing == "ignore":
+                new_dict[k] = v
+        else:
+            new_dict[new_key] = v
+    return new_dict
