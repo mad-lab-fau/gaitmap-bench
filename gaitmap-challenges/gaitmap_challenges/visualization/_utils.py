@@ -1,4 +1,4 @@
-from typing import TypeVar, Union, List, Tuple
+from typing import List, Tuple, TypeVar, Union
 
 int_or_str = TypeVar("int_or_str", int, str, float)
 

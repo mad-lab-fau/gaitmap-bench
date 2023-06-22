@@ -6,7 +6,7 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Union, NamedTuple, Type, Tuple, TypedDict
+from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Type, TypedDict, Union
 
 import numpy as np
 import pandas as pd

@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from itertools import chain
-from typing import Optional, List, Sequence, Union, Literal, Tuple, Dict
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from bokeh.models import HoverTool
-from matplotlib import pyplot as plt, transforms
+from matplotlib import pyplot as plt
+from matplotlib import transforms
 from scipy import stats
 
 from gaitmap_challenges.visualization._utils import _ensure_label_tuple
@@ -39,10 +40,10 @@ def _prepare_residual_plot_data(
         if label_col_name is not None:
             inner_labels, _ = _handle_single_or_list(cv_result[f"test_single_{label_col_name}"])
         else:
-            inner_labels = {k: pd.Series(range(len(v))) for k, v in predictions.items()}
+            {k: pd.Series(range(len(v))) for k, v in predictions.items()}
 
         # TODO: Implement this
-        assert False
+        raise AssertionError()
     else:
         return pd.DataFrame(
             {
@@ -72,7 +73,7 @@ def plot_blandaltman_annotations(
     agreement=1.96,
     confidence=0.95,
 ):
-    """Add annotations (mean and confidence interval) to a blandaltman style plot
+    """Add annotations (mean and confidence interval) to a blandaltman style plot.
 
     Code modified based on penguin
 
@@ -126,7 +127,7 @@ def plot_blandaltman_annotations(
 
     # Add 95% confidence intervals for mean bias and limits of agreement
     assert 0 < confidence < 1
-    ci = dict()
+    ci = {}
     ci["mean"] = stats.t.interval(confidence, dof, loc=mean_diff, scale=mean_diff_se)
     ci["high"] = stats.t.interval(confidence, dof, loc=high, scale=high_low_se)
     ci["low"] = stats.t.interval(confidence, dof, loc=low, scale=high_low_se)
@@ -183,8 +184,8 @@ def residual_plot_bokeh(
     label_col_name: Optional[str] = None,
     metric_name: Optional[str] = None,
 ):
+    from bokeh.models import Label, Span
     from bokeh.plotting import figure
-    from bokeh.models import Span, Label
 
     df = _prepare_residual_plot_data(
         cv_result,

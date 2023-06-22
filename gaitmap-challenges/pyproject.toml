@@ -10,14 +10,14 @@ readme = "README.md"
 python = ">=3.8,<3.11"
 pandas = ">=1.4.3"
 scikit-learn = ">=1.0"
-gaitmap = {git = "https://github.com/mad-lab-fau/gaitmap.git", rev = "master", extras = ["stats"]}
 optuna = ">=3.0.0"
 py-cpuinfo = "^9.0.0"
 toml = "^0.10.2"
 bokeh = {version = "^3.0.3", optional = true}
 jupyter-bokeh = {version = "^3.0.5", optional = true}
 gitpython = "^3.1.31"
-gaitmap-datasets = {git = "https://github.com/mad-lab-fau/gaitmap-datasets"}
+gaitmap = {version = "^2.2.0", extras = ["stats"]}
+gaitmap-datasets = {git = "https://github.com/mad-lab-fau/gaitmap-datasets.git", rev = "5f114b48430a12282c5c72736395bda0403176e9"}
 
 [tool.poetry.extras]
 visualization = ["bokeh"]

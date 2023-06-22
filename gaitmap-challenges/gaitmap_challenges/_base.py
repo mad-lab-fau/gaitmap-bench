@@ -178,9 +178,9 @@ def save_run(
     path.mkdir(parents=True, exist_ok=True)
 
     # Save the metadata
-    with open(path / "custom_metadata.json", "w", encoding="utf8") as f:
+    with (path / "custom_metadata.json").open("w", encoding="utf8") as f:
         json.dump(custom_metadata, f)
-    with open(path / "metadata.json", "w", encoding="utf8") as f:
+    with (path / "metadata.json").open("w", encoding="utf8") as f:
         json.dump(metadata, f)
 
     # Save the results

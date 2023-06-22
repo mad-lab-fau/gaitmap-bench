@@ -13,14 +13,14 @@ from tpcp.validate import cross_validate
 
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
+    CvMetadata,
+    collect_cv_metadata,
     collect_cv_results,
     collect_opti_results,
     load_cv_results,
     load_opti_results,
     save_cv_results,
     save_opti_results,
-    CvMetadata,
-    collect_cv_metadata,
 )
 from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 
@@ -99,14 +99,14 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_imu_data(
-        self,
+        cls,
         datapoint: ChallengeDataset,
     ) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
         return datapoint.data
 
     @classmethod
     def get_reference_stride_list(
-        self,
+        cls,
         datapoint: ChallengeDataset,
     ) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
         return datapoint.segmented_stride_list_
@@ -120,7 +120,7 @@ class Challenge(BaseChallenge):
 
     def save_core_results(self, folder_path) -> None:
         core_results = self.get_core_results()
-        save_cv_results(core_results["cv_results"], folder_path)
+        save_cv_results(core_results["cv_results"], core_results["cv_metadata"], folder_path)
         if (opti_results := core_results["opti_results"]) is not None:
             save_opti_results(opti_results, folder_path)
 

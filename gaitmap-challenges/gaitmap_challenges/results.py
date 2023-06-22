@@ -1,15 +1,15 @@
+"""Methods to load and filter results from the challenge."""
+
 import json
 import warnings
 from functools import lru_cache
 from pathlib import Path
-from typing import Type, Union, Dict, Tuple, List, Any, cast, Optional, Sequence, Hashable, Callable
+from typing import Any, Callable, Dict, Hashable, List, Literal, Optional, Sequence, Tuple, Type, Union, cast
 
 import pandas as pd
-from typing_extensions import Literal
 
 from gaitmap_challenges._base import ResultReturn
 from gaitmap_challenges.challenge_base import BaseChallenge
-
 from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import Challenge
 
 
@@ -30,6 +30,7 @@ def get_all_results_path(
     base_path
         The base path to search for the results.
         The folder structure will be searched recursively.
+
     """
     if isinstance(challenge_class_or_full_name, str):
         folder_name = challenge_class_or_full_name
@@ -63,14 +64,15 @@ def get_all_results_path(
 
     sorted_entries = {}
     for name, entry_list in entries.items():
-        parents = set(e.parent for e in entry_list)
+        parents = {e.parent for e in entry_list}
         if len(parents) > 1:
             warnings.warn(
                 f"We found results from the same entry name ({name}) in different folders. "
                 "This could indicate that you forgot to correctly name one of your entries when you saved a "
                 "run, or that files/folders where manually copied around. "
                 "Both can lead to issues. "
-                "Please double check your results folder."
+                "Please double check your results folder.",
+                stacklevel=2,
             )
         sorted_entries[name] = sorted(entry_list, key=lambda e: e.name, reverse=False)
 
@@ -119,7 +121,12 @@ def get_latest_result(results: Dict[Tuple[str, ...], List[Path]]) -> Dict[Tuple[
     Parameters
     ----------
     results
-        The results to filter.
+        The dictionary of all results of all entries.
+
+    Returns
+    -------
+    latest_results
+        The result with the latest utc timestamp for each entry.
 
     """
     latest_results = {}
@@ -136,8 +143,6 @@ def get_metadata_as_df(
     results: Dict[Tuple[str, ...], Path], include_additional: Optional[Sequence[str]] = None
 ) -> pd.DataFrame:
     """Return the metadata of the results as a pandas DataFrame.
-
-
 
     Parameters
     ----------
@@ -179,7 +184,12 @@ def generate_overview_table(results: Dict[Tuple[str, ...], Path]):
     Parameters
     ----------
     results
-        The results to filter.
+        The results to display.
+
+    Returns
+    -------
+    table
+        A pandas DataFrame containing the overview table.
 
     """
     df = (
@@ -213,39 +223,84 @@ def generate_overview_table(results: Dict[Tuple[str, ...], Path]):
 
 
 @lru_cache(maxsize=100)
-def load_run_metadata(path: Union[str, Path]) -> Dict[str, Any]:
-    path = Path(path)
+def load_run_metadata(folder_path: Union[str, Path]) -> Dict[str, Any]:
+    """Load the metadata of a run.
 
-    with open(path / "metadata.json", encoding="utf8") as f:
+    Parameters
+    ----------
+    folder_path
+        The path to the folder where the run results are stored.
+        The metadata is loaded from the file `metadata.json` in this folder.
+
+    Returns
+    -------
+    The metadata as a dictionary.
+    """
+    folder_path = Path(folder_path)
+
+    with (folder_path / "metadata.json").open(encoding="utf8") as f:
         metadata = json.load(f)
 
     return metadata
 
 
 @lru_cache(maxsize=100)
-def load_run_custom_metadata(path: Union[str, Path]) -> Dict[str, Any]:
-    path = Path(path)
+def load_run_custom_metadata(folder_path: Union[str, Path]) -> Dict[str, Any]:
+    """Load the custom metadata of a run.
 
-    with open(path / "custom_metadata.json", encoding="utf8") as f:
+    Parameters
+    ----------
+    folder_path
+        The path to the folder where the run is stored.
+        The metadata is loaded from the file `custom_metadata.json` in this folder.
+
+    Returns
+    -------
+    The custom metadata as a dictionary.
+    """
+    folder_path = Path(folder_path)
+
+    with (folder_path / "custom_metadata.json").open(encoding="utf8") as f:
         metadata = json.load(f)
 
     return metadata
 
 
-def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], path: Union[str, Path]) -> ResultReturn:
+def load_run(challenge_class: Union[Type[BaseChallenge], BaseChallenge], folder_path: Union[str, Path]) -> ResultReturn:
+    """Load the results of a run.
+
+    This uses the custom load functions of a challenge to load the results.
+
+    Parameters
+    ----------
+    challenge_class
+        The challenge class to load the results for.
+        Note, that we don't explicitly check if the challenge class matches the results.
+    folder_path
+        The path to the folder where the run results are stored.
+
+    Returns
+    -------
+    ResultReturn
+        A named tuple containing the `metadata`, the `results` and the `custom_metadata`.
+        The metadata is expected to have a similar structure for all challenges.
+        However, the results and the custom metadata can be arbitrary and are controlled by the challenge and the
+        actual run, respectively.
+
+    """
     challenge_class: Type[BaseChallenge] = cast(
         Type[BaseChallenge], challenge_class if isinstance(challenge_class, type) else challenge_class.__class__
     )
-    path = Path(path)
+    folder_path = Path(folder_path)
 
-    metadata = load_run_metadata(path)
+    metadata = load_run_metadata(folder_path)
 
     assert metadata["challenge_name"] == challenge_class.__module__ + "." + challenge_class.__name__
 
-    results = challenge_class.load_core_results(path / "results")
+    results = challenge_class.load_core_results(folder_path / "results")
 
     # laad custom metadata
-    with open(path / "custom_metadata.json", encoding="utf8") as f:
+    with (folder_path / "custom_metadata.json").open(encoding="utf8") as f:
         custom_metadata = json.load(f)
     return ResultReturn(metadata, results, custom_metadata)
 
@@ -286,10 +341,10 @@ def rename_keys(
     for k, v in in_dict.items():
         try:
             new_key = mapping_or_callable(k)
-        except Exception as e:
+        except:  # noqa: E722
             if missing == "raise":
-                raise e
-            elif missing == "ignore":
+                raise
+            if missing == "ignore":
                 new_dict[k] = v
         else:
             new_dict[new_key] = v

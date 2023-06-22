@@ -1,24 +1,24 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TypedDict, Optional, Union, Iterator, Dict, Any
+from typing import Dict, Iterator, Optional, TypedDict, Union
 
 import pandas as pd
-from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCalculation
+from gaitmap.evaluation_utils import calculate_parameter_errors
+from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
 from gaitmap.utils.consts import GF_POS
 from gaitmap_datasets import Kluge2017
 from sklearn.model_selection import BaseCrossValidator, StratifiedGroupKFold
 from tpcp import Pipeline
 from tpcp.optimize import BaseOptimize
-from gaitmap.evaluation_utils import calculate_parameter_errors
-
-from tpcp.validate import cross_validate, NoAgg
+from tpcp.validate import NoAgg, cross_validate
 
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
+    CvMetadata,
+    collect_cv_metadata,
     collect_cv_results,
-    save_cv_results,
     load_cv_results,
-    collect_cv_metadata, CvMetadata,
+    save_cv_results,
 )
 from gaitmap_challenges.full_pipeline._utils import ParameterErrors
 

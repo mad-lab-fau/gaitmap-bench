@@ -79,7 +79,7 @@ def group_by_data_label(
             # In this case we assume that the labels are loaded as namedtuples
             group_labels = labels.apply(lambda label: getattr(label, level)).astype(str)
         else:
-            raise ValueError(f"level must be either int or str, but was {type(level)}")
+            raise TypeError(f"level must be either int or str, but was {type(level)}")
 
         group_labels.index = labels
         ordered_names = group_labels.unique().tolist()
@@ -120,10 +120,7 @@ def _prepare_boxplot_data(
 
     all_results = {}
     for k, v in cv_results.items():
-        if isinstance(k, tuple):
-            name = "/\n".join(k)
-        else:
-            name = k
+        name = "/\n".join(k) if isinstance(k, tuple) else k
         if use_aggregation == "fold":
             data = v[metric_name]
             labels = v.index.astype("str")
@@ -285,10 +282,7 @@ def box_plot_bokeh(
 
     # quantile boxes
     if "__group" in all_results.columns:
-        if invert_grouping:
-            colors = all_results["name"].unique()
-        else:
-            colors = all_results["__group"].dtype.categories
+        colors = all_results["name"].unique() if invert_grouping else all_results["__group"].dtype.categories
         color = factor_cmap("__factors", palette=Spectral6, factors=colors, start=1, end=2)
     else:
         color = "blue"

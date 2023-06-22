@@ -1,6 +1,7 @@
 import json
 import os
 import warnings
+from contextlib import suppress
 from dataclasses import asdict, dataclass, fields
 from os.path import relpath
 from pathlib import Path
@@ -217,15 +218,12 @@ def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_Res
         _DEBUG = config_obj["debug"]
         global _GLOBAL_CONFIG
         _GLOBAL_CONFIG = config_obj["config_obj_or_path"]
-        try:
+        with suppress(AttributeError):
             set_datasets_config(config_obj["config_obj_or_path"].datasets)
-        except AttributeError:
-            pass
-
     try:
         returned_config = config()
     except ValueError:
-        return None, lambda x: None
+        return None, lambda _: None
     return {"config_obj_or_path": returned_config, "debug": is_debug_run()}, setter
 
 
