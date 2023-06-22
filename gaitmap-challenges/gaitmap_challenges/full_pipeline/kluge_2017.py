@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TypedDict, Optional, Union, Iterator, Dict
+from typing import TypedDict, Optional, Union, Iterator, Dict, Any
 
 import pandas as pd
 from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCalculation
@@ -13,7 +13,13 @@ from gaitmap.evaluation_utils import calculate_parameter_errors
 
 from tpcp.validate import cross_validate, NoAgg
 
-from gaitmap_challenges.challenge_base import BaseChallenge, collect_cv_results, save_cv_results, load_cv_results
+from gaitmap_challenges.challenge_base import (
+    BaseChallenge,
+    collect_cv_results,
+    save_cv_results,
+    load_cv_results,
+    collect_cv_metadata, CvMetadata,
+)
 from gaitmap_challenges.full_pipeline._utils import ParameterErrors
 
 ChallengeDataset = Kluge2017
@@ -41,6 +47,7 @@ def _final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
 
 class ResultType(TypedDict):
     cv_results: pd.DataFrame
+    cv_metadata: CvMetadata
 
 
 @dataclass(repr=False)
@@ -120,16 +127,13 @@ class Challenge(BaseChallenge):
         return pd.concat(cls.get_ground_truth_parameter(datapoint)).mean()
 
     def get_core_results(self) -> ResultType:
-        return {
-            "cv_results": collect_cv_results(self.cv_results_),
-        }
+        return {"cv_results": collect_cv_results(self.cv_results_), "cv_metadata": collect_cv_metadata(self.dataset)}
 
     def save_core_results(self, folder_path) -> None:
         core_results = self.get_core_results()
-        save_cv_results(core_results["cv_results"], folder_path)
+        save_cv_results(core_results["cv_results"], core_results["cv_metadata"], folder_path)
 
     @classmethod
     def load_core_results(cls, folder_path) -> ResultType:
-        return {
-            "cv_results": load_cv_results(folder_path),
-        }
+        cv_results = load_cv_results(folder_path)
+        return {"cv_results": cv_results[0], "cv_metadata": cv_results[1]}

@@ -19,6 +19,8 @@ from gaitmap_challenges.challenge_base import (
     load_opti_results,
     save_cv_results,
     save_opti_results,
+    CvMetadata,
+    collect_cv_metadata,
 )
 from gaitmap_challenges.stride_segmentation._utils import SingleValuePrecisionRecallF1
 
@@ -46,6 +48,7 @@ ChallengeDataset = EgaitSegmentationValidation2014
 
 class ResultType(TypedDict):
     cv_results: pd.DataFrame
+    cv_metadata: CvMetadata
     opti_results: Optional[List[Dict[str, Any]]]
 
 
@@ -88,9 +91,7 @@ class Challenge(BaseChallenge):
             return ChallengeDataset(data_folder=Path(self.dataset))
         if isinstance(self.dataset, ChallengeDataset):
             return self.dataset
-        raise ValueError(
-            "`dataset` must either be a valid path or a valid instance of `EgaitSegmentationValidation2014`."
-        )
+        raise ValueError(f"`dataset` must either be a valid path or a valid instance of `{ChallengeDataset.__name__}`.")
 
     @classmethod
     def get_scorer(cls):
@@ -113,6 +114,7 @@ class Challenge(BaseChallenge):
     def get_core_results(self) -> ResultType:
         return {
             "cv_results": collect_cv_results(self.cv_results_),
+            "cv_metadata": collect_cv_metadata(self.dataset_),
             "opti_results": collect_opti_results(self.cv_results_),
         }
 
@@ -124,8 +126,10 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def load_core_results(cls, folder_path) -> ResultType:
+        cv_results = load_cv_results(folder_path)
         return {
-            "cv_results": load_cv_results(folder_path),
+            "cv_results": cv_results[0],
+            "cv_metadata": cv_results[1],
             "opti_results": load_opti_results(folder_path),
         }
 

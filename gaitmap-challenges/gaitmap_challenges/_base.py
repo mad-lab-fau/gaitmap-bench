@@ -95,6 +95,8 @@ def save_run(
         "repr_challenge": repr(challenge),
         "repr_pipeline": repr(challenge.optimizer),
         "repr_dataset": repr(challenge.dataset_),
+        "dataset_name": challenge.dataset_.__class__.__name__,
+        "dataset_columns": list(challenge.dataset_.index.columns),
         "run_start_datetime_utc": challenge.run_start_datetime_utc_timestamp_,
         "run_start_datetime": challenge.run_start_datetime_,
         "end_start_datetime_utc": challenge.end_start_datetime_utc_timestamp_,

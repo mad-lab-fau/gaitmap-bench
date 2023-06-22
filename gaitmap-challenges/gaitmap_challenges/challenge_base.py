@@ -2,10 +2,11 @@ import contextlib
 import copy
 import json
 import time
+from collections import namedtuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Union, NamedTuple, Type, Tuple, TypedDict
 
 import numpy as np
 import pandas as pd
@@ -70,6 +71,17 @@ def collect_cv_results(cv_results: Dict) -> pd.DataFrame:
     return pd.DataFrame(cv_results)
 
 
+class CvMetadata(TypedDict):
+    dataset_name: str
+    dataset_columns: List[str]
+
+def collect_cv_metadata(dataset) -> CvMetadata:
+    return {
+        "dataset_name": dataset.__class__.__name__,
+        "dataset_columns": list(dataset.index.columns),
+    }
+
+
 def collect_opti_results(cv_results: Dict) -> Optional[List[Dict[str, Any]]]:
     cv_results = copy.copy(cv_results)
 
@@ -92,8 +104,16 @@ def collect_opti_results(cv_results: Dict) -> Optional[List[Dict[str, Any]]]:
     return opti_results
 
 
-def save_cv_results(cv_results: pd.DataFrame, folder_path: Union[str, Path], filename: str = "cv_results.json"):
+def save_cv_results(
+    cv_results: pd.DataFrame,
+    cv_metadata: CvMetadata,
+    folder_path: Union[str, Path],
+    filename: str = "cv_results.json",
+    meta_data_filename: str = "cv_metadata.json",
+):
     cv_results.to_json(Path(folder_path) / filename)
+    with (Path(folder_path) / meta_data_filename).open("w", encoding="utf8") as f:
+        json.dump(cv_metadata, f, indent=4)
 
 
 def save_opti_results(
@@ -103,8 +123,25 @@ def save_opti_results(
         json.dump(opti_results, f, cls=NpEncoder)
 
 
-def load_cv_results(folder_path: Union[str, Path], filename: str = "cv_results.json") -> pd.DataFrame:
-    return pd.read_json(Path(folder_path) / filename)
+def _get_dataset_tuple_class_from_metadata(metadata: Dict[str, Any]) -> Type[Tuple]:
+    return namedtuple(metadata["dataset_name"], metadata["dataset_columns"])
+
+
+def load_cv_results(
+    folder_path: Union[str, Path], filename: str = "cv_results.json", meta_data_filename: str = "cv_metadata.json"
+) -> Tuple[pd.DataFrame, CvMetadata]:
+    with (Path(folder_path) / meta_data_filename).open(encoding="utf8") as f:
+        metadata = json.load(f)
+
+    dataset_tuple_type = _get_dataset_tuple_class_from_metadata(metadata)
+    cv_results = pd.read_json(Path(folder_path) / filename)
+    # We convert all columns that contain dataset labels to tuples of the correct type
+    # This preserves the names of the columns
+    for col in ["train_data_labels", "test_data_labels"]:
+        if col in cv_results.columns:
+            cv_results[col] = cv_results[col].apply(lambda x: [dataset_tuple_type(*i) for i in x])
+
+    return cv_results, metadata
 
 
 def load_opti_results(

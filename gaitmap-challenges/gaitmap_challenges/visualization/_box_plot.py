@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Dict, Literal, Optional, Sequence
+from typing import Callable, Dict, Literal, Optional, Sequence, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -45,19 +45,49 @@ class SingleMetricBoxplot:
         )
 
 
-def group_by_data_label(level: int, include_all: bool = True, force_order: Optional[Sequence[str]] = None):
+def group_by_data_label(
+    level: [int, str], include_all: Union[bool, str] = True, force_order: Optional[Sequence[str]] = None
+):
+    """Create a grouper function that groups labels by the data label at the given level.
+
+    This returns a pd.Series mapping the original label to its group label.
+
+    Parameters
+    ----------
+    level
+        The level to groupby. We assume that the original dataset had multiple levels.
+        If an integer is passed, the level is assumed to be the index of the label.
+        If a string is passed, the level is assumed to be the name of the level.
+    include_all
+        If True a group "all" is added that contains all labels.
+        To customize the name of the group, pass a string.
+    force_order
+        If given, the order of the groups is forced to be the given order.
+        Note, that this sequence must contain all groups (including "all" if `include_all` is True).
+
+    """
+
     def grouper(labels: pd.Series) -> pd.Categorical:
         """Group labels by the data label at the given level.
 
         This returns a pd.Series mapping the original label to its group label.
         If `include_all` is True, all group labels are repeated with the groupname "all".
         """
-        group_labels = labels.apply(lambda label: label[level]).astype(str)
+        if isinstance(level, int):
+            group_labels = labels.apply(lambda label: label[level]).astype(str)
+        elif isinstance(level, str):
+            # In this case we assume that the labels are loaded as namedtuples
+            group_labels = labels.apply(lambda label: getattr(label, level)).astype(str)
+        else:
+            raise ValueError(f"level must be either int or str, but was {type(level)}")
+
         group_labels.index = labels
-        ordered_names = group_labels.unique().tolist() if force_order is None else force_order
-        if include_all:
+        ordered_names = group_labels.unique().tolist()
+        if include_all is not False:
             group_labels = pd.concat([group_labels, pd.Series("all", index=labels)])
-            ordered_names.append("all")
+            include_all_name = "all" if include_all is True else include_all
+            ordered_names.append(include_all_name)
+        ordered_names = ordered_names if force_order is None else force_order
         ordered_names = [str(name) for name in ordered_names]
         order = pd.CategoricalDtype(categories=ordered_names, ordered=True)
         return group_labels.astype(order)
@@ -191,7 +221,6 @@ def box_plot_bokeh(
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
     invert_grouping: bool = False,
 ):
-
     all_results = _prepare_boxplot_data(
         cv_results=cv_results, metric=metric, use_aggregation=use_aggregation, label_grouper=label_grouper
     )
@@ -260,9 +289,7 @@ def box_plot_bokeh(
             colors = all_results["name"].unique()
         else:
             colors = all_results["__group"].dtype.categories
-        color = factor_cmap(
-            "__factors", palette=Spectral6, factors=colors, start=1, end=2
-        )
+        color = factor_cmap("__factors", palette=Spectral6, factors=colors, start=1, end=2)
     else:
         color = "blue"
     p.vbar("__factors", 0.7, "__med", "__q3", source=data, line_color="black", fill_color=color)
