@@ -220,6 +220,7 @@ def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_Res
         _GLOBAL_CONFIG = config_obj["config_obj_or_path"]
         with suppress(AttributeError):
             set_datasets_config(config_obj["config_obj_or_path"].datasets)
+
     try:
         returned_config = config()
     except ValueError:

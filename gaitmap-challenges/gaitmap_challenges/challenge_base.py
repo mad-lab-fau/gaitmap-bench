@@ -75,6 +75,7 @@ class CvMetadata(TypedDict):
     dataset_name: str
     dataset_columns: List[str]
 
+
 def collect_cv_metadata(dataset) -> CvMetadata:
     return {
         "dataset_name": dataset.__class__.__name__,
