@@ -20,6 +20,7 @@ class SingleMetricBoxplot:
     metric: str
     use_aggregation: Literal["fold", "single"] = "single"
     overlay_scatter: bool = True
+    force_order: Optional[Sequence[str]] = None
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None
     invert_grouping: bool = False
 
@@ -28,6 +29,7 @@ class SingleMetricBoxplot:
             cv_results=self.cv_results,
             metric=self.metric,
             use_aggregation=self.use_aggregation,
+            force_order=self.force_order,
             overlay_scatter=self.overlay_scatter,
             label_grouper=self.label_grouper,
             invert_grouping=self.invert_grouping,
@@ -39,6 +41,7 @@ class SingleMetricBoxplot:
             metric=self.metric,
             use_aggregation=self.use_aggregation,
             overlay_scatter=self.overlay_scatter,
+            force_order=self.force_order,
             label_grouper=self.label_grouper,
             invert_grouping=self.invert_grouping,
             ax=ax,
@@ -84,8 +87,8 @@ def group_by_data_label(
         group_labels.index = labels
         ordered_names = group_labels.unique().tolist()
         if include_all is not False:
-            group_labels = pd.concat([group_labels, pd.Series("all", index=labels)])
             include_all_name = "all" if include_all is True else include_all
+            group_labels = pd.concat([group_labels, pd.Series(include_all_name, index=labels)])
             ordered_names.append(include_all_name)
         ordered_names = ordered_names if force_order is None else force_order
         ordered_names = [str(name) for name in ordered_names]
@@ -150,6 +153,7 @@ def box_plot_matplotlib(
     overlay_scatter: bool = True,
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
     invert_grouping: bool = False,
+    force_order: Optional[Sequence[str]] = None,
     *,
     ax=None,
 ):
@@ -160,6 +164,8 @@ def box_plot_matplotlib(
         label_grouper=label_grouper,
         invert_grouping=invert_grouping,
     )
+
+    order = all_results["name"].unique() if force_order is None else force_order
 
     if ax is None:
         _, ax = plt.subplots()
@@ -174,7 +180,7 @@ def box_plot_matplotlib(
     x = "name"
 
     if invert_grouping:
-        hue_order = all_results[x].unique()
+        order, hue_order = hue_order, order
         x, hue = hue, x
 
     sns.boxplot(
@@ -184,6 +190,7 @@ def box_plot_matplotlib(
         showfliers=not overlay_scatter,
         hue=hue,
         hue_order=hue_order,
+        order=order,
         ax=ax,
     )
     if overlay_scatter:
@@ -197,6 +204,7 @@ def box_plot_matplotlib(
             ax=ax,
             legend=False,
             hue_order=hue_order,
+            order=order,
             size=3,
         )
 
@@ -214,6 +222,7 @@ def box_plot_bokeh(
     cv_results: Dict[str, pd.DataFrame],
     metric: str,
     use_aggregation: Literal["fold", "single"] = "single",
+    force_order: Optional[Sequence[str]] = None,
     overlay_scatter: bool = True,
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
     invert_grouping: bool = False,
@@ -221,6 +230,13 @@ def box_plot_bokeh(
     all_results = _prepare_boxplot_data(
         cv_results=cv_results, metric=metric, use_aggregation=use_aggregation, label_grouper=label_grouper
     )
+
+    # We use categorical dtypes to make sorting easier
+    if force_order is not None:
+        # We use the order category dtype trick to sort the factors
+        name_dtype = pd.CategoricalDtype(categories=force_order, ordered=True)
+    else:
+        name_dtype = str
 
     if "__group" in all_results.columns:
         results = {}
@@ -242,12 +258,12 @@ def box_plot_bokeh(
             .reset_index()
             .astype({"__group": all_results["__group"].dtype, "name": all_results["name"].dtype})
         )
-        if invert_grouping:
-            box_plot_stats = box_plot_stats.assign(__factors=lambda df_: list(zip(df_["__group"], df_["name"])))
-            sort_order = ["__group", "name"]
-        else:
-            box_plot_stats = box_plot_stats.assign(__factors=lambda df_: list(zip(df_["name"], df_["__group"])))
-            sort_order = ["name", "__group"]
+        sort_order = ["__group", "name"] if invert_grouping else ["name", "__group"]
+        sorted_factors = (
+            box_plot_stats[sort_order].drop_duplicates().astype({"name": name_dtype}).sort_values(by=sort_order)
+        )
+        sorted_factors = list(sorted_factors.itertuples(index=False))
+        box_plot_stats = box_plot_stats.assign(__factors=lambda df_: list(zip(df_[sort_order[0]], df_[sort_order[1]])))
 
         all_results = all_results.merge(box_plot_stats, on=["__group", "name"]).sort_values(sort_order)
     else:
@@ -259,15 +275,13 @@ def box_plot_bokeh(
             .rename(columns={"__label": "name"})
             .assign(__factors=lambda df_: df_["name"])
         )
+
+        sorted_factors = box_plot_stats["name"].drop_duplicates().astype(str).astype(name_dtype).sort_values()
+        sorted_factors = list(sorted_factors)
         # Merge everything back together
         all_results = all_results.merge(box_plot_stats, on="name")
 
     data = ColumnDataSource(all_results)
-
-    try:
-        sorted_factors = all_results["__factors"].drop_duplicates().sort_values()
-    except TypeError:
-        sorted_factors = all_results["__factors"].drop_duplicates().astype(str).sort_values()
 
     p = figure(
         x_range=FactorRange(factors=sorted_factors),
