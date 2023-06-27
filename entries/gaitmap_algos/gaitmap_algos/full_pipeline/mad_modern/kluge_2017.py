@@ -1,11 +1,12 @@
 import pandas as pd
-from gaitmap.event_detection import FilteredRamppEventDetection
+from gaitmap.event_detection import HerzerEventDetection
 from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCalculation
 from gaitmap.trajectory_reconstruction import (
     RegionLevelTrajectory,
     MadgwickRtsKalman,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
+from gaitmap.zupt_detection import ComboZuptDetector, NormZuptDetector, StrideEventZuptDetector
 from gaitmap_mad.stride_segmentation.hmm import (
     HmmStrideSegmentation,
     PreTrainedRothSegmentationModel,
@@ -26,7 +27,6 @@ class MadOptimized(Pipeline[ChallengeDataset]):
 
     @make_action_safe
     def run(self, datapoint: ChallengeDataset):
-
         data_sf = Challenge.get_imu_data(datapoint)
         sampling_rate_hz = datapoint.sampling_rate_hz
 
@@ -39,7 +39,7 @@ class MadOptimized(Pipeline[ChallengeDataset]):
         )
 
         # event detection
-        ed = FilteredRamppEventDetection()
+        ed = HerzerEventDetection()
         ed = ed.detect(
             data=bf_data,
             stride_list=hmm.stride_list_,
@@ -119,6 +119,6 @@ if __name__ == "__main__":
     )
     save_run(
         challenge=challenge,
-        entry_name=("gaitmap", "mad_optimized", "default"),
+        entry_name=("gaitmap", "mad_modern", "default"),
         custom_metadata=metadata,
     )

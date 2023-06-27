@@ -28,4 +28,6 @@ roth_hmm_trained = "gaitmap_algos/stride_segmentation/roth_hmm/sensor_position_c
 
 [challenge.full_pipeline.kluge_2017]
 mad_default = "gaitmap_algos/full_pipeline/mad_default/kluge_2017.py"
-mad_optimized = "gaitmap_algos/full_pipeline/mad_optimized/kluge_2017.py"
+mad_modern = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017.py"
+mad_modern_optimized_zupt = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017_optimized_zupt.py"
+
