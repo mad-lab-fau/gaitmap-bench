@@ -200,6 +200,11 @@ def is_debug_run() -> Optional[bool]:
     return _DEBUG
 
 
+def is_config_set() -> bool:
+    """Check if the config is set."""
+    return _GLOBAL_CONFIG is not None
+
+
 # This callback (and the register afterwards), works together with a tpcp parallel "hack" that ensures that the config
 # is restored in a worker process spawned by joblib.
 # This will only have an effect if the config is set in the main process and the parallel implementation is using the
@@ -231,4 +236,12 @@ def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_Res
 register_global_parallel_callback(_config_restore_callback)
 
 
-__all__ = ["set_config", "reset_config", "config", "create_config_template", "LocalConfig", "is_debug_run"]
+__all__ = [
+    "set_config",
+    "reset_config",
+    "config",
+    "create_config_template",
+    "LocalConfig",
+    "is_debug_run",
+    "is_config_set",
+]

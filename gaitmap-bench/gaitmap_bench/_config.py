@@ -65,11 +65,14 @@ def config() -> BenchLocalConfig:
 # We reexport some of the functions from gaitmap_challenges.config for convenience
 reset_config = challenge_config.reset_config
 
+is_config_set = challenge_config.is_config_set
+
 __all__ = [
     "set_config",
     "BenchLocalConfig",
     "config",
     "reset_config",
+    "is_config_set",
     "create_config_template",
     "DEFAULT_CONFIG_FILE",
     "DEFAULT_RESULTS_DIR",

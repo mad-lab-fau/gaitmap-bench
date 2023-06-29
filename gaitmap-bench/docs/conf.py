@@ -65,7 +65,11 @@ extensions = [
     # "sphinx_gallery.gen_gallery",
     "myst_nb",
     "sphinx_design",
-    "myst_nb_bokeh"
+    "myst_nb_bokeh",
+]
+
+myst_enable_extensions = [
+    "colon_fence",
 ]
 
 # this is needed for some reason...
@@ -113,17 +117,13 @@ add_function_parentheses = False
 #
 # Activate the theme.
 html_theme = "sphinx_book_theme"
-html_theme_options = {
-    "repository_url": URL,
-    "use_repository_button": True,
-    "show_prev_next": False
-}
+html_theme_options = {"repository_url": URL, "use_repository_button": True, "show_prev_next": False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
-
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 # -- Options for extensions --------------------------------------------------
 # Intersphinx
 
@@ -163,4 +163,3 @@ linkcode_resolve = make_linkcode_resolve(
     "gaitmap-challenges",
     "https://github.com/mad-lab-fau/gaitmap-challenges/blob/{revision}/{package}/{path}#L{lineno}",
 )
-
