@@ -27,6 +27,7 @@ myst-nb-bokeh = "^1.1.0"
 ruff = "^0.0.260"
 sphinx = "^5"
 jupytext = "^1.14.6"
+nbstripout = "^0.6.1"
 
 
 [tool.black]
