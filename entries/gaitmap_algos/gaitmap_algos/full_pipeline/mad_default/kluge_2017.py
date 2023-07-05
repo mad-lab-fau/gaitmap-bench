@@ -1,14 +1,14 @@
 import pandas as pd
 from gaitmap.event_detection import RamppEventDetection
 from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
+from gaitmap.stride_segmentation import (
+    BarthOriginalTemplate,
+    ConstrainedBarthDtw,
+)
 from gaitmap.trajectory_reconstruction import StrideLevelTrajectory
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
 from gaitmap_bench import save_run, set_config
 from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
-from gaitmap_mad.stride_segmentation import (
-    BarthOriginalTemplate,
-    ConstrainedBarthDtw,
-)
 from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize

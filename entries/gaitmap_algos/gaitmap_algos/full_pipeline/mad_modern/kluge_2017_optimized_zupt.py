@@ -1,6 +1,10 @@
 import pandas as pd
 from gaitmap.event_detection import HerzerEventDetection
 from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
+from gaitmap.stride_segmentation.hmm import (
+    HmmStrideSegmentation,
+    PreTrainedRothSegmentationModel,
+)
 from gaitmap.trajectory_reconstruction import (
     MadgwickRtsKalman,
     RegionLevelTrajectory,
@@ -13,10 +17,6 @@ from gaitmap.zupt_detection import (
 )
 from gaitmap_bench import save_run, set_config
 from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
-from gaitmap_mad.stride_segmentation.hmm import (
-    HmmStrideSegmentation,
-    PreTrainedRothSegmentationModel,
-)
 from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
