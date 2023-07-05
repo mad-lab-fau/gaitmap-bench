@@ -87,13 +87,14 @@ ignore = [
     # melt over stack
     "PD013",
     "TRY003",
+    "PD010",
 ]
 
 
 exclude = [
-    "doc/sphinxext/*.py",
-    "doc/build/*.py",
-    "doc/temp/*.py",
+    "docs/sphinxext/*.py",
+    "docs/build/*.py",
+    "docs/temp/*.py",
     ".eggs/*.py",
     "example_data",
     "examples"

@@ -6,9 +6,8 @@ from tpcp.validate import Aggregator
 
 
 class SingleValuePrecisionRecallF1(Aggregator[pd.DataFrame]):
-
     RETURN_RAW_SCORES = False
 
     @classmethod
-    def aggregate(cls, /, values: Sequence[pd.DataFrame], datapoints) -> Dict[str, float]:
+    def aggregate(cls, /, values: Sequence[pd.DataFrame], datapoints) -> Dict[str, float]:  # noqa: ARG003
         return precision_recall_f1_score(pd.concat(values))

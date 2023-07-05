@@ -44,15 +44,14 @@ def _prepare_residual_plot_data(
 
         # TODO: Implement this
         raise AssertionError()
-    else:
-        return pd.DataFrame(
-            {
-                "reference": list(chain(*references.values())),
-                "predictions": list(chain(*predictions.values())),
-                "label": labels.to_list(),
-                "fold": labels.index.to_list(),
-            }
-        )
+    return pd.DataFrame(
+        {
+            "reference": list(chain(*references.values())),
+            "predictions": list(chain(*predictions.values())),
+            "label": labels.to_list(),
+            "fold": labels.index.to_list(),
+        }
+    )
 
 
 def blandaltman_stats(*, reference, prediction, x_val: Literal["mean", "reference", "prediction"] = "mean"):

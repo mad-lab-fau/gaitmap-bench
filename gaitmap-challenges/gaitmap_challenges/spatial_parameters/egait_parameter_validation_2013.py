@@ -149,8 +149,8 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def load_core_results(cls, folder_path) -> ResultType:
-        if (folder_path / "opti_results.json").is_file():
-            with open(folder_path / "opti_results.json") as f:
+        if (opti_result_file := folder_path / "opti_results.json").is_file():
+            with opti_result_file.open() as f:
                 opti_results = json.load(f)
         else:
             opti_results = None

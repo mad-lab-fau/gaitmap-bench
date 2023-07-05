@@ -13,8 +13,8 @@ def get_all_result_path(challenge_class, base_path):
     folder_name = challenge_class.__module__ + "." + challenge_class.__name__
     try:
         folder = next(Path(base_path).rglob(folder_name))
-    except Exception as e:
-        raise e
+    except StopIteration as e:
+        raise FileNotFoundError(f"Could not find any results for {challenge_class.__name__}") from e
 
     entries = {}
     for run in folder.rglob("metadata.json"):

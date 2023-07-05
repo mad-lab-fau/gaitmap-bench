@@ -2,11 +2,10 @@ import shutil
 from pathlib import Path
 
 import pandas as pd
-from tpcp import Dataset, Pipeline
-from tpcp.optimize import BaseOptimize, DummyOptimize
-
 from gaitmap_challenges import load_run, save_run
 from gaitmap_challenges.challenge_base import BaseChallenge
+from tpcp import Dataset, Pipeline
+from tpcp.optimize import BaseOptimize, DummyOptimize
 
 
 class DummyDataset(Dataset):
@@ -15,7 +14,6 @@ class DummyDataset(Dataset):
 
 
 class DummyChallenge(BaseChallenge):
-
     VERSION = "1.0.0"
 
     def run(self, optimizer: BaseOptimize):
@@ -72,7 +70,6 @@ def test_save_load_run(tmp_path):
 
 
 def test_manual_test():
-
     # This will create the output in the current directory
     # Set a breakpoint at the last line and inspect the output
     challenge = DummyChallenge()

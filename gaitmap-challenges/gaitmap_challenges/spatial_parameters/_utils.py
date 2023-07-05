@@ -10,7 +10,6 @@ _AggType = Tuple[
 
 
 class SingleValueErrors(Aggregator[_AggType]):
-
     RETURN_RAW_SCORES = False
 
     @classmethod

@@ -22,7 +22,6 @@ class MadClassic(Pipeline[ChallengeDataset]):
 
     @make_action_safe
     def run(self, datapoint: ChallengeDataset):
-
         data_sf = Challenge.get_imu_data(datapoint)
         sampling_rate_hz = datapoint.sampling_rate_hz
 

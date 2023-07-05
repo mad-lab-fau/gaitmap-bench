@@ -14,17 +14,19 @@ def tabs(content: Dict[str, str], class_str: str = "", sync: bool = False):
 
     tab_item_template = "::::{{tab-item}} {title}\n{content}\n::::"
 
-    def content_processor(title: str, content_str: str):
-        return content_str
-
     if sync:
 
         def content_processor(title: str, content_str: str):
             return f":sync: {title}\n\n{content_str}\n"
+
+    else:
+
+        def content_processor(_: str, content_str: str):
+            return content_str
 
     tab_items = [
         tab_item_template.format(title=title, content=content_processor(title, content))
         for title, content in content.items()
     ]
 
-    return "\n".join([start] + tab_items + [end])
+    return "\n".join([start, *tab_items] + [end])

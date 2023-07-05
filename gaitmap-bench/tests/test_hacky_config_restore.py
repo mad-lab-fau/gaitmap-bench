@@ -1,7 +1,6 @@
 import joblib
-from tpcp.parallel import delayed
-
 from gaitmap_bench import config, set_config
+from tpcp.parallel import delayed
 
 
 def test_config_restore():

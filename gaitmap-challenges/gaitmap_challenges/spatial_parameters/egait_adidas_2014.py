@@ -149,13 +149,13 @@ class Challenge(BaseChallenge):
         core_results["cv_results"].to_json(folder_path / "cv_results.json")
         core_results["stride_length"].to_csv(folder_path / "stride_length.csv")
         if core_results["opti_results"] is not None:
-            with open(folder_path / "opti_results.json", "w") as f:
+            with (folder_path / "opti_results.json").open("w") as f:
                 json.dump(core_results["opti_results"], f, cls=NpEncoder)
 
     @classmethod
     def load_core_results(cls, folder_path) -> ResultType:
         if (folder_path / "opti_results.json").is_file():
-            with open(folder_path / "opti_results.json") as f:
+            with folder_path / "opti_results.json" as f:
                 opti_results = json.load(f)
         else:
             opti_results = None

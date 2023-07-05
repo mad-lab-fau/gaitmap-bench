@@ -6,11 +6,10 @@ from typing import Sequence
 
 import click
 import pandas as pd
-from trogon import tui
-
 from gaitmap_challenges.config import _CONFIG_ENV_VAR, _DEBUG_ENV_VAR
 from rich.console import Console
 from rich.table import Table
+from trogon import tui
 
 from gaitmap_bench import create_config_template
 from gaitmap_bench._config import DEFAULT_CONFIG_FILE, DEFAULT_ENTRIES_DIR, MAIN_REPO_ROOT
@@ -106,7 +105,7 @@ def create_config(path):
 )
 @click.option("--show-command", "-c", is_flag=True, help="Show the command that is used to run the entry.")
 @click.option("--show-base-folder", "-f", is_flag=True, help="Show the base folder of the entry.")
-def list_entries(path, group, show_command, show_base_folder):
+def list_entries(path, group, show_command, show_base_folder):  # noqa: C901
     """List all entries that are registered in the `entries` folder."""
     path = Path(path)
     all_entries = find_all_entries(path)
@@ -193,7 +192,7 @@ def list_entries(path, group, show_command, show_base_folder):
     "This should be a path to a script relative to the working directory you started the command in. "
     "Note, that it requires the right permissions to be executable. ",
 )
-def run_challenge(entry_id, path, python_path, config_path, non_debug, executor):
+def run_challenge(entry_id, path, python_path, config_path, non_debug, executor):  # noqa: PLR0913
     """Run a challenge."""
     path = Path(path)
     all_entries = pd.DataFrame(find_all_entries(path))
@@ -281,7 +280,7 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug, executor)
     "-i",
     "entry_ids",
     type=str,
-    help="The ID of the entry to run (Can be specified multiple times, but all IDs must be from the same entry).",
+    help="The ID of the entry to run (Can be specified multiple times, but all IDs must be from the same group).",
     multiple=True,
 )
 @click.option(
@@ -308,7 +307,14 @@ def run_challenge(entry_id, path, python_path, config_path, non_debug, executor)
     "This should be a path to a script relative to the working directory you started the command in. "
     "Note, that it requires the right permissions to be executable. ",
 )
-def run_multiple_from_group(entry_ids, path, python_path, config_path, non_debug, executor):
+def run_multiple_from_group(  # noqa: PLR0913, PLR0912, C901
+    entry_ids,
+    path,
+    python_path,
+    config_path,
+    non_debug,
+    executor,
+):
     """Run multiple entries from a single group.
 
     Compared to `run_challenge`, this command will run multiple entries while running the setup only once.

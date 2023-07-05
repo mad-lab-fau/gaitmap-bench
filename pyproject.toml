@@ -13,7 +13,6 @@ gaitmap-challenges = {path = "gaitmap-challenges", develop = true}
 gaitmap-algos = {path = "entries/gaitmap_algos", develop = true}
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.12.0"
 poethepoet = "^0.16.5"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
@@ -28,6 +27,7 @@ ruff = "^0.0.260"
 sphinx = "^5"
 jupytext = "^1.14.6"
 nbstripout = "^0.6.1"
+black = {version = "^23.3.0", extras = ["jupyter"]}
 
 
 [tool.black]
@@ -46,6 +46,17 @@ exclude = '''
     | build
     | dist
     | \.virtual_documents
+    | \.ipynb_checkpoints
+    | \_debug
   )/
 )
 '''
+
+[tool.poe.tasks]
+_format_black = "black ."
+_format_ruff = "ruff . --fix-only --exit-zero"
+format = ["_format_black", "_format_ruff", "_format_black"]
+lint = { cmd = "ruff gaitmap-challenges gaitmap-bench entries --fix", help = "Lint all files with ruff." }
+test = { cmd = "pytest --cov=gaitmap-challenges --cov-report=term-missing --cov-report=xml", help = "Run Pytest with coverage." }
+version = { script = "_tasks:task_update_version()" }
+bump_dev = { script = "_tasks:task_bump_all_dev()" }

@@ -40,11 +40,11 @@ def _check_if_dirty(repo, ignore: Sequence[str] = ()):
         # For each file we need to check if it is in the `ignore` list or a subdirectory of a path in the `ignore` list.
         if any(Path(i) in Path(f).parents or Path(i) == Path(f) for i in ignore):
             continue
-        else:
-            return True
+        return True
+    return None
 
 
-def save_run(
+def save_run(  # noqa: PLR0912, PLR0915, C901
     challenge: BaseChallenge,
     entry_name: Union[str, Tuple[str, ...]],
     *,
@@ -74,7 +74,8 @@ def save_run(
                 f"The debug_run parameter was set ({debug_run=}), but the global config also has a debug_run setting. "
                 f"The config setting ({config_debug_run=}) will be used. "
                 "You should not use the `debug_run` parameter of the `save_run` function if you are using global "
-                "config."
+                "config.",
+                stacklevel=2,
             )
 
         debug_run = config_debug_run
@@ -145,7 +146,8 @@ def save_run(
                 "We will treat the results as a debug run instead. "
                 "If you are absolute sure that the results are reproducible, and this warning is an error, "
                 "manually modify the metadata.json file to set is_debug_run to True and remove the debug "
-                "folder prefix (if used)."
+                "folder prefix (if used).",
+                stacklevel=2,
             )
             debug_run = True
             metadata["is_debug_run"] = debug_run

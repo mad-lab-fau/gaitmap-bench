@@ -98,7 +98,7 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_imu_data(
-        self,
+        cls,
         datapoint: ChallengeDataset,
     ):
         return datapoint.data

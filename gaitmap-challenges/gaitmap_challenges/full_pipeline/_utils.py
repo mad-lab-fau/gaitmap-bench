@@ -8,7 +8,6 @@ _AggType = Dict[Literal["reference", "predicted"], pd.Series]
 
 
 class ParameterErrors(Aggregator[_AggType]):
-
     RETURN_RAW_SCORES = False
 
     @classmethod

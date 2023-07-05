@@ -1,7 +1,7 @@
 import warnings
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 import gaitmap_challenges.config as challenge_config
 
@@ -31,7 +31,8 @@ def set_config(
             "At the moment you are trying to set it via a config object or path in `set_config`. "
             "This will be ignored and we fallback to the environment variable. "
             "Please remove, the manual config setting (`set_config(None)`) before submitting your script to the "
-            "github repo."
+            "github repo.",
+            stacklevel=2,
         )
         config_obj_or_path = None
 
@@ -42,14 +43,15 @@ def set_config(
         # In this case we need to make sure that the results dir is set to the default one.
         # We will do that silently to avoid having a warning every time, as users will have a local version in their
         # config for debugging purposes.
-            warnings.warn(
-                "Custom result dir specified. "
-                "This is not allowed for non-debug runs. "
-                f"Overwriting with default result dir ({DEFAULT_RESULTS_DIR})."
-            )
-            config_obj = replace(config_obj, results_dir=DEFAULT_RESULTS_DIR)
-            challenge_config.reset_config()
-            config_obj = challenge_config.set_config(config_obj, debug)
+        warnings.warn(
+            "Custom result dir specified. "
+            "This is not allowed for non-debug runs. "
+            f"Overwriting with default result dir ({DEFAULT_RESULTS_DIR}).",
+            stacklevel=2,
+        )
+        config_obj = replace(config_obj, results_dir=DEFAULT_RESULTS_DIR)
+        challenge_config.reset_config()
+        config_obj = challenge_config.set_config(config_obj, debug)
     return config_obj
 
 
@@ -59,7 +61,7 @@ def create_config_template(path: Union[str, Path]):
 
 # We just reexport that to change the type hint
 def config() -> BenchLocalConfig:
-    return challenge_config.config()  # type: ignore
+    return cast(BenchLocalConfig, challenge_config.config())
 
 
 # We reexport some of the functions from gaitmap_challenges.config for convenience

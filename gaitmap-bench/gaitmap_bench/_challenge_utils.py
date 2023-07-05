@@ -71,7 +71,8 @@ def save_run(
             warnings.warn(
                 "Your custom metadata is not valid. "
                 "This is fine for debug-runs, but you should fix this before performing an official run. "
-                f"\n\nError: {e}"
+                f"\n\nError: {e}",
+                stacklevel=2,
             )
         else:
             warnings.warn(
@@ -81,7 +82,8 @@ def save_run(
                 "stored as a debug run. "
                 "Check the results and rerun with the correct parameters to ensure that your results are "
                 "considered as an official run."
-                f"\n\nError: {e}"
+                f"\n\nError: {e}",
+                stacklevel=2,
             )
             debug = True
     if debug is False:
@@ -94,11 +96,10 @@ def save_run(
                     "We will still store your results to ensure that you don't loose anything, but they will be "
                     "stored as a debug run. "
                     "Check the results and rerun with the correct parameters to ensure that your results are "
-                    "considered as an official run."
+                    "considered as an official run.",
+                    stacklevel=2,
                 )
                 debug = True
-
-            debug = True
 
     return challenge_save_run(
         challenge=challenge,

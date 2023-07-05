@@ -146,7 +146,7 @@ def _prepare_boxplot_data(
     return df.reset_index(drop=True)
 
 
-def box_plot_matplotlib(
+def box_plot_matplotlib(  # noqa: PLR0913
     cv_results: Dict[str, pd.DataFrame],
     metric: str,
     use_aggregation: Literal["fold", "single"] = "single",
@@ -218,7 +218,7 @@ def box_plot_matplotlib(
     return ax
 
 
-def box_plot_bokeh(
+def box_plot_bokeh(  # noqa: PLR0913, PLR0915
     cv_results: Dict[str, pd.DataFrame],
     metric: str,
     use_aggregation: Literal["fold", "single"] = "single",
@@ -232,7 +232,7 @@ def box_plot_bokeh(
     )
 
     # We use categorical dtypes to make sorting easier
-    if force_order is not None:
+    if force_order is not None:  # noqa: SIM108
         # We use the order category dtype trick to sort the factors
         name_dtype = pd.CategoricalDtype(categories=force_order, ordered=True)
     else:

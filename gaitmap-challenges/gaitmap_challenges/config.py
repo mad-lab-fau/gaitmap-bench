@@ -40,7 +40,7 @@ class LocalConfig:
             }
             return cls(**config_dict)
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: D105
         path_fields = ("tmp_dir", "cache_dir", "results_dir")
         for field in path_fields:
             if (val := getattr(self, field, None)) is not None:
@@ -104,13 +104,13 @@ def set_config(
     elif isinstance(config_obj_or_path, _config_type):
         config_obj = config_obj_or_path
     else:
-        raise ValueError("Invalid config object or path.")
-    global _GLOBAL_CONFIG
+        raise ValueError("Invalid config object or path.")  # noqa: TRY004
+    global _GLOBAL_CONFIG  # noqa: PLW0603
     if _GLOBAL_CONFIG is not None:
         raise ValueError("Config already set.")
     _GLOBAL_CONFIG = config_obj
     config_obj._register_dataset_config()
-    global _DEBUG
+    global _DEBUG  # noqa: PLW0603
     if _DEBUG is not None:
         raise ValueError("Debug already set.")
     _DEBUG = _resolve_debug(debug)
@@ -129,7 +129,8 @@ def _resolve_debug(debug: Optional[bool]):
                 f"{_DEBUG_ENV_VAR} is also set. "
                 f"The configuration from the environmental variable ({debug_from_env=}) will be used! "
                 "We recommend removing `debug` from the `set_config` call when you are using the environmental "
-                "variable."
+                "variable.",
+                stacklevel=2,
             )
         debug = debug_from_env
     if debug is None:
@@ -180,11 +181,11 @@ def reset_config():
 
     Afterwards you can use `set_config` to set a new config (e.g. to change the config file during runtime).
     """
-    global _GLOBAL_CONFIG  # pylint: disable=global-statement
+    global _GLOBAL_CONFIG  # noqa: PLW0603
     _GLOBAL_CONFIG = None
     reset_datasets_config()
 
-    global _DEBUG
+    global _DEBUG  # noqa: PLW0603
     _DEBUG = None
 
 
@@ -219,9 +220,9 @@ def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_Res
         reset_config()
         # We set the config manually here to skip the check in set_config.
         # We don't need this, as this method is only called if the config is set in the main process.
-        global _DEBUG
+        global _DEBUG  # noqa: PLW0603
         _DEBUG = config_obj["debug"]
-        global _GLOBAL_CONFIG
+        global _GLOBAL_CONFIG  # noqa: PLW0603
         _GLOBAL_CONFIG = config_obj["config_obj_or_path"]
         with suppress(AttributeError):
             set_datasets_config(config_obj["config_obj_or_path"].datasets)

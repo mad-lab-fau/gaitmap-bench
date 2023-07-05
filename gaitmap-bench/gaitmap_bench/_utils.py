@@ -15,7 +15,7 @@ class Entry(NamedTuple):
     command_template: str
     command: str
     run_name: str
-    hash: str
+    hash: str  # noqa: A003
 
 
 def find_all_entries(base_folder: Path) -> List[Entry]:
