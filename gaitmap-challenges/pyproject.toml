@@ -16,56 +16,15 @@ toml = "^0.10.2"
 bokeh = {version = "^3.0.3", optional = true}
 jupyter-bokeh = {version = "^3.0.5", optional = true}
 gitpython = "^3.1.31"
-gaitmap = {version = "^2.2.0", extras = ["stats"]}
-gaitmap-datasets = {git = "https://github.com/mad-lab-fau/gaitmap-datasets.git", rev = "5f114b48430a12282c5c72736395bda0403176e9"}
+gaitmap = {version = ">=2.2.0", extras = ["stats"]}
+gaitmap-datasets = {git = "https://github.com/mad-lab-fau/gaitmap-datasets.git", rev = "ef8c906f4ff5f7398878ff7ff8b7c3b779370b63"}
 
 [tool.poetry.extras]
 visualization = ["bokeh"]
 
-[tool.poetry.group.dev.dependencies]
-black = "^22.12.0"
-poethepoet = "^0.16.5"
-pytest = "^7.2.0"
-pytest-cov = "^4.0.0"
-ipykernel = "^6.19.2"
-numpydoc = "^1.5.0"
-Sphinx = "^5.3.0"
-sphinx-gallery = "^0.11.1"
-recommonmark = "^0.7.1"
-memory-profiler = "^0.61.0"
-matplotlib = "^3.6.2"
-ruff = "^0.0.260"
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.black]
-line-length = 120
-exclude = '''
-(
-  /(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | docs
-    | build
-    | dist
-    | \.virtual_documents
-  )/
-)
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 120
-skip_gitignore = true
-
 
 [tool.poe.tasks]
 _format_black = "black ."
