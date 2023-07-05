@@ -24,7 +24,7 @@ from tpcp.optimize import DummyOptimize
 from gaitmap_algos.full_pipeline.mad_modern import shared_metadata
 
 
-class MadOptimized(Pipeline[ChallengeDataset]):
+class MadModernOptimizedZupts(Pipeline[ChallengeDataset]):
     # Result objects
     gait_parameters_with_turns_: pd.DataFrame
     gait_parameters_: pd.DataFrame
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
 
     challenge.run(
-        DummyOptimize(MadOptimized()),
+        DummyOptimize(MadModernOptimizedZupts()),
     )
     save_run(
         challenge=challenge,

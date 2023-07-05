@@ -14,7 +14,7 @@ from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
 
 
-class MadDefault(Pipeline[ChallengeDataset]):
+class MadClassic(Pipeline[ChallengeDataset]):
     # Result objects
     gait_parameters_with_turns_: pd.DataFrame
     gait_parameters_: pd.DataFrame
@@ -77,7 +77,7 @@ class MadDefault(Pipeline[ChallengeDataset]):
 if __name__ == "__main__":
     metadata = {
         "short_description": "Default MaD pipeline",
-        "long_description": "The default pipeline used in many gait-analysis studies by the MaD lab. "
+        "long_description": "The classic pipeline used in many gait-analysis studies by the MaD lab. "
         "This version uses mostly the default parameters of the gaitmap-implementations without "
         "specific tuning.",
         "references": [
@@ -98,10 +98,10 @@ if __name__ == "__main__":
     challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
 
     challenge.run(
-        DummyOptimize(MadDefault()),
+        DummyOptimize(MadClassic()),
     )
     save_run(
         challenge=challenge,
-        entry_name=("gaitmap", "mad_default", "default"),
+        entry_name=("gaitmap", "mad_classic", "default"),
         custom_metadata=metadata,
     )
