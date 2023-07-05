@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Iterable, Callable, List, TypeVar
+from typing import Callable, Iterable, List, TypeVar
 
 metadata = {
     "short_description": "Hierarchical Hidden Markov Model for gait segmentation",

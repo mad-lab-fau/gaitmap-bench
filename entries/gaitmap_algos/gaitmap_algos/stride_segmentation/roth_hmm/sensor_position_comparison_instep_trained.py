@@ -2,6 +2,12 @@ from typing import Dict, cast
 
 import pandas as pd
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
+from gaitmap_bench import save_run, set_config
+from gaitmap_challenges.stride_segmentation.sensor_position_comparison_instep import (
+    Challenge,
+    ChallengeDataset,
+    SensorNames,
+)
 from gaitmap_datasets.sensor_position_comparison_2019 import (
     SensorPositionComparison2019Segmentation,
 )
@@ -10,17 +16,11 @@ from gaitmap_mad.stride_segmentation.hmm import (
     RothSegmentationHmm,
 )
 from joblib import Memory
-from tpcp import OptiPara, OptimizablePipeline, cf
+from tpcp import OptimizablePipeline, OptiPara, cf
 from tpcp.optimize import Optimize
 from typing_extensions import Self
 
-from gaitmap_algos.stride_segmentation.roth_hmm import metadata, apply_and_flatten
-from gaitmap_bench import set_config, save_run
-from gaitmap_challenges.stride_segmentation.sensor_position_comparison_instep import (
-    Challenge,
-    ChallengeDataset,
-    SensorNames,
-)
+from gaitmap_algos.stride_segmentation.roth_hmm import apply_and_flatten, metadata
 
 
 class Entry(OptimizablePipeline[ChallengeDataset]):
@@ -29,12 +29,10 @@ class Entry(OptimizablePipeline[ChallengeDataset]):
     # Result objects
     stride_list_: Dict[SensorNames, pd.DataFrame]
 
-    def __init__(
-        self, segmentation_model: RothSegmentationHmm = cf(RothSegmentationHmm())
-    ):
+    def __init__(self, segmentation_model: RothSegmentationHmm = cf(RothSegmentationHmm())):
         self.segmentation_model = segmentation_model
 
-    def self_optimize(self, dataset: ChallengeDataset, **kwargs) -> Self:
+    def self_optimize(self, dataset: ChallengeDataset, **_) -> Self:
         all_bf_data = apply_and_flatten(
             dataset,
             lambda datapoint: convert_to_fbf(
@@ -58,9 +56,7 @@ class Entry(OptimizablePipeline[ChallengeDataset]):
         return self
 
     def run(self, datapoint: SensorPositionComparison2019Segmentation) -> Self:
-        bf_data = convert_to_fbf(
-            challenge.get_imu_data(datapoint), left_like="l", right_like="r"
-        )
+        bf_data = convert_to_fbf(challenge.get_imu_data(datapoint), left_like="l", right_like="r")
         self.stride_list_ = cast(
             Dict[SensorNames, pd.DataFrame],
             HmmStrideSegmentation(self.segmentation_model)

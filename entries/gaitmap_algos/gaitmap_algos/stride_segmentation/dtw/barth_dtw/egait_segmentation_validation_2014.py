@@ -1,4 +1,9 @@
 from gaitmap.stride_segmentation import BarthDtw
+from gaitmap_bench import save_run, set_config
+from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import (
+    Challenge,
+    ChallengeDataset,
+)
 from joblib import Memory
 from optuna import Trial, create_study
 from tpcp.optimize.optuna import OptunaSearch
@@ -7,11 +12,6 @@ from gaitmap_algos.stride_segmentation.dtw._egait_segmentation_validation_2014 i
     Egait2014DtwBase,
 )
 from gaitmap_algos.stride_segmentation.dtw.barth_dtw import metadata
-from gaitmap_bench import set_config, save_run
-from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import (
-    Challenge,
-    ChallengeDataset,
-)
 
 
 def optuna_search_space(trial: Trial) -> None:

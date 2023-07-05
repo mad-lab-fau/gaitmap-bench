@@ -2,32 +2,42 @@ import warnings
 from pathlib import Path
 from typing import Dict, Literal
 
+import numpy as np
 import pandas as pd
 from gaitmap.base import BaseTrajectoryMethod
 from gaitmap.event_detection import RamppEventDetection
 from gaitmap.parameters import SpatialParameterCalculation
 from gaitmap.trajectory_reconstruction import (
+    MadgwickRtsKalman,
     RegionLevelTrajectory,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap_challenges import Config
-from gaitmap_challenges.spatial_parameters.egait_parameter_validation_2013 import (
+from gaitmap.utils.datatype_helper import get_multi_sensor_names
+from gaitmap_challenges import save_run
+from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import (
     Challenge,
     ChallengeDataset,
 )
 from joblib import Memory
+from sklearn.model_selection import ParameterGrid
 from tpcp import Pipeline
+from tpcp.optimize import GridSearch
 from typing_extensions import Self
 
-Config()
+# from gaitmap_challenges import Config
+#
+# Config()
 
 SensorNames = Literal["left_sensor", "right_sensor"]
 
 
 dataset = ChallengeDataset(
-    data_folder=Path("/home/arne/Documents/repos/work/datasets/eGaIT_database"),
+    data_folder=Path(
+        "/home/arne/Documents/repos/work/datasets/ValidationDatasets-GaitAnalysis/MoCapReference_Adidas/public_version/"
+    ),
     memory=Memory("../.cache"),
-)
+).get_subset(sensor="shimmer3")
+print(len(dataset))
 
 challenge = Challenge(dataset=dataset, cv_params={"n_jobs": 3})
 
@@ -42,12 +52,15 @@ class Entry(Pipeline[ChallengeDataset]):
     def __init__(
         self,
         traj_method: BaseTrajectoryMethod,
+        search_region_padding_s: float = 3.0,
     ):
         self.traj_method = traj_method
+        self.search_region_padding_s = search_region_padding_s
 
     def run(self, datapoint: ChallengeDataset) -> Self:
         data = challenge.get_imu_data(datapoint)
-        data_bf = convert_to_fbf(data, left_like="left_", right_like="right_")
+        foot_sensors = {n.split("_")[0] + "_like": n for n in get_multi_sensor_names(data)}
+        data_bf = convert_to_fbf(data, **foot_sensors)
         stride_list = challenge.get_reference_segmented_stride_list(datapoint)
         sampling_rate_hz = datapoint.sampling_rate_hz
         # 1. We only have segmented strides -> we need to find the min_vel for each stride. For this we use Rampp
@@ -64,16 +77,49 @@ class Entry(Pipeline[ChallengeDataset]):
         # For the Kalman Filter we need to integrate over multiple strides to actually get the benefits of the Kalman
         # smoothing.
         # Hence, we create a fake roi list to pass as region to the trajectory reconstruction.
+        #
+        # However, in this dataset the recording often does not start with a resting period.
+        # To make sure that the initial orientation guess is correct, we find a resting period before and after the
+        # segmented strides and use them as starting and ending point for the trajectory reconstruction.
+        int(np.round(self.search_region_padding_s * sampling_rate_hz))
 
         fake_roi_list = {}
         for i, sensor in enumerate(data):
+            min_vel_list = min_vel_stride_list[sensor]
+            # start = int(max(0, min_vel_list.iloc[0].start - padding_s))
+            # end = int(min(min_vel_list.iloc[-1].end + padding_s, len(data[sensor])))
+            # fake_stride_list = pd.DataFrame.from_records(
+            #     [
+            #         {"start": start, "end": int(min_vel_list.iloc[0].start), "s_id": 0},
+            #         {"start": int(min_vel_list.iloc[-1].end), "end": end, "s_id": 1},
+            #     ]
+            # )
+            #
+            # # We use Rampp EventDetection to find the static moments within these fake strides.
+            # # This is 100% hacky, but it works.
+            # fake_region_min_vels = (
+            #     RamppEventDetection(detect_only=("min_vel",), enforce_consistency=False)
+            #     .detect(
+            #         data_bf[sensor], fake_stride_list, sampling_rate_hz=sampling_rate_hz
+            #     )
+            #     .segmented_event_list_
+            # )
+            #
+            # fake_roi_list[sensor] = pd.DataFrame(
+            #     {
+            #         "start": [fake_region_min_vels.iloc[0].min_vel],
+            #         "end": [fake_region_min_vels.iloc[1].min_vel],
+            #         "roi_id": i,
+            #     }
+            # )
             fake_roi_list[sensor] = pd.DataFrame(
                 {
-                    "start": [0],
-                    "end": [len(data[sensor])],
+                    "start": [min_vel_list.iloc[0].start],
+                    "end": [min_vel_list.iloc[-1].end],
                     "roi_id": i,
                 }
             )
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             traj = RegionLevelTrajectory(
@@ -111,7 +157,7 @@ class Entry(Pipeline[ChallengeDataset]):
 if __name__ == "__main__":
     # challenge.run(
     #     DummyOptimize(
-    #         pipeline=Entry(RtsKalman()),
+    #         pipeline=Entry(RtsKalman(), search_region_padding_s=2.0),
     #     )
     # )
     # save_run(
@@ -126,6 +172,29 @@ if __name__ == "__main__":
     #     },
     #     path=Path("../"),
     # )
+
+    paras = ParameterGrid({"traj_method__zupt_detector__inactive_signal_threshold": np.linspace(30, 80, 5)})
+
+    challenge.run(
+        GridSearch(
+            pipeline=Entry(MadgwickRtsKalman(madgwick_beta=0.1)),
+            parameter_grid=paras,
+            scoring=lambda x, y: -challenge.final_scorer(x, y)["abs_error_mean"],
+            return_optimized=True,
+        )
+    )
+    save_run(
+        challenge=challenge,
+        entry_name=("gaitmap", "rts_kalman", "optimized"),
+        custom_metadata={
+            "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
+            "references": [],
+            "code_authors": [],
+            "algorithm_authors": [],
+            "implementation_link": "",
+        },
+        path=Path("../"),
+    )
 
     # Set pandas print width to unlimited
     pd.set_option("display.max_colwidth", None)

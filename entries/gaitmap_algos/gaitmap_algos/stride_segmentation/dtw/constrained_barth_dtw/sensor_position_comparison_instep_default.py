@@ -1,6 +1,9 @@
-from pathlib import Path
-
 from gaitmap.stride_segmentation import ConstrainedBarthDtw
+from gaitmap_bench import save_run, set_config
+from gaitmap_challenges.stride_segmentation.sensor_position_comparison_instep import (
+    Challenge,
+    ChallengeDataset,
+)
 from joblib import Memory
 from tpcp.optimize import DummyOptimize
 
@@ -8,11 +11,6 @@ from gaitmap_algos.stride_segmentation.dtw._sensor_position_comparison_instep im
     SensorPosDtwBase,
 )
 from gaitmap_algos.stride_segmentation.dtw.constrained_barth_dtw import metadata
-from gaitmap_bench import set_config, save_run
-from gaitmap_challenges.stride_segmentation.sensor_position_comparison_instep import (
-    Challenge,
-    ChallengeDataset,
-)
 
 if __name__ == "__main__":
     config = set_config()

@@ -1,22 +1,22 @@
 from pathlib import Path
 from typing import Literal
 
-import numpy as np
 from gaitmap.trajectory_reconstruction import (
-    MadgwickAHRS,
     ForwardBackwardIntegration,
-)
-from gaitmap_algos.spatial_parameters._egait_parameter_validation_2013_base import (
-    StrideLevelIntegrationEntry,
+    MadgwickAHRS,
 )
 from gaitmap_challenges import save_run
 from gaitmap_challenges.spatial_parameters.egait_parameter_validation_2013 import (
-    ChallengeDataset,
     Challenge,
+    ChallengeDataset,
 )
 from joblib import Memory
-from sklearn.model_selection import ParameterGrid
-from tpcp.optimize import GridSearch, DummyOptimize
+from optuna import Trial, create_study
+from tpcp.optimize.optuna import OptunaSearch
+
+from gaitmap_algos.spatial_parameters._egait_parameter_validation_2013_base import (
+    StrideLevelIntegrationEntry,
+)
 
 SensorNames = Literal["left_sensor", "right_sensor"]
 
@@ -35,38 +35,45 @@ class Entry(StrideLevelIntegrationEntry):
 
 
 if __name__ == "__main__":
-    challenge.run(
-        DummyOptimize(
+    # challenge.run(
+    #     DummyOptimize(
+    #         pipeline=Entry(
+    #             pos_method=ForwardBackwardIntegration(level_assumption=False),
+    #             ori_method=MadgwickAHRS(),
+    #         ),
+    #     )
+    # )
+
+    # save_run(
+    #     challenge=challenge,
+    #     entry_name=("gaitmap", "simple_integration_madgwick", "default"),
+    #     custom_metadata={
+    #         "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
+    #         "references": [],
+    #         "code_authors": [],
+    #         "algorithm_authors": [],
+    #         "implementation_link": "",
+    #     },
+    #     path=Path("../"),
+    # )
+    def create_search_space(trial: Trial):
+        trial.suggest_float("ori_method__beta", 0.0, 0.3)
+
+    def get_study():
+        return create_study(direction="minimize")
+
+    c = challenge.run(
+        OptunaSearch(
             pipeline=Entry(
                 pos_method=ForwardBackwardIntegration(level_assumption=False),
                 ori_method=MadgwickAHRS(),
             ),
-        )
-    )
-
-    save_run(
-        challenge=challenge,
-        entry_name=("gaitmap", "simple_integration_madgwick", "default"),
-        custom_metadata={
-            "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
-            "citations": [],
-            "code_authors": [],
-            "algorithm_authors": [],
-            "implementation_link": "",
-        },
-        path=Path("../"),
-    )
-    paras = ParameterGrid({"ori_method__beta": np.linspace(0, 0.1, 10)})
-
-    challenge.run(
-        GridSearch(
-            pipeline=Entry(
-                pos_method=ForwardBackwardIntegration(level_assumption=False),
-                ori_method=MadgwickAHRS(),
-            ),
-            parameter_grid=paras,
-            scoring=lambda x, y: -challenge.final_scorer(x, y)["abs_error_mean"],
-            return_optimized=True,
+            create_study=get_study,
+            create_search_space=create_search_space,
+            scoring=challenge.final_scorer,
+            score_name="per_stride__abs_error_mean",
+            show_progress_bar=True,
+            n_trials=20,
         )
     )
     save_run(
@@ -74,7 +81,7 @@ if __name__ == "__main__":
         entry_name=("gaitmap", "simple_integration_madgwick", "optimized"),
         custom_metadata={
             "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
-            "citations": [],
+            "references": [],
             "code_authors": [],
             "algorithm_authors": [],
             "implementation_link": "",

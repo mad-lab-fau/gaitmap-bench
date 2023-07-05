@@ -1,8 +1,10 @@
 import pandas as pd
 from gaitmap.event_detection import RamppEventDetection
-from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCalculation
+from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
 from gaitmap.trajectory_reconstruction import StrideLevelTrajectory
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
+from gaitmap_bench import save_run, set_config
+from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
 from gaitmap_mad.stride_segmentation import (
     BarthOriginalTemplate,
     ConstrainedBarthDtw,
@@ -10,9 +12,6 @@ from gaitmap_mad.stride_segmentation import (
 from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
-
-from gaitmap_bench import set_config, save_run
-from gaitmap_challenges.full_pipeline.kluge_2017 import ChallengeDataset, Challenge
 
 
 class MadDefault(Pipeline[ChallengeDataset]):
@@ -31,9 +30,7 @@ class MadDefault(Pipeline[ChallengeDataset]):
         bf_data = convert_to_fbf(data_sf, left_like="left_", right_like="right_")
 
         # stride segmentation
-        dtw = ConstrainedBarthDtw(
-            template=BarthOriginalTemplate(use_cols=["gyr_ml"]), max_cost=2.4
-        )
+        dtw = ConstrainedBarthDtw(template=BarthOriginalTemplate(use_cols=["gyr_ml"]), max_cost=2.4)
         dtw = dtw.segment(data=bf_data, sampling_rate_hz=sampling_rate_hz)
 
         # event detection
@@ -70,12 +67,8 @@ class MadDefault(Pipeline[ChallengeDataset]):
         all_temporal = pd.concat(temporal_paras.parameters_)
         all_spatial = pd.concat(spatial_paras.parameters_)
 
-        self.gait_parameters_with_turns_ = pd.concat(
-            [all_temporal, all_spatial], axis=1
-        )
-        self.gait_parameters_ = self.gait_parameters_with_turns_.query(
-            "turning_angle.abs() < 20"
-        )
+        self.gait_parameters_with_turns_ = pd.concat([all_temporal, all_spatial], axis=1)
+        self.gait_parameters_ = self.gait_parameters_with_turns_.query("turning_angle.abs() < 20")
         self.aggregated_gait_parameters_ = self.gait_parameters_.mean()
 
         return self
@@ -84,11 +77,16 @@ class MadDefault(Pipeline[ChallengeDataset]):
 if __name__ == "__main__":
     metadata = {
         "short_description": "Default MaD pipeline",
-        "long_description": "",
-        "references": [],
-        "code_authors": [],
-        "algorithm_authors": [],
-        "implementation_link": "",
+        "long_description": "The default pipeline used in many gait-analysis studies by the MaD lab. "
+        "This version uses mostly the default parameters of the gaitmap-implementations without "
+        "specific tuning.",
+        "references": [
+            "https://ieeexplore.ieee.org/document/6949634",
+            "http://www.mdpi.com/1424-8220/15/3/6419",
+        ],
+        "code_authors": ["MaD-DiGait"],
+        "algorithm_authors": ["See source and references for individual algorithm authors"],
+        "implementation_link": "https://github.com/mad-lab-fau/gaitmap",
     }
 
     config = set_config()

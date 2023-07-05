@@ -1,12 +1,18 @@
 import pandas as pd
 from gaitmap.event_detection import HerzerEventDetection
-from gaitmap.parameters import TemporalParameterCalculation, SpatialParameterCalculation
+from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
 from gaitmap.trajectory_reconstruction import (
-    RegionLevelTrajectory,
     MadgwickRtsKalman,
+    RegionLevelTrajectory,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap.zupt_detection import ComboZuptDetector, NormZuptDetector, StrideEventZuptDetector
+from gaitmap.zupt_detection import (
+    ComboZuptDetector,
+    NormZuptDetector,
+    StrideEventZuptDetector,
+)
+from gaitmap_bench import save_run, set_config
+from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
 from gaitmap_mad.stride_segmentation.hmm import (
     HmmStrideSegmentation,
     PreTrainedRothSegmentationModel,
@@ -15,8 +21,7 @@ from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
 
-from gaitmap_bench import set_config, save_run
-from gaitmap_challenges.full_pipeline.kluge_2017 import ChallengeDataset, Challenge
+from gaitmap_algos.full_pipeline.mad_modern import shared_metadata
 
 
 class MadOptimized(Pipeline[ChallengeDataset]):
@@ -94,12 +99,8 @@ class MadOptimized(Pipeline[ChallengeDataset]):
         all_temporal = pd.concat(temporal_paras.parameters_)
         all_spatial = pd.concat(spatial_paras.parameters_)
 
-        self.gait_parameters_with_turns_ = pd.concat(
-            [all_temporal, all_spatial], axis=1
-        )
-        self.gait_parameters_ = self.gait_parameters_with_turns_.query(
-            "turning_angle.abs() < 20"
-        )
+        self.gait_parameters_with_turns_ = pd.concat([all_temporal, all_spatial], axis=1)
+        self.gait_parameters_ = self.gait_parameters_with_turns_.query("turning_angle.abs() < 20")
         self.aggregated_gait_parameters_ = self.gait_parameters_.mean()
 
         return self
@@ -107,12 +108,12 @@ class MadOptimized(Pipeline[ChallengeDataset]):
 
 if __name__ == "__main__":
     metadata = {
-        "short_description": "Optimized MaD pipeline",
-        "long_description": "",
-        "references": [],
-        "code_authors": [],
-        "algorithm_authors": [],
-        "implementation_link": "",
+        "short_description": "Modern MaD pipeline with optimized ZUPT detection",
+        "long_description": "A version of the modern MaD pipeline with more advanced ZUPT detection. Specfically, this"
+        "method forces the existence of one ZUPT event per stride. "
+        "This can help with fast walks, where a simple threshold based ZUPT detector tuned for "
+        "normal speeds might not be able to detect ZUPT events.",
+        **shared_metadata,
     }
 
     config = set_config()

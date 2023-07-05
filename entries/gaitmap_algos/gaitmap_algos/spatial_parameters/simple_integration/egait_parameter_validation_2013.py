@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 from gaitmap.trajectory_reconstruction import (
-    SimpleGyroIntegration,
     ForwardBackwardIntegration,
+    SimpleGyroIntegration,
 )
 from gaitmap_challenges import save_run
 from gaitmap_challenges.spatial_parameters.egait_parameter_validation_2013 import (
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         entry_name=("gaitmap", "simple_integration", "default"),
         custom_metadata={
             "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
-            "citations": [],
+            "references": [],
             "code_authors": [],
             "algorithm_authors": [],
             "implementation_link": "",
