@@ -6,5 +6,5 @@ shared_metadata = {
     ],
     "code_authors": ["MaD-DiGait"],
     "algorithm_authors": ["See source and references for individual algorithm authors"],
-    "implementation_link": "https://github.com/mad-lab-fau/gaitmap",
+    "implementation_url": "https://github.com/mad-lab-fau/gaitmap",
 }

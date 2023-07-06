@@ -20,7 +20,7 @@ class CustomMetadata(TypedDict):
     long_description: str
     code_authors: Sequence[str]
     algorithm_authors: Sequence[str]
-    citations: Sequence[str]
+    references: Sequence[str]
     implementation_url: str
 
 
@@ -35,7 +35,7 @@ def _validate_custom_metadata(value: Dict[str, Any]):
     seq_fields = (
         "code_authors",
         "algorithm_authors",
-        "citations",
+        "references",
     )
 
     for field in str_fields:
