@@ -9,6 +9,12 @@ authors = ["Arne Küderle"]
 python = ">=3.8,<3.11"
 gaitmap-bench = {path = "gaitmap-bench", develop = true}
 gaitmap-challenges = {path = "gaitmap-challenges", develop = true}
+
+
+[tool.poetry.group.gaitmap_algos]
+optional = true
+
+[tool.poetry.group.gaitmap_algos.dependencies]
 # We add this for development, as this allows us to simply work on the gaitmap algo entries
 gaitmap-algos = {path = "entries/gaitmap_algos", develop = true}
 
