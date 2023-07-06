@@ -15,7 +15,7 @@ DELETE_REMOTE_RESULTS=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -u|--username) USERNAME="$2"; shift ;;
-        -d|--delte-results) DELETE_REMOTE_RESULTS=true ;;
+        -d|--delete-results) DELETE_REMOTE_RESULTS=true ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
