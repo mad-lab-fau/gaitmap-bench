@@ -10,7 +10,6 @@ gaitmap-bench Docu Overview
    Getting Started <README.md>
    Challenges <challenges/index.md>
    guides/index.rst
-   Changelog <CHANGELOG.md>
 
 Indices and Tables
 ==================

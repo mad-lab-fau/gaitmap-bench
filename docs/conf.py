@@ -43,11 +43,11 @@ with (HERE.parent / "README.md").open() as f:
     out = f.read()
 with (HERE / "README.md").open("w+") as f:
     f.write(out)
-
-with (HERE.parent / "CHANGELOG.md").open() as f:
-    out = f.read()
-with (HERE / "CHANGELOG.md").open("w+") as f:
-    f.write(out)
+#
+# with (HERE.parent / "CHANGELOG.md").open() as f:
+#     out = f.read()
+# with (HERE / "CHANGELOG.md").open("w+") as f:
+#     f.write(out)
 
 # -- General configuration ---------------------------------------------------
 
@@ -71,6 +71,9 @@ extensions = [
 myst_enable_extensions = [
     "colon_fence",
 ]
+
+nb_execution_mode = "force"
+
 
 # this is needed for some reason...
 # see https://github.com/numpy/numpydoc/issues/69

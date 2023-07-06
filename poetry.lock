@@ -2070,6 +2070,24 @@ files = [
 ]
 
 [[package]]
+name = "numpydoc"
+version = "1.5.0"
+description = "Sphinx extension to support docstrings in Numpy format"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "numpydoc-1.5.0-py3-none-any.whl", hash = "sha256:c997759fb6fc32662801cece76491eedbc0ec619b514932ffd2b270ae89c07f9"},
+    {file = "numpydoc-1.5.0.tar.gz", hash = "sha256:b0db7b75a32367a0e25c23b397842c65e344a1206524d16c8069f0a1c91b5f4c"},
+]
+
+[package.dependencies]
+Jinja2 = ">=2.10"
+sphinx = ">=4.2"
+
+[package.extras]
+testing = ["matplotlib", "pytest", "pytest-cov"]
+
+[[package]]
 name = "optuna"
 version = "3.2.0"
 description = "A hyperparameter optimization framework"
@@ -3761,4 +3779,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "915617a7de61aa5fdeeb9e4eff1d663a741dd15ce25028d046635f5bfcedda63"
+content-hash = "21cd33d9a84b2b2ac5abfc8c4b74b36d8950fdd3b5c2b0c8d51e8faaa242c3d3"
