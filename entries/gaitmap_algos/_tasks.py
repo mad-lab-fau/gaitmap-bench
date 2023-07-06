@@ -31,4 +31,4 @@ def commit_lock_if_changed():
     if len(repo.index.diff("HEAD")) > 0:
         raise RuntimeError("There are staged changes in the repo. Can not commit changed poetry.lock cleanly.")
     repo.git.add(poetry_lock)
-    repo.index.commit("Update poetry.lock after run update.")
+    repo.index.commit(f"<{HERE.name}> Update poetry.lock after run update.")
