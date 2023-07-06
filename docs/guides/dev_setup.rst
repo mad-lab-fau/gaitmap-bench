@@ -47,6 +47,10 @@ The `--lock` is crucial, as this will tell poetry that to not install the depend
 Now we need to install the package.
 For this, we go back to the top-level project and run `poetry update <sub-package>`.
 
+Similarly, if you want ot update a dependency (or update the lock file, after changing the `pyproject.toml`), you need
+to run `poetry update --lock` in the sub-project (remember, the `--lock` is crucial) and then
+`poetry update <sub-package>` in the top-level project.
+
 Developing Entries in Parallel
 ------------------------------
 
