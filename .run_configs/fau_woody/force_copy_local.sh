@@ -25,10 +25,6 @@ done
 if [ "$DELETE_REMOTE_RESULTS" = false ] ; then
   echo "Copying results from remote to avoid overwriting them"
   /bin/bash "$SCRIPT_DIR/result_sync.sh" "$USERNAME"
-  echo "Copying .git and entries folder from remote to avoid overwriting them"
-  # Note: We need this, as running an entry can create a commit for an updated poetry.lock file
-  #rsync -a --ignore-existing "$USERNAME"@woody.nhr.fau.de:"$REMOTE_PATH/gaitmap-bench/.git" "$PROJECT_ROOT"
-  rsync -a --ignore-existing "$USERNAME"@woody.nhr.fau.de:"$REMOTE_PATH/gaitmap-bench/entries" "$PROJECT_ROOT"
 fi
 
 
