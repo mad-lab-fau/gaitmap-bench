@@ -16,10 +16,11 @@ def commit_lock_if_changed():
 
     poetry_lock = (HERE / "poetry.lock").relative_to(MAIN_GIT_REPO)
     here_relative = HERE.relative_to(MAIN_GIT_REPO)
-    all_changed_files = [item.a_path for item in repo.index.diff(None)]
+    all_changed_files = {item.a_path for item in repo.index.diff(None)}
     if str(poetry_lock) not in all_changed_files:
         print("Poetry.lock has not changed. Nothing to commit.")
         return
+    all_changed_files.remove(str(poetry_lock))
     if any(str(item).startswith(str(here_relative)) for item in all_changed_files):
         print(
             f"Poetry.lock has changed, but other files of the entry ({here_relative}) have changed too. "
