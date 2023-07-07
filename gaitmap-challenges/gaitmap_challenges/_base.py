@@ -41,7 +41,7 @@ def _check_if_dirty(repo, ignore: Sequence[str] = ()):
         if any(Path(i) in Path(f).parents or Path(i) == Path(f) for i in ignore):
             continue
         return True
-    return None
+    return False
 
 
 def save_run(  # noqa: PLR0912, PLR0915, C901

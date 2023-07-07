@@ -109,7 +109,7 @@ def save_run(
         path=path,
         stored_filenames_relative_to=stored_filenames_relative_to,
         use_git=use_git,
-        git_dirty_ignore=("results",),
+        git_dirty_ignore=("results", "docs", ".run_config", ".github"),
         debug_folder_prefix="_",
         _force_local_debug_run_setting=True,
     )
