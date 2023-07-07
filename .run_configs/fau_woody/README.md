@@ -97,6 +97,7 @@ This will make sure that any local code changes you made will directly synced ag
 
 ## Notes
 
-You might need to increase the wall time in `executor.sh` for long-running entries.
+- You might need to increase the wall time in `executor.sh` for long-running entries.
+- You might want to increase the number of tasks (`ntasks`) in `executor.sh` for entries that use multiple processes.
 
    
