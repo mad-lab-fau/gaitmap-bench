@@ -56,6 +56,7 @@ def save_run(  # noqa: PLR0912, PLR0915, C901
     git_dirty_ignore: Sequence[str] = (),
     debug_folder_prefix: str = "_",
     _force_local_debug_run_setting: bool = False,
+    _caller_file_path_stack_offset: int = 0,
 ):
     try:
         global_config = config()
@@ -122,7 +123,7 @@ def save_run(  # noqa: PLR0912, PLR0915, C901
         metadata["config"] = None
 
     # Get caller filename
-    frame = inspect.stack()[1]
+    frame = inspect.stack()[1 + _caller_file_path_stack_offset]
     module = inspect.getmodule(frame[0])
     filename = module.__file__
     if stored_filenames_relative_to is not None:
