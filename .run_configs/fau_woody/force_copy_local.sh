@@ -24,7 +24,7 @@ done
 # Sync the directory to the remote machine using the original script if the SYNC_ONLY flag is not set
 if [ "$DELETE_REMOTE_RESULTS" = false ] ; then
   echo "Copying results from remote to avoid overwriting them"
-  /bin/bash "$SCRIPT_DIR/result_sync.sh" "$USERNAME"
+  /bin/bash "$SCRIPT_DIR/result_sync.sh" "$USERNAME" || exit 1
 fi
 
 
