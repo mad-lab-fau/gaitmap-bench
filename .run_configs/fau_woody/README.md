@@ -99,5 +99,8 @@ This will make sure that any local code changes you made will directly synced ag
 
 - You might need to increase the wall time in `executor.sh` for long-running entries.
 - You might want to increase the number of tasks (`ntasks`) in `executor.sh` for entries that use multiple processes.
-
+  Note, that you need to increase the "n_jobs" in the config file as well.
+- If you have trouble with syncing to the HPC run the `force_copy_local.sh` script with the `-d` flag.
+  This will overwrite any changes you made on the cluster.
+  If you still have issues, delete the folde on the cluster and start from scratch.
    
