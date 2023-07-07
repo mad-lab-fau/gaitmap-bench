@@ -53,6 +53,50 @@ Equivalently, you can use the `run-multi` command.
 Remember to add the `--non-debug` flag, when you want to officially run the entry.
 Otherwise, results will be stored with a debug flag and are not considered as official results for the website.
 
+This will spawn one job per selected entry.
+Note that the creation of the python env will still happen on the frontend node.
+
+After the job is spawned, the script will terminate.
+You can use `squeue` to check on the status of your jobs and monitor the stdout/stderr files in the `hpc_logs` folder.
+
+Once all jobs are finished, you can download the results as explained below.
+
 ## Retrieving Results
+
+Due to the way the system is setup, downloading the results is a little tricky.
+While running a challenge entry, there is a chance that a new git commit is created in the repo.
+The reason for that is we run poetry update before running the entry.
+If the poetry.lock file changes, a new commit is created to ensure that we have a fixed repo state for each run.
+
+This means when downloading the results, we also need to "download" the changed git repo.
+To avoid issues with that, we treat the repo on the cluster as a remote and pull the changes locally using pull-rebase.
+This will ensure that nothing breaks, even if you have local changes.
+
+However, there are two big caveats:
+
+1. You can not have uncommitted in your local repo.
+   If you do, the pull-rebase will fail.
+2. If you are on a different branch locally when you run the download script compared to when you submitted the jobs,
+   things might break in unexpected ways.
+
+To be safe, limit the amount of changes you make to the local repo while the jobs are running and commit everything 
+(or at least stash it) before downloading the results.
+
+To download the results, run the following command:
+
+```bash
+./result_sync.sh <username>
+```
+
+Alternatively, you can also run the `force_copy_local.sh` script again.
+This will make sure that any local code changes you made will directly synced again with the cluster as well
+
+```bash
+./force_copy_local.sh -u <username>
+`````
+
+## Notes
+
+You might need to increase the wall time in `executor.sh` for long-running entries.
 
    
