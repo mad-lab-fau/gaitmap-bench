@@ -34,7 +34,7 @@ rsync -a --filter=':- dir-merge,-n /.gitignore' --delete "$PROJECT_ROOT" "$USERN
 
 # We need to reconfigure nbstripout on the remote machine, as there is a hardcoded path in the .git/config file
 echo "Reconfiguring nbstripout as a stupid workaround"
-ssh "$USERNAME"@woody.nhr.fau.de 'cd "~/projects/gaitmap-bench" &&\
+ssh "$USERNAME"@woody.nhr.fau.de 'cd "projects/gaitmap-bench" &&\
  source ~/.bashrc &&\
  poetry run nbstripout --install --attributes .gitattributes'
 
