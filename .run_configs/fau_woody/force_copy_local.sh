@@ -31,3 +31,8 @@ fi
 # Use rsync to sync the directory to the remote machine
 echo "Copying everything from $PROJECT_ROOT to $REMOTE_PATH on woody"
 rsync -a --filter=':- dir-merge,-n /.gitignore' --delete "$PROJECT_ROOT" "$USERNAME"@woody.nhr.fau.de:"$REMOTE_PATH"
+
+# We need to reconfigure nbstripout on the remote machine, as there is a hardcoded path in the .git/config file
+echo "Reconfiguring nbstripout as a stupid workaround"
+ssh "$USERNAME"@woody.nhr.fau.de 'cd "~/projects/gaitmap-bench" && poetry run nbstripout --install --attributes .gitattributes'
+
