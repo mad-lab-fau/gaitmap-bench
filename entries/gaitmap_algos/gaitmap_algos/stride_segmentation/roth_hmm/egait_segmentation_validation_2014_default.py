@@ -17,7 +17,7 @@ from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
 from typing_extensions import Self
 
-from gaitmap_algos.stride_segmentation.roth_hmm import metadata
+from gaitmap_algos.stride_segmentation.roth_hmm import default_metadata
 
 
 class Entry(Pipeline[ChallengeDataset]):
@@ -49,5 +49,5 @@ if __name__ == "__main__":
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "roth_hmm", "default"),
-        custom_metadata=metadata,
+        custom_metadata=default_metadata,
     )

@@ -14,7 +14,7 @@ from tpcp import OptimizablePipeline, OptiPara, cf, make_action_safe, make_optim
 from tpcp.optimize import Optimize
 from typing_extensions import Self
 
-from gaitmap_algos.stride_segmentation.roth_hmm import apply_and_flatten, metadata
+from gaitmap_algos.stride_segmentation.roth_hmm import apply_and_flatten, retrained_metadata
 
 
 class Entry(OptimizablePipeline[ChallengeDataset]):
@@ -75,5 +75,5 @@ if __name__ == "__main__":
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "roth_hmm", "trained_default"),
-        custom_metadata=metadata,
+        custom_metadata=retrained_metadata,
     )

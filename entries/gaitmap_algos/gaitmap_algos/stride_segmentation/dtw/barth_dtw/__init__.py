@@ -1,7 +1,7 @@
 shared_metadata = {
     "references": ["https://www.mdpi.com/1424-8220/15/3/6419"],
     "code_authors": ["MaD-DiGait"],
-    "algorithm_authors": ["Barth et al."],
+    "algorithm_authors": ["Jens Barth et al."],
     "implementation_url": "https://github.com/mad-lab-fau/gaitmap/blob/master/gaitmap_mad/gaitmap_mad/"
     "stride_segmentation/dtw/_barth_dtw.py",
 }
