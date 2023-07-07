@@ -10,7 +10,7 @@ from tpcp.optimize import DummyOptimize
 from gaitmap_algos.stride_segmentation.dtw._egait_segmentation_validation_2014 import (
     Egait2014DtwBase,
 )
-from gaitmap_algos.stride_segmentation.dtw.constrained_barth_dtw import metadata
+from gaitmap_algos.stride_segmentation.dtw.constrained_barth_dtw import metadata_default
 
 if __name__ == "__main__":
     config = set_config()
@@ -29,5 +29,5 @@ if __name__ == "__main__":
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "constrained_barth_dtw", "default"),
-        custom_metadata=metadata,
+        custom_metadata=metadata_default,
     )

@@ -11,7 +11,7 @@ from tpcp.optimize.optuna import OptunaSearch
 from gaitmap_algos.stride_segmentation.dtw._sensor_position_comparison_instep import (
     SensorPosDtwBase,
 )
-from gaitmap_algos.stride_segmentation.dtw.barth_dtw import metadata
+from gaitmap_algos.stride_segmentation.dtw.barth_dtw import metadata_optimized
 
 
 def optuna_search_space(trial: Trial) -> None:
@@ -49,5 +49,5 @@ if __name__ == "__main__":
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "barth_dtw", "optimized"),
-        custom_metadata=metadata,
+        custom_metadata=metadata_optimized,
     )

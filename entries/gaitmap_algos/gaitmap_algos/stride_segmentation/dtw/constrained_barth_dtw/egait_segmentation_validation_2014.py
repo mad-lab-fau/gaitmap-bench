@@ -11,7 +11,7 @@ from tpcp.optimize.optuna import OptunaSearch
 from gaitmap_algos.stride_segmentation.dtw._egait_segmentation_validation_2014 import (
     Egait2014DtwBase,
 )
-from gaitmap_algos.stride_segmentation.dtw.constrained_barth_dtw import metadata
+from gaitmap_algos.stride_segmentation.dtw.constrained_barth_dtw import metadata_optimized
 
 
 def optuna_search_space(trial: Trial) -> None:
@@ -44,12 +44,12 @@ if __name__ == "__main__":
             score_name="per_sample__f1_score",
             create_search_space=optuna_search_space,
             return_optimized=True,
-            n_trials=10,
+            n_trials=100,
             eval_str_paras=["dtw__template__use_cols"],
         )
     )
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "constrained_barth_dtw", "optimized"),
-        custom_metadata=metadata,
+        custom_metadata=metadata_optimized,
     )
