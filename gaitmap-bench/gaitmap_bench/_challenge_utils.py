@@ -109,7 +109,7 @@ def save_run(
         path=path,
         stored_filenames_relative_to=stored_filenames_relative_to,
         use_git=use_git,
-        git_dirty_ignore=("results", "docs", ".run_config", ".github"),
+        git_dirty_ignore=("results", "docs", ".run_config", ".github", "gaitmap_paper"),
         debug_folder_prefix="_",
         _force_local_debug_run_setting=True,
         _caller_file_path_stack_offset=1,
