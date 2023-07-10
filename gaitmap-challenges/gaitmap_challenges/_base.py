@@ -6,6 +6,7 @@ import warnings
 from collections import namedtuple
 from datetime import datetime
 from importlib.metadata import distributions
+from itertools import chain
 from os.path import relpath
 from pathlib import Path
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
@@ -35,7 +36,8 @@ def _check_if_dirty(repo, ignore: Sequence[str] = ()):
         return False
 
     # changed files including untracked
-    files = repo.untracked_files + repo.index.diff(None)
+    # Note, that we add both files of a diff (in case we have moved a file)
+    files = set(chain(repo.untracked_files, *((i.a_path, i.b_path) for i in repo.index.diff(None))))
     for f in files:
         # For each file we need to check if it is in the `ignore` list or a subdirectory of a path in the `ignore` list.
         if any(Path(i) in Path(f).parents or Path(i) == Path(f) for i in ignore):
