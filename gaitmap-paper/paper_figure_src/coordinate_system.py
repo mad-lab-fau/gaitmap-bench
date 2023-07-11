@@ -23,12 +23,7 @@ dataset_sf = sensor_alignment.align_dataset_to_gravity(example_dataset, sampling
 # Convert dataset to body frame: resulting in body frame representation
 dataset_bf = convert_to_fbf(dataset_sf, right=["right_sensor"], left=["left_sensor"])
 
-# define doc colors
-docs_red = np.array([148, 11, 41]) / 255.0
-docs_green = np.array([0, 155, 121]) / 255.0
-docs_blue = np.array([0, 181, 232]) / 255.0
-
-colors = [docs_red, docs_green, docs_blue]
+colors = ["#FFB81C", "#4C3B70", "#009B77"]
 
 
 # helper to plot different coordinate frames

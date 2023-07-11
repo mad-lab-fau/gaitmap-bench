@@ -5,11 +5,12 @@ from pathlib import Path
 from gaitmap_challenges.results import load_run, get_latest_result, filter_results, get_all_results_path, rename_keys
 from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import Challenge as SegmentationChallenge
 from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge as FullPipelineChallenge
-from gaitmap_challenges.visualization import SingleMetricBoxplot, group_by_data_label
+from gaitmap_challenges.visualization import SingleMetricBoxplot, group_by_data_label, replace_legend_labels
 
-sns.set_palette("colorblind")
+sns.set_palette(["#FFB81C", "#4C3B70", "#009B77", "#00A3E0"])
 sns.set_context("paper", font_scale=0.75)
 
+flierprops = dict(marker="o", markersize=3, markerfacecolor="None", markeredgecolor="black")
 
 HERE = Path(__file__).parent
 RESULTS_FOLDER = Path(HERE.parent.parent, "results")
@@ -43,12 +44,24 @@ per_test = SingleMetricBoxplot(
     overlay_scatter=False,
     force_order=order,
     label_grouper=group_by_data_label(level="test", include_all="Combined"),
+    matplotlib_boxplot_props={"flierprops": flierprops},
 )
-per_fold = SingleMetricBoxplot(cv_results, "f1_score", "fold", overlay_scatter=False, force_order=order)
+
+
+
+per_fold = SingleMetricBoxplot(
+    cv_results,
+    "f1_score",
+    "fold",
+    overlay_scatter=False,
+    force_order=order,
+    matplotlib_boxplot_props={"flierprops": flierprops},
+)
 
 fig, axs = plt.subplots(ncols=2, sharey=True, figsize=(TWO_COLUMN_WIDTH, 3))
 per_test.matplotlib(ax=axs[0])
-per_fold.matplotlib(ax=axs[1])
+with sns.color_palette(["#009B77"] * 6):
+    per_fold.matplotlib(ax=axs[1])
 
 axs[0].set_ylabel("F1-Score")
 axs[1].set_ylabel(None)
@@ -60,7 +73,7 @@ for ax in axs:
     ax.set_xticks(ax.get_xticks(), ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
 sns.move_legend(axs[0], 0, title="Test")
-
+replace_legend_labels(axs[0], {"free_walk": "Free Walk"})
 
 fig.tight_layout()
 
@@ -89,16 +102,24 @@ per_test = SingleMetricBoxplot(
     label_grouper=group_by_data_label(
         level="speed", include_all="Combined", force_order=["slow", "normal", "fast", "Combined"]
     ),
+    matplotlib_boxplot_props={"flierprops": flierprops},
 )
 per_fold = SingleMetricBoxplot(
-    cv_results, "agg__gait_velocity__abs_error_mean", "fold", force_order=order, overlay_scatter=False
+    cv_results,
+    "agg__gait_velocity__abs_error_mean",
+    "fold",
+    force_order=order,
+    overlay_scatter=False,
+    matplotlib_boxplot_props={"flierprops": flierprops},
 )
 
 fig, axs = plt.subplots(ncols=2, sharey=True, figsize=(TWO_COLUMN_WIDTH, 2.2))
 per_test.matplotlib(ax=axs[0])
-per_fold.matplotlib(ax=axs[1])
+with sns.color_palette(["#009B77"] * 2):
+    per_fold.matplotlib(ax=axs[1])
 
 sns.move_legend(axs[0], 0, title="Speed")
+replace_legend_labels(axs[0], {"slow": "Slow", "normal": "Normal", "fast": "Fast"})
 
 axs[0].set_ylabel("Absolute Gait Speed Error [m/s]")
 axs[1].set_ylabel(None)
@@ -109,4 +130,3 @@ axs[1].set_title("Per Fold")
 fig.tight_layout()
 
 fig.savefig(PAPER_FOLDER / "example_2_box.pdf")
-

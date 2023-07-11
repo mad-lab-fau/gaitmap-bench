@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Dict, Literal, Optional, Sequence, Union
+from typing import Callable, Dict, Literal, Optional, Sequence, Union, Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -23,6 +23,7 @@ class SingleMetricBoxplot:
     force_order: Optional[Sequence[str]] = None
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None
     invert_grouping: bool = False
+    matplotlib_boxplot_props: Optional[Dict[str, Any]] = None
 
     def bokeh(self):
         return box_plot_bokeh(
@@ -44,6 +45,7 @@ class SingleMetricBoxplot:
             force_order=self.force_order,
             label_grouper=self.label_grouper,
             invert_grouping=self.invert_grouping,
+            boxplot_props=self.matplotlib_boxplot_props,
             ax=ax,
         )
 
@@ -154,6 +156,7 @@ def box_plot_matplotlib(  # noqa: PLR0913
     label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
     invert_grouping: bool = False,
     force_order: Optional[Sequence[str]] = None,
+    boxplot_props: Optional[Dict[str, Any]] = None,
     *,
     ax=None,
 ):
@@ -192,6 +195,7 @@ def box_plot_matplotlib(  # noqa: PLR0913
         hue_order=hue_order,
         order=order,
         ax=ax,
+        **(boxplot_props or {}),
     )
     if overlay_scatter:
         sns.swarmplot(
