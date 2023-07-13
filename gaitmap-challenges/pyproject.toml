@@ -17,7 +17,7 @@ bokeh = {version = "^3.0.3", optional = true}
 jupyter-bokeh = {version = "^3.0.5", optional = true}
 gitpython = "^3.1.31"
 gaitmap = {version = ">=2.2.0", extras = ["stats"]}
-gaitmap-datasets = {git = "https://github.com/mad-lab-fau/gaitmap-datasets.git", rev = "ef8c906f4ff5f7398878ff7ff8b7c3b779370b63"}
+gaitmap-datasets = ">=0.13.0"
 
 [tool.poetry.extras]
 visualization = ["bokeh"]
