@@ -41,7 +41,7 @@ class Entry(OptimizablePipeline[ChallengeDataset]):
             dataset,
             lambda datapoint: challenge.get_reference_stride_list(datapoint).values(),
         )
-        # WARNING: Unfortunately, this line of code does not previde reproducible results and actually might fail on
+        # WARNING: Unfortunately, this line of code does not provide reproducible results and actually might fail on
         # some machines. I am not really sure why, and this is something unlikely to be fixed without moving to
         # pomegranate v1.0.0 for all the HMM stuff.
         # You can track the progress for this here: https://github.com/mad-lab-fau/gaitmap/issues/7
