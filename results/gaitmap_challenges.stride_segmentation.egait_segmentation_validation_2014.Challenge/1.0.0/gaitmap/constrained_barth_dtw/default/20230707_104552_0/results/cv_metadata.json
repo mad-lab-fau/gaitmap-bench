@@ -1,0 +1,8 @@
+{
+    "dataset_name": "EgaitSegmentationValidation2014",
+    "dataset_columns": [
+        "cohort",
+        "test",
+        "participant"
+    ]
+}

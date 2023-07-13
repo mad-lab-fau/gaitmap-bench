@@ -1,0 +1,9 @@
+{
+    "dataset_name": "Kluge2017",
+    "dataset_columns": [
+        "patient",
+        "participant",
+        "repetition",
+        "speed"
+    ]
+}
