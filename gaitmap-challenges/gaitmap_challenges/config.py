@@ -48,7 +48,8 @@ class LocalConfig:
 
     def _register_dataset_config(self):
         # Register the dataset config
-        set_datasets_config(self.datasets)
+        if self.datasets:
+            set_datasets_config(self.datasets)
 
     def to_json_dict(self, path_relative_to: Optional[Path] = None) -> Dict[str, Any]:
         """Get the config as json-serializable dict.
@@ -86,7 +87,11 @@ def set_config(
     """Load the config file."""
     if _default_config_file is not None and not Path(_default_config_file).exists():
         _default_config_file = None
-    look_up_order = (config_obj_or_path, os.environ.get(_CONFIG_ENV_VAR, None), _default_config_file)
+    look_up_order = (
+        config_obj_or_path,
+        os.environ.get(_CONFIG_ENV_VAR, None),
+        _default_config_file,
+    )
     for config_obj_or_path in look_up_order:
         if config_obj_or_path is not None:
             break
@@ -138,7 +143,9 @@ def _resolve_debug(debug: Optional[bool]):
     return debug
 
 
-def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] = LocalConfig):
+def create_config_template(
+    path: Union[str, Path], _config_type: Type[_ConfigT] = LocalConfig
+):
     """Create a template json file that can be used to configure the datasets paths.
 
     Use that method once to create your local config file.
@@ -167,9 +174,13 @@ def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] 
     with path.open("w", encoding="utf8") as f:
         config_dict = {
             "gaitmap_challenges": {
-                k.name: sanitize_path(k.default) for k in fields(_config_type) if k.name != "datasets"
+                k.name: sanitize_path(k.default)
+                for k in fields(_config_type)
+                if k.name != "datasets"
             },
-            "datasets": {k.name: sanitize_path(k.default) for k in fields(DatasetsConfig)},
+            "datasets": {
+                k.name: sanitize_path(k.default) for k in fields(DatasetsConfig)
+            },
         }
         json.dump(config_dict, f, indent=4, sort_keys=True)
 
@@ -215,7 +226,9 @@ class _RestoreConfig(TypedDict):
     debug: Optional[bool]
 
 
-def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]:
+def _config_restore_callback() -> (
+    Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]
+):
     def setter(config_obj: _RestoreConfig):
         reset_config()
         # We set the config manually here to skip the check in set_config.

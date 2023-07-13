@@ -1,5 +1,8 @@
 from typing import Dict
 
+from gaitmap_bench import set_config
+from gaitmap_bench._config import BenchLocalConfig
+
 
 def glue_bokeh_md(fig_name: str):
     """Create markdown for bokeh figure."""
@@ -30,3 +33,8 @@ def tabs(content: Dict[str, str], class_str: str = "", sync: bool = False):
     ]
 
     return "\n".join([start, *tab_items] + [end])
+
+
+def set_docs_config():
+    """Set config for docs."""
+    return set_config(BenchLocalConfig())
