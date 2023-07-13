@@ -2,13 +2,11 @@
 # The resulting plots are used within the coordinate system guide
 
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 from gaitmap.example_data import get_healthy_example_imu_data, get_healthy_example_stride_borders
 from gaitmap.preprocessing import sensor_alignment
 from gaitmap.utils.consts import *
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-
-import seaborn as sns
 
 sns.set_context("talk", font_scale=1)
 
@@ -50,6 +48,7 @@ def plot_stride(data, column_names, sensor_id, stride_id, export_name):
     axs[1].set_ylim([-50, 50])
     plt.tight_layout()
     fig.savefig(export_name, bbox_inches="tight")
+
 
 # %%
 # Plot "Stride-Template" in Sensor Frame

@@ -6,7 +6,7 @@ __all__ = [
     "ResidualPlot",
     "residual_plot_matplotlib",
     "residual_plot_bokeh",
-    "replace_legend_labels"
+    "replace_legend_labels",
 ]
 
 from gaitmap_challenges.visualization._box_plot import (

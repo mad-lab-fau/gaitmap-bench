@@ -1,16 +1,16 @@
-import seaborn as sns
-import matplotlib.pyplot as plt
 from pathlib import Path
 
-from gaitmap_challenges.results import load_run, get_latest_result, filter_results, get_all_results_path, rename_keys
-from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import Challenge as SegmentationChallenge
+import matplotlib.pyplot as plt
+import seaborn as sns
 from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge as FullPipelineChallenge
+from gaitmap_challenges.results import filter_results, get_all_results_path, get_latest_result, load_run, rename_keys
+from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import Challenge as SegmentationChallenge
 from gaitmap_challenges.visualization import SingleMetricBoxplot, group_by_data_label, replace_legend_labels
 
 sns.set_palette(["#FFB81C", "#4C3B70", "#009B77", "#00A3E0"])
 sns.set_context("paper", font_scale=0.75)
 
-flierprops = dict(marker="o", markersize=3, markerfacecolor="None", markeredgecolor="black")
+flierprops = {"marker": "o", "markersize": 3, "markerfacecolor": "None", "markeredgecolor": "black"}
 
 HERE = Path(__file__).parent
 RESULTS_FOLDER = Path(HERE.parent.parent, "results")
@@ -46,7 +46,6 @@ per_test = SingleMetricBoxplot(
     label_grouper=group_by_data_label(level="test", include_all="Combined"),
     matplotlib_boxplot_props={"flierprops": flierprops},
 )
-
 
 
 per_fold = SingleMetricBoxplot(

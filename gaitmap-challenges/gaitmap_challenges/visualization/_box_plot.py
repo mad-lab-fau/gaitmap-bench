@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import chain
-from typing import Callable, Dict, Literal, Optional, Sequence, Union, Any
+from typing import Any, Callable, Dict, Literal, Optional, Sequence, Union
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
