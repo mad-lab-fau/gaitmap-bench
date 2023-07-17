@@ -19,7 +19,7 @@ TWO_COLUMN_WIDTH = 7.16  # in inches
 
 # %%
 all_runs = get_all_results_path(SegmentationChallenge, RESULTS_FOLDER)
-all_runs = filter_results(all_runs, challenge_version=SegmentationChallenge.VERSION)
+all_runs = filter_results(all_runs, challenge_version=SegmentationChallenge.VERSION, is_debug_run=False)
 latest_runs = get_latest_result(all_runs)
 
 rename_map = {
@@ -85,7 +85,7 @@ rename_map = {("gaitmap", "mad_modern", "default"): "Modern", ("gaitmap", "mad_c
 order = ["Classic", "Modern"]
 
 all_runs = get_all_results_path(FullPipelineChallenge, RESULTS_FOLDER)
-all_runs = filter_results(all_runs, challenge_version=FullPipelineChallenge.VERSION)
+all_runs = filter_results(all_runs, challenge_version=FullPipelineChallenge.VERSION, is_debug_run=False)
 latest_runs = get_latest_result(all_runs)
 
 run_info = {k: load_run(FullPipelineChallenge, v) for k, v in latest_runs.items()}
