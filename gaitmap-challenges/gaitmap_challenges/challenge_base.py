@@ -6,12 +6,26 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Type, TypedDict, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypedDict,
+    Union,
+)
 
 import numpy as np
 import pandas as pd
 from tpcp import BaseTpcpObject, Dataset
 from tpcp.optimize import BaseOptimize
+
+from gaitmap_challenges._utils import _ensure_label_tuple
 
 
 @dataclass(repr=False)
@@ -118,7 +132,9 @@ def save_cv_results(
 
 
 def save_opti_results(
-    opti_results: List[Dict[str, Any]], folder_path: Union[str, Path], filename: str = "opti_results.json"
+    opti_results: List[Dict[str, Any]],
+    folder_path: Union[str, Path],
+    filename: str = "opti_results.json",
 ):
     with (Path(folder_path) / filename).open("w", encoding="utf8") as f:
         json.dump(opti_results, f, cls=NpEncoder)
@@ -129,7 +145,9 @@ def _get_dataset_tuple_class_from_metadata(metadata: Dict[str, Any]) -> Type[Tup
 
 
 def load_cv_results(
-    folder_path: Union[str, Path], filename: str = "cv_results.json", meta_data_filename: str = "cv_metadata.json"
+    folder_path: Union[str, Path],
+    filename: str = "cv_results.json",
+    meta_data_filename: str = "cv_metadata.json",
 ) -> Tuple[pd.DataFrame, CvMetadata]:
     with (Path(folder_path) / meta_data_filename).open(encoding="utf8") as f:
         metadata = json.load(f)
@@ -140,7 +158,7 @@ def load_cv_results(
     # This preserves the names of the columns
     for col in ["train_data_labels", "test_data_labels"]:
         if col in cv_results.columns:
-            cv_results[col] = cv_results[col].apply(lambda x: [dataset_tuple_type(*i) for i in x])
+            cv_results[col] = cv_results[col].apply(lambda x: [dataset_tuple_type(*_ensure_label_tuple(i)) for i in x])
 
     return cv_results, metadata
 
@@ -163,3 +181,11 @@ class NpEncoder(json.JSONEncoder):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
+
+
+def _resolve_dataset(dataset, dataset_class):
+    if isinstance(dataset, (str, Path)):
+        return dataset_class(data_folder=Path(dataset))
+    if isinstance(dataset, dataset_class):
+        return dataset
+    raise ValueError(f"`dataset` must either be a valid path or a valid instance of `{dataset_class.__name__}`.")

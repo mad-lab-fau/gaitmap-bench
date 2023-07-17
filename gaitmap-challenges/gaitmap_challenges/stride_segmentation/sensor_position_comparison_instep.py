@@ -13,6 +13,9 @@ from tpcp.validate import cross_validate
 
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
+    CvMetadata,
+    _resolve_dataset,
+    collect_cv_metadata,
     collect_cv_results,
     collect_opti_results,
     load_cv_results,
@@ -62,13 +65,14 @@ ChallengeDataset = SensorPositionComparison2019Segmentation
 
 class ResultType(TypedDict):
     cv_results: pd.DataFrame
+    cv_metadata: CvMetadata
     opti_results: Optional[List[Dict[str, Any]]]
 
 
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
     dataset: Optional[Union[str, Path, ChallengeDataset]]
-    cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = 3
+    cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = 5
     cv_params: Optional[Dict] = None
 
     # Class level config.
@@ -85,6 +89,7 @@ class Challenge(BaseChallenge):
             self.optimizer = optimizer
             self.dataset_ = self._resolve_dataset()
             cv_params = {} if self.cv_params is None else self.cv_params
+
             self.cv_results_ = cross_validate(
                 optimizable=optimizer,
                 dataset=self.dataset_,
@@ -96,13 +101,7 @@ class Challenge(BaseChallenge):
         return self
 
     def _resolve_dataset(self):
-        if isinstance(self.dataset, (str, Path)):
-            return ChallengeDataset(data_folder=Path(self.dataset))
-        if isinstance(self.dataset, ChallengeDataset):
-            return self.dataset
-        raise ValueError(
-            "`dataset` must either be a valid path or a valid instance of `SensorPositionComparison2019Segmentation`."
-        )
+        return _resolve_dataset(self.dataset, ChallengeDataset)
 
     @classmethod
     def get_scorer(cls):
@@ -122,19 +121,22 @@ class Challenge(BaseChallenge):
     def get_core_results(self) -> ResultType:
         return {
             "cv_results": collect_cv_results(self.cv_results_),
+            "cv_metadata": collect_cv_metadata(self.dataset_),
             "opti_results": collect_opti_results(self.cv_results_),
         }
 
     def save_core_results(self, folder_path) -> None:
         core_results = self.get_core_results()
-        save_cv_results(core_results["cv_results"], folder_path)
+        save_cv_results(core_results["cv_results"], core_results["cv_metadata"], folder_path)
         if (opti_results := core_results["opti_results"]) is not None:
             save_opti_results(opti_results, folder_path)
 
     @classmethod
     def load_core_results(cls, folder_path) -> ResultType:
+        cv_results = load_cv_results(folder_path)
         return {
-            "cv_results": load_cv_results(folder_path),
+            "cv_results": cv_results[0],
+            "cv_metadata": cv_results[1],
             "opti_results": load_opti_results(folder_path),
         }
 

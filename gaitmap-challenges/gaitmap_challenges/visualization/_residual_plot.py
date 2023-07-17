@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib import transforms
 from scipy import stats
 
-from gaitmap_challenges.visualization._utils import _ensure_label_tuple
+from gaitmap_challenges._utils import _ensure_label_tuple
 
 
 def _handle_single_or_list(

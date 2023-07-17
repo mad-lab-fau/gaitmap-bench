@@ -143,9 +143,7 @@ def _resolve_debug(debug: Optional[bool]):
     return debug
 
 
-def create_config_template(
-    path: Union[str, Path], _config_type: Type[_ConfigT] = LocalConfig
-):
+def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] = LocalConfig):
     """Create a template json file that can be used to configure the datasets paths.
 
     Use that method once to create your local config file.
@@ -174,13 +172,9 @@ def create_config_template(
     with path.open("w", encoding="utf8") as f:
         config_dict = {
             "gaitmap_challenges": {
-                k.name: sanitize_path(k.default)
-                for k in fields(_config_type)
-                if k.name != "datasets"
+                k.name: sanitize_path(k.default) for k in fields(_config_type) if k.name != "datasets"
             },
-            "datasets": {
-                k.name: sanitize_path(k.default) for k in fields(DatasetsConfig)
-            },
+            "datasets": {k.name: sanitize_path(k.default) for k in fields(DatasetsConfig)},
         }
         json.dump(config_dict, f, indent=4, sort_keys=True)
 
@@ -226,9 +220,7 @@ class _RestoreConfig(TypedDict):
     debug: Optional[bool]
 
 
-def _config_restore_callback() -> (
-    Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]
-):
+def _config_restore_callback() -> Tuple[Optional[_RestoreConfig], Callable[[_RestoreConfig], None]]:
     def setter(config_obj: _RestoreConfig):
         reset_config()
         # We set the config manually here to skip the check in set_config.

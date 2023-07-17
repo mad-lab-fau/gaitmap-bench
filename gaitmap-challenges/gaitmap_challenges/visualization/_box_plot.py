@@ -11,7 +11,7 @@ from bokeh.palettes import Spectral6
 from bokeh.plotting import figure
 from bokeh.transform import factor_cmap, jitter
 
-from gaitmap_challenges.visualization._utils import _ensure_label_tuple
+from gaitmap_challenges._utils import _ensure_label_tuple
 
 
 @dataclass

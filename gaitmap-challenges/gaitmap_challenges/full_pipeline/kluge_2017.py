@@ -15,6 +15,7 @@ from tpcp.validate import NoAgg, cross_validate
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
     CvMetadata,
+    _resolve_dataset,
     collect_cv_metadata,
     collect_cv_results,
     load_cv_results,
@@ -86,11 +87,7 @@ class Challenge(BaseChallenge):
             )
 
     def _resolve_dataset(self):
-        if isinstance(self.dataset, (str, Path)):
-            return ChallengeDataset(data_folder=Path(self.dataset))
-        if isinstance(self.dataset, ChallengeDataset):
-            return self.dataset
-        raise ValueError(f"`dataset` must either be a valid path or a valid instance of `{ChallengeDataset.__name__}`.")
+        return _resolve_dataset(self.dataset, ChallengeDataset)
 
     @classmethod
     def get_scorer(cls):
