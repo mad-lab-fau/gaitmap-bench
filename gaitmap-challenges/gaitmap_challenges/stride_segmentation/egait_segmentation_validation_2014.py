@@ -61,6 +61,7 @@ class Challenge(BaseChallenge):
 
     # Class level config.
     match_tolerance_s: ClassVar[float] = 0.03
+    use_original_labels: ClassVar[bool] = False
 
     # Update the version, when the challenge_class is changed in a relevant way
     VERSION = "1.0.0"
@@ -106,6 +107,8 @@ class Challenge(BaseChallenge):
         cls,
         datapoint: ChallengeDataset,
     ) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
+        if cls.use_original_labels:
+            return datapoint.segmented_stride_list_original_
         return datapoint.segmented_stride_list_
 
     def get_core_results(self) -> ResultType:
