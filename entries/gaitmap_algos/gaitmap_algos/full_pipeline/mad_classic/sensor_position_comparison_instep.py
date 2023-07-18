@@ -1,32 +1,28 @@
 import pandas as pd
-from gaitmap.event_detection import HerzerEventDetection
 from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
-from gaitmap.stride_segmentation.hmm import (
-    HmmStrideSegmentation,
-    PreTrainedRothSegmentationModel,
-)
-from gaitmap.trajectory_reconstruction import (
-    MadgwickRtsKalman,
-    RegionLevelTrajectory,
-)
+from gaitmap.trajectory_reconstruction import StrideLevelTrajectory
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
 from gaitmap_bench import save_run, set_config
-from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
+from gaitmap_challenges.full_pipeline.sensor_position_comparison_instep import (
+    Challenge,
+    ChallengeDataset,
+)
+from gaitmap_mad.event_detection import RamppEventDetection
+from gaitmap_mad.stride_segmentation import BarthOriginalTemplate, ConstrainedBarthDtw
 from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
+from typing_extensions import Self
 
-from gaitmap_algos.full_pipeline.mad_modern import default_metadata
+from gaitmap_algos.full_pipeline.mad_classic import shared_metadata
 
 
-class MadModern(Pipeline[ChallengeDataset]):
-    # Result objects
-    gait_parameters_with_turns_: pd.DataFrame
+class MadClassic(Pipeline[ChallengeDataset]):
     gait_parameters_: pd.DataFrame
     aggregated_gait_parameters_: pd.Series
 
     @make_action_safe
-    def run(self, datapoint: ChallengeDataset):
+    def run(self, datapoint: ChallengeDataset) -> Self:
         data_sf = Challenge.get_imu_data(datapoint)
         sampling_rate_hz = datapoint.sampling_rate_hz
 
@@ -34,35 +30,23 @@ class MadModern(Pipeline[ChallengeDataset]):
         bf_data = convert_to_fbf(data_sf, left_like="left_", right_like="right_")
 
         # stride segmentation
-        hmm = HmmStrideSegmentation(PreTrainedRothSegmentationModel()).segment(
-            bf_data, sampling_rate_hz=datapoint.sampling_rate_hz
-        )
+        dtw = ConstrainedBarthDtw(template=BarthOriginalTemplate(use_cols=["gyr_ml"]), max_cost=2.4)
+        dtw = dtw.segment(data=bf_data, sampling_rate_hz=sampling_rate_hz)
 
         # event detection
-        ed = HerzerEventDetection()
+
+        ed = RamppEventDetection()
         ed = ed.detect(
             data=bf_data,
-            stride_list=hmm.stride_list_,
+            stride_list=dtw.stride_list_,
             sampling_rate_hz=sampling_rate_hz,
         )
 
         # trajectory estimation
-        fake_roi_list = {
-            k: pd.DataFrame(
-                {
-                    "start": v.iloc[0].start,
-                    "end": v.iloc[-1].end,
-                    "roi_id": 1,
-                },
-                index=[0],
-            )
-            for k, v in ed.min_vel_event_list_.items()
-        }
-        trajectory = RegionLevelTrajectory(ori_method=None, pos_method=None, trajectory_method=MadgwickRtsKalman())
-        trajectory = trajectory.estimate_intersect(
+        trajectory = StrideLevelTrajectory()
+        trajectory = trajectory.estimate(
             data=data_sf,
             stride_event_list=ed.min_vel_event_list_,
-            regions_of_interest=fake_roi_list,
             sampling_rate_hz=sampling_rate_hz,
         )
 
@@ -83,8 +67,7 @@ class MadModern(Pipeline[ChallengeDataset]):
         all_temporal = pd.concat(temporal_paras.parameters_)
         all_spatial = pd.concat(spatial_paras.parameters_)
 
-        self.gait_parameters_with_turns_ = pd.concat([all_temporal, all_spatial], axis=1)
-        self.gait_parameters_ = self.gait_parameters_with_turns_.query("turning_angle.abs() < 20")
+        self.gait_parameters_ = pd.concat([all_temporal, all_spatial], axis=1)
         self.aggregated_gait_parameters_ = self.gait_parameters_.mean()
 
         return self
@@ -97,13 +80,13 @@ if __name__ == "__main__":
         memory=Memory(config.cache_dir),
     )
 
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
+    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": 1})
 
     challenge.run(
-        DummyOptimize(MadModern()),
+        DummyOptimize(MadClassic()),
     )
     save_run(
         challenge=challenge,
-        entry_name=("gaitmap", "mad_modern", "default"),
-        custom_metadata=default_metadata,
+        entry_name=("gaitmap", "mad_classic", "default"),
+        custom_metadata=shared_metadata,
     )

@@ -30,7 +30,7 @@ SensorNames = Literal["left_sensor", "right_sensor"]
 
 def _get_data_subset(
     datapoint_data: Union[pd.DataFrame, Dict[str, pd.DataFrame]], sensor="instep"
-) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
+) -> Dict[SensorNames, pd.DataFrame]:
     return {
         "left_sensor": datapoint_data[f"l_{sensor}"],
         "right_sensor": datapoint_data[f"r_{sensor}"],

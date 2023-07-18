@@ -10,28 +10,23 @@ from gaitmap.trajectory_reconstruction import (
     RegionLevelTrajectory,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap.zupt_detection import (
-    ComboZuptDetector,
-    NormZuptDetector,
-    StrideEventZuptDetector,
-)
 from gaitmap_bench import save_run, set_config
-from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
+from gaitmap_challenges.full_pipeline.sensor_position_comparison_instep import Challenge, ChallengeDataset
 from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
+from typing_extensions import Self
 
-from gaitmap_algos.full_pipeline.mad_modern import improved_zupt_metadata
+from gaitmap_algos.full_pipeline.mad_modern import default_metadata
 
 
-class MadModernOptimizedZupts(Pipeline[ChallengeDataset]):
-    # Result objects
+class MadClassic(Pipeline[ChallengeDataset]):
     gait_parameters_with_turns_: pd.DataFrame
     gait_parameters_: pd.DataFrame
     aggregated_gait_parameters_: pd.Series
 
     @make_action_safe
-    def run(self, datapoint: ChallengeDataset):
+    def run(self, datapoint: ChallengeDataset) -> Self:
         data_sf = Challenge.get_imu_data(datapoint)
         sampling_rate_hz = datapoint.sampling_rate_hz
 
@@ -63,18 +58,7 @@ class MadModernOptimizedZupts(Pipeline[ChallengeDataset]):
             )
             for k, v in ed.min_vel_event_list_.items()
         }
-        trajectory = RegionLevelTrajectory(
-            ori_method=None,
-            pos_method=None,
-            trajectory_method=MadgwickRtsKalman(
-                zupt_detector=ComboZuptDetector(
-                    detectors=[
-                        ("stride", StrideEventZuptDetector(half_region_size_s=0.05)),
-                        ("norm", NormZuptDetector()),
-                    ]
-                )
-            ),
-        )
+        trajectory = RegionLevelTrajectory(ori_method=None, pos_method=None, trajectory_method=MadgwickRtsKalman())
         trajectory = trajectory.estimate_intersect(
             data=data_sf,
             stride_event_list=ed.min_vel_event_list_,
@@ -99,8 +83,7 @@ class MadModernOptimizedZupts(Pipeline[ChallengeDataset]):
         all_temporal = pd.concat(temporal_paras.parameters_)
         all_spatial = pd.concat(spatial_paras.parameters_)
 
-        self.gait_parameters_with_turns_ = pd.concat([all_temporal, all_spatial], axis=1)
-        self.gait_parameters_ = self.gait_parameters_with_turns_.query("turning_angle.abs() < 20")
+        self.gait_parameters_ = pd.concat([all_temporal, all_spatial], axis=1)
         self.aggregated_gait_parameters_ = self.gait_parameters_.mean()
 
         return self
@@ -113,13 +96,13 @@ if __name__ == "__main__":
         memory=Memory(config.cache_dir),
     )
 
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
+    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": 1})
 
     challenge.run(
-        DummyOptimize(MadModernOptimizedZupts()),
+        DummyOptimize(MadClassic()),
     )
     save_run(
         challenge=challenge,
-        entry_name=("gaitmap", "mad_modern", "optimized_zupt"),
-        custom_metadata=improved_zupt_metadata,
+        entry_name=("gaitmap", "mad_modern", "default"),
+        custom_metadata=default_metadata,
     )

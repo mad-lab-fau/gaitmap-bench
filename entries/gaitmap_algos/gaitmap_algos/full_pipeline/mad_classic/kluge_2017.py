@@ -1,21 +1,19 @@
 import pandas as pd
-from gaitmap.event_detection import RamppEventDetection
 from gaitmap.parameters import SpatialParameterCalculation, TemporalParameterCalculation
-from gaitmap.stride_segmentation import (
-    BarthOriginalTemplate,
-    ConstrainedBarthDtw,
-)
 from gaitmap.trajectory_reconstruction import StrideLevelTrajectory
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
 from gaitmap_bench import save_run, set_config
 from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge, ChallengeDataset
+from gaitmap_mad.event_detection import RamppEventDetection
+from gaitmap_mad.stride_segmentation import BarthOriginalTemplate, ConstrainedBarthDtw
 from joblib import Memory
 from tpcp import Pipeline, make_action_safe
 from tpcp.optimize import DummyOptimize
 
+from gaitmap_algos.full_pipeline.mad_classic import shared_metadata
+
 
 class MadClassic(Pipeline[ChallengeDataset]):
-    # Result objects
     gait_parameters_with_turns_: pd.DataFrame
     gait_parameters_: pd.DataFrame
     aggregated_gait_parameters_: pd.Series
@@ -74,20 +72,6 @@ class MadClassic(Pipeline[ChallengeDataset]):
 
 
 if __name__ == "__main__":
-    metadata = {
-        "short_description": "Default MaD pipeline",
-        "long_description": "The classic pipeline used in many gait-analysis studies by the MaD lab. "
-        "This version uses mostly the default parameters of the gaitmap-implementations without "
-        "specific tuning.",
-        "references": [
-            "https://ieeexplore.ieee.org/document/6949634",
-            "http://www.mdpi.com/1424-8220/15/3/6419",
-        ],
-        "code_authors": ["MaD-DiGait"],
-        "algorithm_authors": ["See source and references for individual algorithm authors"],
-        "implementation_url": "https://github.com/mad-lab-fau/gaitmap",
-    }
-
     config = set_config()
 
     dataset = ChallengeDataset(
@@ -102,5 +86,5 @@ if __name__ == "__main__":
     save_run(
         challenge=challenge,
         entry_name=("gaitmap", "mad_classic", "default"),
-        custom_metadata=metadata,
+        custom_metadata=shared_metadata,
     )

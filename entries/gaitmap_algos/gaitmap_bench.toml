@@ -31,3 +31,8 @@ mad_classic = "gaitmap_algos/full_pipeline/mad_classic/kluge_2017.py"
 mad_modern = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017.py"
 mad_modern_optimized_zupt = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017_optimized_zupt.py"
 
+
+[challenge.full_pipeline.sensor_position_comparison_instep]
+mad_classic = "gaitmap_algos/full_pipeline/mad_classic/sensor_position_comparison_instep.py"
+mad_modern = "gaitmap_algos/full_pipeline/mad_modern/sensor_position_comparison_instep.py"
+mad_modern_optimized_zupt = "gaitmap_algos/full_pipeline/mad_modern/sensor_position_comparison_instep_optimized_zupt.py"
