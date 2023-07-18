@@ -4,7 +4,7 @@ sbatch <<EOT
 #!/bin/bash -l
 
 #SBATCH --job-name="$2"
-#SBATCH --time=01:00:00
+#SBATCH --time=03:00:00
 #SBATCH --mail-user="$USER_EMAIL"
 #SBATCH --mail-type=ALL
 #SBATCH --output=../../results/hpc_logs/%j_$2.out
