@@ -1,0 +1,7 @@
+{
+    "dataset_name": "SensorPositionComparison2019Mocap",
+    "dataset_columns": [
+        "participant",
+        "test"
+    ]
+}
