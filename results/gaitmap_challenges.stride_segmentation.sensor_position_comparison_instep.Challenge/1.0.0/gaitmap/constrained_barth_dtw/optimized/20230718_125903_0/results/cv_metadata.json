@@ -1,0 +1,6 @@
+{
+    "dataset_name": "SensorPositionComparison2019Segmentation",
+    "dataset_columns": [
+        "participant"
+    ]
+}
