@@ -2,29 +2,23 @@ import warnings
 from typing import Dict
 
 import pandas as pd
-from gaitmap.base import BaseOrientationMethod, BasePositionMethod
+from gaitmap.base import BaseTrajectoryMethod
 from gaitmap.event_detection import RamppEventDetection
 from gaitmap.parameters import SpatialParameterCalculation
 from gaitmap.trajectory_reconstruction import (
-    ForwardBackwardIntegration,
-    SimpleGyroIntegration,
-    StrideLevelTrajectory,
+    RegionLevelTrajectory,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap_bench import set_config
-from gaitmap_challenges import save_run
 from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import (
     Challenge,
     ChallengeDataset,
     SensorNames,
 )
-from joblib import Memory
 from tpcp import Pipeline
-from tpcp.optimize import DummyOptimize
 from typing_extensions import Self
 
 
-class Entry(Pipeline[ChallengeDataset]):
+class RegionIntegrationBase(Pipeline[ChallengeDataset]):
     # Result object
     parameters_: Dict[SensorNames, pd.DataFrame]
     event_list_: Dict[SensorNames, pd.DataFrame]
@@ -33,11 +27,9 @@ class Entry(Pipeline[ChallengeDataset]):
 
     def __init__(
         self,
-        ori_method: BaseOrientationMethod,
-        pos_method: BasePositionMethod,
+        traj_method: BaseTrajectoryMethod,
     ):
-        self.ori_method = ori_method
-        self.pos_method = pos_method
+        self.traj_method = traj_method
 
     def run(self, datapoint: ChallengeDataset) -> Self:
         data = Challenge.get_imu_data(datapoint)
@@ -56,10 +48,32 @@ class Entry(Pipeline[ChallengeDataset]):
         )
 
         # 2. We now have the strides defined as min_vel -> min_vel. We can integrate the data over these strides.
+        # For the Kalman Filter we need to integrate over multiple strides to actually get the benefits of the Kalman
+        # smoothing.
+        # Hence, we create a fake roi list to pass as region to the trajectory reconstruction.
+        fake_roi_list = {}
+        for i, sensor in enumerate(data):
+            min_vel_list = self.event_list_[sensor]
+            fake_roi_list[sensor] = pd.DataFrame(
+                {
+                    "start": [min_vel_list.iloc[0].start],
+                    "end": [min_vel_list.iloc[-1].end],
+                    "roi_id": i,
+                }
+            )
 
-        traj = StrideLevelTrajectory(ori_method=self.ori_method, pos_method=self.pos_method).estimate(
-            data, self.event_list_, sampling_rate_hz=sampling_rate_hz
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            traj = RegionLevelTrajectory(
+                ori_method=None,
+                pos_method=None,
+                trajectory_method=self.traj_method,
+            ).estimate_intersect(
+                data,
+                regions_of_interest=fake_roi_list,
+                stride_event_list=self.event_list_,
+                sampling_rate_hz=sampling_rate_hz,
+            )
 
         self.position_ = traj.position_
         self.orientation_ = traj.orientation_
@@ -70,7 +84,7 @@ class Entry(Pipeline[ChallengeDataset]):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.parameters_ = (
-                SpatialParameterCalculation(calculate_only=("stride_length", "gait_velocity"))
+                SpatialParameterCalculation()
                 .calculate(
                     self.event_list_,
                     traj.position_,
@@ -80,33 +94,3 @@ class Entry(Pipeline[ChallengeDataset]):
                 .parameters_
             )
         return self
-
-
-if __name__ == "__main__":
-    config = set_config()
-
-    dataset = ChallengeDataset(
-        memory=Memory(config.cache_dir),
-    )
-
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
-
-    challenge.run(
-        DummyOptimize(
-            pipeline=Entry(
-                pos_method=ForwardBackwardIntegration(level_assumption=False),
-                ori_method=SimpleGyroIntegration(),
-            ),
-        )
-    )
-    save_run(
-        challenge=challenge,
-        entry_name=("gaitmap", "simple_integration", "default"),
-        custom_metadata={
-            "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
-            "references": [],
-            "code_authors": [],
-            "algorithm_authors": [],
-            "implementation_link": "",
-        },
-    )

@@ -1,7 +1,7 @@
 from typing import Dict, Literal, Sequence, Tuple
 
 import pandas as pd
-from gaitmap.evaluation_utils import calculate_parameter_errors
+from gaitmap.evaluation_utils import calculate_aggregated_parameter_errors
 from tpcp.validate import Aggregator
 
 _AggType = Tuple[
@@ -28,7 +28,7 @@ class SingleValueErrors(Aggregator[_AggType]):
                     # Could be that the sensor is not available for this data
                     pass
 
-        return calculate_parameter_errors(
+        return calculate_aggregated_parameter_errors(
             reference_parameter=all_references,
             predicted_parameter=all_predictions,
             calculate_per_sensor=False,
