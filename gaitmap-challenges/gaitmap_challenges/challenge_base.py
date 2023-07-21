@@ -183,7 +183,7 @@ class NpEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def _resolve_dataset(dataset, dataset_class):
+def resolve_dataset(dataset, dataset_class):
     if isinstance(dataset, (str, Path)):
         return dataset_class(data_folder=Path(dataset))
     if isinstance(dataset, dataset_class):

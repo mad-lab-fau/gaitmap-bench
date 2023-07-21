@@ -15,10 +15,10 @@ from tpcp.validate import NoAgg, cross_validate
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
     CvMetadata,
-    _resolve_dataset,
     collect_cv_metadata,
     collect_cv_results,
     load_cv_results,
+    resolve_dataset,
     save_cv_results,
 )
 from gaitmap_challenges.full_pipeline._utils import ParameterErrors
@@ -87,7 +87,7 @@ class Challenge(BaseChallenge):
             )
 
     def _resolve_dataset(self):
-        return _resolve_dataset(self.dataset, ChallengeDataset)
+        return resolve_dataset(self.dataset, ChallengeDataset)
 
     @classmethod
     def get_scorer(cls):
@@ -105,7 +105,7 @@ class Challenge(BaseChallenge):
         fake_events = {k: ev.assign(min_vel=pd.NA) for k, ev in datapoint.mocap_events_.items()}
 
         tp = TemporalParameterCalculation(expected_stride_type="ic").calculate(
-            stride_event_list=fake_events, sampling_rate_hz=datapoint.mocap_sampling_rate_hz
+            stride_event_list=fake_events, sampling_rate_hz=datapoint.mocap_sampling_rate_hz_
         )
 
         per_stride_trajectory = {k: v["ankle"][GF_POS] for k, v in datapoint.marker_position_per_stride_.items()}
@@ -114,7 +114,7 @@ class Challenge(BaseChallenge):
             positions=per_stride_trajectory,
             orientations=None,
             stride_event_list=fake_events,
-            sampling_rate_hz=datapoint.mocap_sampling_rate_hz,
+            sampling_rate_hz=datapoint.mocap_sampling_rate_hz_,
         )
 
         return {k: pd.concat([tp.parameters_[k], sp.parameters_[k]]) for k in ["left", "right"]}

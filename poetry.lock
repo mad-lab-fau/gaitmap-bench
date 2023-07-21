@@ -846,7 +846,7 @@ develop = true
 [package.dependencies]
 bokeh = {version = "^3.0.3", optional = true}
 gaitmap = {version = ">=2.2.0", extras = ["stats"]}
-gaitmap-datasets = ">=0.13.0"
+gaitmap-datasets = ">=0.14.0"
 gitpython = "^3.1.31"
 optuna = ">=3.0.0"
 pandas = ">=1.4.3"
@@ -863,13 +863,13 @@ url = "gaitmap-challenges"
 
 [[package]]
 name = "gaitmap-datasets"
-version = "0.13.0"
+version = "0.14.0"
 description = "Helper to access to open-source gait datasets used by MaD-Lab"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "gaitmap_datasets-0.13.0-py3-none-any.whl", hash = "sha256:f477019bc76755ee8611535fa98cd85560eef1d0c0f8b194ab0c05976ec19c49"},
-    {file = "gaitmap_datasets-0.13.0.tar.gz", hash = "sha256:5035a3722734ba796c05f7d34d27ffeefaf2f48c2830c0f8ada7291a1771e2b6"},
+    {file = "gaitmap_datasets-0.14.0-py3-none-any.whl", hash = "sha256:0b2c6510b932d9500bb2c0d8505dce1edf62bebe506d82d7f625d488436ef6aa"},
+    {file = "gaitmap_datasets-0.14.0.tar.gz", hash = "sha256:256584615e1a73433ef99b84ef099e8dfa0980e94da8c6d372a6a6170d38112e"},
 ]
 
 [package.dependencies]

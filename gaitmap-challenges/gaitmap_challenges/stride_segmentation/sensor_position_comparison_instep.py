@@ -14,12 +14,12 @@ from tpcp.validate import cross_validate
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
     CvMetadata,
-    _resolve_dataset,
     collect_cv_metadata,
     collect_cv_results,
     collect_opti_results,
     load_cv_results,
     load_opti_results,
+    resolve_dataset,
     save_cv_results,
     save_opti_results,
 )
@@ -101,7 +101,7 @@ class Challenge(BaseChallenge):
         return self
 
     def _resolve_dataset(self):
-        return _resolve_dataset(self.dataset, ChallengeDataset)
+        return resolve_dataset(self.dataset, ChallengeDataset)
 
     @classmethod
     def get_scorer(cls):

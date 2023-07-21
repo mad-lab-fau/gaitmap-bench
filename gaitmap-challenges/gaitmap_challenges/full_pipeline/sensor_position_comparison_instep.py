@@ -17,10 +17,10 @@ from tpcp.validate import NoAgg, cross_validate
 from gaitmap_challenges.challenge_base import (
     BaseChallenge,
     CvMetadata,
-    _resolve_dataset,
     collect_cv_metadata,
     collect_cv_results,
     load_cv_results,
+    resolve_dataset,
     save_cv_results,
 )
 from gaitmap_challenges.full_pipeline._utils import ParameterErrors
@@ -100,7 +100,7 @@ class Challenge(BaseChallenge):
             )
 
     def _resolve_dataset(self):
-        return _resolve_dataset(self.dataset, ChallengeDataset)
+        return resolve_dataset(self.dataset, ChallengeDataset)
 
     @classmethod
     def get_scorer(cls):
@@ -123,20 +123,15 @@ class Challenge(BaseChallenge):
             sampling_rate_hz=datapoint.mocap_sampling_rate_hz_,
         )
 
-        trajectory = {
+        {
             foot: datapoint.marker_position_[f"{foot[0]}_{cls.ground_truth_marker}"].rename(
                 columns=lambda x: f"pos_{x}"
             )
             for foot in ["left_sensor", "right_sensor"]
         }
 
-        per_stride_trajectory = marker_position_per_stride_(
-            trajectory,
-            events,
-        )
-
         sp = SpatialParameterCalculation(expected_stride_type="ic").calculate(
-            positions=per_stride_trajectory,
+            positions=datapoint.marker_position_per_stride_,
             orientations=None,
             stride_event_list=events,
             sampling_rate_hz=datapoint.mocap_sampling_rate_hz_,
@@ -162,18 +157,3 @@ class Challenge(BaseChallenge):
     def load_core_results(cls, folder_path) -> ResultType:
         cv_results = load_cv_results(folder_path)
         return {"cv_results": cv_results[0], "cv_metadata": cv_results[1]}
-
-
-# TODO: remove once implemented in gaitmap datasets
-def marker_position_per_stride_(trajectory, mocap_events):
-    per_stride_trajectory = {}
-    for foot, events in mocap_events.items():
-        output_per_foot = {}
-        data = trajectory[foot]
-        for s_id, stride in events.iterrows():
-            # This cuts out the n+1 samples for each stride.
-            # The first sample is the value before the stride started.
-            # This is the equivalent to the "initial" position/orientation
-            output_per_foot[s_id] = data.iloc[int(stride["start"]) : int(stride["end"] + 1)].reset_index(drop=True)
-        per_stride_trajectory[foot] = pd.concat(output_per_foot, names=["s_id", "sample"])
-    return per_stride_trajectory
