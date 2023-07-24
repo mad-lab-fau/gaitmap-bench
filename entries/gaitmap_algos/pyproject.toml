@@ -11,6 +11,7 @@ python = ">=3.8,<3.11"
 gaitmap-bench = {path = "../../gaitmap-bench", develop = true}
 gaitmap = {version = ">=2.2.3", extras = ["hmm"]}
 gaitmap-mad = ">=2.2.3"
+tpcp= ">=0.20.0"
 
 [tool.poetry.group.dev.dependencies]
 poethepoet = "^0.19.0"

@@ -23,8 +23,8 @@ def optuna_search_space(trial: Trial) -> None:
     )
 
 
-def get_study():
-    return create_study(direction="maximize")
+def get_study_params(_):
+    return dict(direction="maximize")
 
 
 if __name__ == "__main__":
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     challenge.run(
         OptunaSearch(
             pipeline=Egait2014DtwBase(dtw=ConstrainedBarthDtw()),
-            create_study=get_study,
+            get_study_params=get_study_params,
             scoring=challenge.get_scorer(),
             score_name="per_sample__f1_score",
             create_search_space=optuna_search_space,
