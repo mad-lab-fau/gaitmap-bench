@@ -5,7 +5,7 @@ from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014_o
     ChallengeDataset,
 )
 from joblib import Memory
-from optuna import Trial, create_study
+from optuna import Trial
 from tpcp.optimize.optuna import OptunaSearch
 
 from gaitmap_algos.stride_segmentation.dtw._egait_segmentation_validation_2014 import (
@@ -24,7 +24,7 @@ def optuna_search_space(trial: Trial) -> None:
 
 
 def get_study_params(_):
-    return dict(direction="maximize")
+    return {"direction": "maximize"}
 
 
 if __name__ == "__main__":
