@@ -6,25 +6,19 @@ from gaitmap.base import BaseOrientationMethod, BasePositionMethod
 from gaitmap.event_detection import RamppEventDetection
 from gaitmap.parameters import SpatialParameterCalculation
 from gaitmap.trajectory_reconstruction import (
-    ForwardBackwardIntegration,
-    SimpleGyroIntegration,
     StrideLevelTrajectory,
 )
 from gaitmap.utils.coordinate_conversion import convert_to_fbf
-from gaitmap_bench import set_config
-from gaitmap_challenges import save_run
 from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import (
     Challenge,
     ChallengeDataset,
     SensorNames,
 )
-from joblib import Memory
 from tpcp import Pipeline
-from tpcp.optimize import DummyOptimize
 from typing_extensions import Self
 
 
-class Entry(Pipeline[ChallengeDataset]):
+class StrideIntegrationBase(Pipeline[ChallengeDataset]):
     # Result object
     parameters_: Dict[SensorNames, pd.DataFrame]
     event_list_: Dict[SensorNames, pd.DataFrame]
@@ -80,33 +74,3 @@ class Entry(Pipeline[ChallengeDataset]):
                 .parameters_
             )
         return self
-
-
-if __name__ == "__main__":
-    config = set_config()
-
-    dataset = ChallengeDataset(
-        memory=Memory(config.cache_dir),
-    )
-
-    challenge = Challenge(dataset=dataset, cv_params={"n_jobs": config.n_jobs})
-
-    challenge.run(
-        DummyOptimize(
-            pipeline=Entry(
-                pos_method=ForwardBackwardIntegration(level_assumption=False),
-                ori_method=SimpleGyroIntegration(),
-            ),
-        )
-    )
-    save_run(
-        challenge=challenge,
-        entry_name=("gaitmap", "simple_integration", "default"),
-        custom_metadata={
-            "description": "DTW based stride segmentation algorithm from Barth et al. (2014)",
-            "references": [],
-            "code_authors": [],
-            "algorithm_authors": [],
-            "implementation_link": "",
-        },
-    )

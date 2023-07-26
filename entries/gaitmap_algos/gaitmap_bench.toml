@@ -45,3 +45,13 @@ mad_modern_optimized_zupt = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017_o
 mad_classic = "gaitmap_algos/full_pipeline/mad_classic/sensor_position_comparison_instep.py"
 mad_modern = "gaitmap_algos/full_pipeline/mad_modern/sensor_position_comparison_instep.py"
 mad_modern_optimized_zupt = "gaitmap_algos/full_pipeline/mad_modern/sensor_position_comparison_instep_optimized_zupt.py"
+
+[challenge.spatial_parameters.egait_adidas_2014]
+simple_integration_default = "gaitmap_algos/spatial_parameters/simple_integration/egait_adidas_2014_default.py"
+simple_integration_madgwick_default = "gaitmap_algos/spatial_parameters/simple_integration_madgwick/egait_adidas_2014_default.py"
+madgwick_rts_kalman_default = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_adidas_2014_default.py"
+madgwick_rts_kalman_forced_zupt = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_adidas_2014_forced_zupt.py"
+madgwick_rts_kalman_forced_zupt_default = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_adidas_2014_forced_zupt_default.py"
+rts_kalman_default = "gaitmap_algos/spatial_parameters/rts_kalman/egait_adidas_2014_default.py"
+rts_kalman_forced_zupt = "gaitmap_algos/spatial_parameters/rts_kalman/egait_adidas_2014_forced_zupt.py"
+rts_kalman_forced_zupt_default = "gaitmap_algos/spatial_parameters/rts_kalman/egait_adidas_2014_forced_zupt_default.py"

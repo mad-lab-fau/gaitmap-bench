@@ -1,4 +1,7 @@
-from gaitmap.trajectory_reconstruction import MadgwickRtsKalman
+from gaitmap.trajectory_reconstruction import (
+    ForwardBackwardIntegration,
+    MadgwickAHRS,
+)
 from gaitmap_bench import set_config
 from gaitmap_challenges import save_run
 from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import (
@@ -8,8 +11,10 @@ from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import (
 from joblib import Memory
 from tpcp.optimize import DummyOptimize
 
-from gaitmap_algos.spatial_parameters._egait_adidas_region_integration_base import RegionIntegrationBase
-from gaitmap_algos.spatial_parameters.madgwick_rts_kalman import default_metadata
+from gaitmap_algos.spatial_parameters._egait_adidas_stride_integration_base import StrideIntegrationBase
+from gaitmap_algos.spatial_parameters.simple_integration_madgwick import (
+    default_metadata,
+)
 
 if __name__ == "__main__":
     config = set_config()
@@ -22,11 +27,14 @@ if __name__ == "__main__":
 
     challenge.run(
         DummyOptimize(
-            pipeline=RegionIntegrationBase(MadgwickRtsKalman()),
+            pipeline=StrideIntegrationBase(
+                pos_method=ForwardBackwardIntegration(level_assumption=False),
+                ori_method=MadgwickAHRS(),
+            ),
         )
     )
     save_run(
         challenge=challenge,
-        entry_name=("gaitmap", "madgwick_rts_kalman", "default"),
+        entry_name=("gaitmap", "simple_integration_madgwick", "default"),
         custom_metadata=default_metadata,
     )
