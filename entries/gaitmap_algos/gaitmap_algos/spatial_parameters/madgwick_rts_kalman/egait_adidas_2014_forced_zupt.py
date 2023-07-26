@@ -76,6 +76,7 @@ if __name__ == "__main__":
             score_name="per_stride__abs_error_mean",
             n_trials=100,
             return_optimized=True,
+            random_seed=42,
         )
     )
 

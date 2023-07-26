@@ -46,6 +46,7 @@ if __name__ == "__main__":
             return_optimized=True,
             n_trials=100,
             eval_str_paras=["dtw__template__use_cols"],
+            random_seed=42,
         )
     )
     save_run(
