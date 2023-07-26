@@ -213,7 +213,7 @@ def generate_overview_table(results: Dict[Tuple[str, ...], Path]):
                 "short_description": "Description",
                 "code_authors": "Code Authors",
                 "algorithm_authors": "Algorithm Authors",
-                "implementation_link": "Implementation",
+                "implementation_url": "Implementation",
                 "references": "References",
             }
         )
