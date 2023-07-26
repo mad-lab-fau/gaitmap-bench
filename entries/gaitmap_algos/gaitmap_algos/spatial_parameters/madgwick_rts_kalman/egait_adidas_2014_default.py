@@ -1,6 +1,5 @@
 from gaitmap.trajectory_reconstruction import MadgwickRtsKalman
-from gaitmap_bench import set_config
-from gaitmap_challenges import save_run
+from gaitmap_bench import set_config, save_run
 from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import (
     Challenge,
     ChallengeDataset,
