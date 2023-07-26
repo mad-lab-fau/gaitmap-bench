@@ -10,7 +10,7 @@
     },
     "gaitmap_challenges": {
         "cache_dir": "/home/woody/iwso/iwso021h/caches/gaitmap-bench/",
-        "n_jobs": 5,
-        "tmp_dir": "$TMPDIR"
+        "n_jobs": 32,
+        "tmp_dir": "$TMPDIR/gaitmap-bench/"
     }
 }
