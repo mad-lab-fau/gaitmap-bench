@@ -1947,14 +1947,12 @@ files = [
 
 [[package]]
 name = "tpcp"
-version = "0.20.0"
+version = "0.20.1"
 description = "Pipeline and Dataset helpers for complex algorithm evaluation."
 optional = false
 python-versions = ">=3.8,<4.0"
-files = [
-    {file = "tpcp-0.20.0-py3-none-any.whl", hash = "sha256:ce55a86eb7f7354b4bf6689bcd55cc79f5821056ccda1ca54b368793ad256471"},
-    {file = "tpcp-0.20.0.tar.gz", hash = "sha256:75bb3c10f1dcb27572cee47d0d32257f2290c2d4a6e87d281b5c7717dedcdc09"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 joblib = ">=1.3"
@@ -1968,6 +1966,12 @@ typing-extensions = ">=4.1.1"
 -torch-cpu = ["torch (>=1.6.0)"]
 attrs = ["attrs (>=22.1.0)"]
 optuna = ["optuna (>=2.10)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/mad-lab-fau/tpcp"
+reference = "HEAD"
+resolved_reference = "5f1d5670e0c86c8466125f83c965548c645ebe51"
 
 [[package]]
 name = "tqdm"
