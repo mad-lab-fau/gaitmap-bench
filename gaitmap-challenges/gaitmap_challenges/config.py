@@ -44,7 +44,7 @@ class LocalConfig:
         path_fields = ("tmp_dir", "cache_dir", "results_dir")
         for field in path_fields:
             if (val := getattr(self, field, None)) is not None:
-                object.__setattr__(self, field, Path(val))
+                object.__setattr__(self, field, Path(os.path.expandvars(val)))
 
     def _register_dataset_config(self):
         # Register the dataset config
