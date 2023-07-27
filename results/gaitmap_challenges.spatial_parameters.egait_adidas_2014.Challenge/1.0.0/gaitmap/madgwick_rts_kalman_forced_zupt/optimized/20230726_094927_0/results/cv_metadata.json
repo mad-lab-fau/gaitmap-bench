@@ -1,0 +1,10 @@
+{
+    "dataset_name": "EgaitAdidas2014",
+    "dataset_columns": [
+        "participant",
+        "sensor",
+        "stride_length",
+        "stride_velocity",
+        "repetition"
+    ]
+}
