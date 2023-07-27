@@ -15,7 +15,7 @@ REMOTE_PATH="~/projects/gaitmap-bench"
 # To do this safely without deleting any commits locally, we actually use git and not rsync for this.
 echo "Syncing git directory"
 git remote add _woody "$USERNAME"@woody.nhr.fau.de:"$REMOTE_PATH"
-git pull _woody "$(git branch --show-current)" --rebase || exit 1
+git pull _woody "$(git branch --show-current)" --rebase --autostash || exit 1
 git remote remove _woody
 
 # Use rsync to sync the results directory from the remote machine
