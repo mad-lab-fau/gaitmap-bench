@@ -1,0 +1,6 @@
+{
+    "dataset_name": "EgaitParameterValidation2013",
+    "dataset_columns": [
+        "participant"
+    ]
+}
