@@ -174,7 +174,8 @@ def get_metadata_as_df(
                 tmp_meta_data[key] = all_meta_data[key]
 
         data.append(tmp_meta_data)
-
+    if len(data) == 0:
+        raise ValueError("No results found.")
     return pd.DataFrame(data).infer_objects()
 
 

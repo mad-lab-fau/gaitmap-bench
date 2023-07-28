@@ -34,12 +34,10 @@ constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrain
 roth_hmm_default = "gaitmap_algos/stride_segmentation/roth_hmm/sensor_position_comparison_instep_default.py"
 roth_hmm_trained = "gaitmap_algos/stride_segmentation/roth_hmm/sensor_position_comparison_instep_trained.py"
 
-
 [challenge.full_pipeline.kluge_2017]
 mad_classic = "gaitmap_algos/full_pipeline/mad_classic/kluge_2017.py"
 mad_modern = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017.py"
 mad_modern_optimized_zupt = "gaitmap_algos/full_pipeline/mad_modern/kluge_2017_optimized_zupt.py"
-
 
 [challenge.full_pipeline.sensor_position_comparison_instep]
 mad_classic = "gaitmap_algos/full_pipeline/mad_classic/sensor_position_comparison_instep.py"
@@ -55,3 +53,10 @@ madgwick_rts_kalman_forced_zupt_default = "gaitmap_algos/spatial_parameters/madg
 rts_kalman_default = "gaitmap_algos/spatial_parameters/rts_kalman/egait_adidas_2014_default.py"
 rts_kalman_forced_zupt = "gaitmap_algos/spatial_parameters/rts_kalman/egait_adidas_2014_forced_zupt.py"
 rts_kalman_forced_zupt_default = "gaitmap_algos/spatial_parameters/rts_kalman/egait_adidas_2014_forced_zupt_default.py"
+
+[challenge.spatial_parameters.egait_parameter_validation_2013]
+simple_integration_default = "gaitmap_algos/spatial_parameters/simple_integration/egait_parameter_validation_2013_default.py"
+simple_integration_madgwick_default = "gaitmap_algos/spatial_parameters/simple_integration_madgwick/egait_parameter_validation_2013_default.py"
+madgwick_rts_kalman_default = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_parameter_validation_2013_default.py"
+madgwick_rts_kalman = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_parameter_validation_2013.py"
+rts_kalman_default = "gaitmap_algos/spatial_parameters/rts_kalman/egait_parameter_validation_2013_default.py"
