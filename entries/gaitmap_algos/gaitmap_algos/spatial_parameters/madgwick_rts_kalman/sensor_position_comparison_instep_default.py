@@ -10,7 +10,7 @@ from tpcp.optimize import DummyOptimize
 from gaitmap_algos.spatial_parameters._sensor_pos_region_integration_base import (
     RegionIntegrationBase,
 )
-from gaitmap_algos.spatial_parameters.rts_kalman import default_metadata
+from gaitmap_algos.spatial_parameters.madgwick_rts_kalman import default_metadata
 
 if __name__ == "__main__":
     config = set_config()

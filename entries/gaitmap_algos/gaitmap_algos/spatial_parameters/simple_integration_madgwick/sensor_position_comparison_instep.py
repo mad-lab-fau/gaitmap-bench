@@ -15,7 +15,7 @@ from tpcp.optimize.optuna import OptunaSearch
 from gaitmap_algos.spatial_parameters._sensor_pos_stride_integration_base import (
     StrideIntegrationBase,
 )
-from gaitmap_algos.spatial_parameters.simple_integration import default_metadata
+from gaitmap_algos.spatial_parameters.simple_integration_madgwick import default_metadata
 
 
 def optuna_search_space(trial: Trial) -> None:

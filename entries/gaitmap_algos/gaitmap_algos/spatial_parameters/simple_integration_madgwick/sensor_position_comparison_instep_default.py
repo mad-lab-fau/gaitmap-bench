@@ -13,7 +13,7 @@ from tpcp.optimize import DummyOptimize
 from gaitmap_algos.spatial_parameters._sensor_pos_stride_integration_base import (
     StrideIntegrationBase,
 )
-from gaitmap_algos.spatial_parameters.simple_integration import default_metadata
+from gaitmap_algos.spatial_parameters.simple_integration_madgwick import default_metadata
 
 if __name__ == "__main__":
     config = set_config()
