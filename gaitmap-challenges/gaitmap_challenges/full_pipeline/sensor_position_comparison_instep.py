@@ -73,6 +73,7 @@ class Challenge(BaseChallenge):
     # Class level config.
     ground_truth_marker: ClassVar[Literal["toe", "fcc", "fm1", "fm5"]] = "fcc"
     data_padding_s: ClassVar[float] = 3.0
+    sensor_pos: ClassVar[str] = "instep"
 
     VERSION = "1.0.0"
 
@@ -111,7 +112,7 @@ class Challenge(BaseChallenge):
         cls,
         datapoint: ChallengeDataset,
     ):
-        return _get_data_subset(datapoint.data)
+        return _get_data_subset(datapoint.data, sensor=cls.sensor_pos)
 
     @classmethod
     def get_ground_truth_parameter(cls, datapoint: ChallengeDataset):
@@ -123,21 +124,21 @@ class Challenge(BaseChallenge):
             sampling_rate_hz=datapoint.mocap_sampling_rate_hz_,
         )
 
-        {
-            foot: datapoint.marker_position_[f"{foot[0]}_{cls.ground_truth_marker}"].rename(
+        marker_positions = {
+            f"{foot}_sensor": datapoint.marker_position_per_stride_[f"{foot[0]}_{cls.ground_truth_marker}"].rename(
                 columns=lambda x: f"pos_{x}"
             )
-            for foot in ["left_sensor", "right_sensor"]
+            for foot in ["left", "right"]
         }
 
         sp = SpatialParameterCalculation(expected_stride_type="ic").calculate(
-            positions=datapoint.marker_position_per_stride_,
+            positions=marker_positions,
             orientations=None,
             stride_event_list=events,
             sampling_rate_hz=datapoint.mocap_sampling_rate_hz_,
         )
 
-        return {k: pd.concat([tp.parameters_[k], sp.parameters_[k]]) for k in ["left_sensor", "right_sensor"]}
+        return {k: pd.concat([tp.parameters_[k], sp.parameters_[k]], axis=1) for k in ["left_sensor", "right_sensor"]}
 
     @classmethod
     def get_aggregated_ground_truth_parameter(cls, datapoint: ChallengeDataset):

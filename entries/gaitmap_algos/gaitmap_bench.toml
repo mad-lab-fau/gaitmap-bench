@@ -16,7 +16,6 @@ constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrain
 roth_hmm_default = "gaitmap_algos/stride_segmentation/roth_hmm/egait_segmentation_validation_2014_default.py"
 roth_hmm_trained = "gaitmap_algos/stride_segmentation/roth_hmm/egait_segmentation_validation_2014_trained.py"
 
-
 [challenge.stride_segmentation.egait_segmentation_validation_2014_original_label]
 barth_dtw = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/egait_segmentation_validation_2014_original_label.py"
 barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/egait_segmentation_validation_2014_original_label_default.py"
@@ -24,7 +23,6 @@ constrained_barth_dtw = "gaitmap_algos/stride_segmentation/dtw/constrained_barth
 constrained_barth_dtw_default = "gaitmap_algos/stride_segmentation/dtw/constrained_barth_dtw/egait_segmentation_validation_2014_original_label_default.py"
 roth_hmm_default = "gaitmap_algos/stride_segmentation/roth_hmm/egait_segmentation_validation_2014_original_label_default.py"
 roth_hmm_trained = "gaitmap_algos/stride_segmentation/roth_hmm/egait_segmentation_validation_2014_original_label_trained.py"
-
 
 [challenge.stride_segmentation.sensor_position_comparison_instep]
 barth_dtw = "gaitmap_algos/stride_segmentation/dtw/barth_dtw/sensor_position_comparison_instep.py"
@@ -60,3 +58,12 @@ simple_integration_madgwick_default = "gaitmap_algos/spatial_parameters/simple_i
 madgwick_rts_kalman_default = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_parameter_validation_2013_default.py"
 madgwick_rts_kalman = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/egait_parameter_validation_2013.py"
 rts_kalman_default = "gaitmap_algos/spatial_parameters/rts_kalman/egait_parameter_validation_2013_default.py"
+
+[challenge.spatial_parameters.sensor_position_comparison_instep]
+simple_integration_default = "gaitmap_algos/spatial_parameters/simple_integration/sensor_position_comparison_instep_default.py"
+simple_integration_madgwick_default = "gaitmap_algos/spatial_parameters/simple_integration_madgwick/sensor_position_comparison_instep_default.py"
+simple_integration_madgwick = "gaitmap_algos/spatial_parameters/simple_integration_madgwick/sensor_position_comparison_instep.py"
+madgwick_rts_kalman_default = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/sensor_position_comparison_instep_default.py"
+madgwick_rts_kalman = "gaitmap_algos/spatial_parameters/madgwick_rts_kalman/sensor_position_comparison_instep.py"
+rts_kalman_default = "gaitmap_algos/spatial_parameters/rts_kalman/sensor_position_comparison_instep_default.py"
+rts_kalman_forced_zupt_default = "gaitmap_algos/spatial_parameters/rts_kalman/sensor_position_comparison_instep_forced_zupt_default.py"
