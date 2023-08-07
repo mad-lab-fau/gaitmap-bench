@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 import pandas as pd
-from gaitmap_challenges import load_run, save_run
+from gaitmap_challenges.results import load_run, save_run
 from gaitmap_challenges.challenge_base import BaseChallenge
 from tpcp import Dataset, Pipeline
 from tpcp.optimize import BaseOptimize, DummyOptimize

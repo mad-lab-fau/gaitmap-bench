@@ -35,7 +35,7 @@ from gaitmap_challenges.spatial_parameters.egait_adidas_2014 import Challenge
 
 __all__ = [
     "save_run",
-    "get_all_results_path",
+    "get_all_result_paths",
     "filter_results",
     "get_latest_result",
     "load_run",
@@ -46,7 +46,7 @@ __all__ = [
 ]
 
 
-def get_all_results_path(
+def get_all_result_paths(
     challenge_class_or_full_name: Union[Type[Challenge], Challenge, str],
     base_path: Union[str, Path],
 ) -> Dict[Tuple[str, ...], List[Path]]:

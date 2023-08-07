@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
 from gaitmap_challenges.full_pipeline.kluge_2017 import Challenge as FullPipelineChallenge
-from gaitmap_challenges.results import filter_results, get_all_results_path, get_latest_result, load_run, rename_keys
+from gaitmap_challenges.results import filter_results, get_all_result_paths, get_latest_result, load_run, rename_keys
 from gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014 import Challenge as SegmentationChallenge
 from gaitmap_challenges.visualization import SingleMetricBoxplot, group_by_data_label, replace_legend_labels
 
@@ -18,7 +18,7 @@ PAPER_FOLDER = Path("/home/arne/Documents/repos/work/gaitmap_paper/src/figures/p
 TWO_COLUMN_WIDTH = 7.16  # in inches
 
 # %%
-all_runs = get_all_results_path(SegmentationChallenge, RESULTS_FOLDER)
+all_runs = get_all_result_paths(SegmentationChallenge, RESULTS_FOLDER)
 all_runs = filter_results(all_runs, challenge_version=SegmentationChallenge.VERSION, is_debug_run=False)
 latest_runs = get_latest_result(all_runs)
 
@@ -84,7 +84,7 @@ rename_map = {("gaitmap", "mad_modern", "default"): "Modern", ("gaitmap", "mad_c
 
 order = ["Classic", "Modern"]
 
-all_runs = get_all_results_path(FullPipelineChallenge, RESULTS_FOLDER)
+all_runs = get_all_result_paths(FullPipelineChallenge, RESULTS_FOLDER)
 all_runs = filter_results(all_runs, challenge_version=FullPipelineChallenge.VERSION, is_debug_run=False)
 latest_runs = get_latest_result(all_runs)
 

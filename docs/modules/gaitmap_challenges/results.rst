@@ -23,7 +23,7 @@ Result Loading and Handling
    :toctree: generated/challenges/results
    :template: function.rst
 
-    get_all_results_path
+    get_all_result_paths
     filter_results
     get_latest_result
     load_run
