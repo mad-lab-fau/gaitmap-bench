@@ -13,19 +13,73 @@ from bokeh.transform import factor_cmap, jitter
 
 from gaitmap_challenges._utils import _ensure_label_tuple
 
+__all__ = [
+    "SingleMetricBoxplot",
+    "box_plot_matplotlib",
+    "box_plot_bokeh",
+    "group_by_data_label",
+]
+
 
 @dataclass
 class SingleMetricBoxplot:
+    """Create a boxplot for a single metric.
+
+    The plot can be either created with matplotlib or bokeh, by using the respective methods.
+
+    Most parameters are shared between both plotting backends.
+    Specific parameters are prefixed with `bokeh_` or `matplotlib_` or are expected to be passed to the method directly.
+
+    Parameters
+    ----------
+    cv_results
+        A list of cv results of multiple algorithms as loaded by `load_run`.
+    metric
+        The metric to plot.
+        This should be the error metric without the "test\\_" and/or "single\\_" prefix.
+    use_aggregation
+        Whether to use the "fold" or "single" aggregation.
+        With "fold" each point in the final plot is a single fold.
+        With "single" we pool all datapoint values from all test folds, so that each point in the final plot is one
+        datapoint (i.e. one participant)
+        In case of single, we look for the metric in the "test_single_<metric>" column.
+        In case of fold, we look for the metric in the "test_<metric>" column.
+        This further changes what other parameters make sense.
+    overlay_scatter
+        Whether to overlay a scatterplot on top of the boxplot.
+    label_grouper
+        A function that returns a group label for each data point.
+        This can be used to split the data into multiple groups that are plotted independently to effectively create
+        grouped boxplots.
+        Most likely you want to use :func:`group_by_data_label` to create this function.
+        Note, that this setting only makes sense when `use_aggregation="single"`.
+    invert_grouping
+        Whether to invert the grouping returned by `label_grouper`.
+        This will just change the order of the boxplots and which boxplots are grouped together.
+        By default, all groups of one algorithm are plotted next to each other.
+        With `invert_grouping=True` all boxplots of one group are plotted next to each other.
+    force_order
+        A list of algorithm names that specifies the order in which the boxplots are plotted.
+        If you want to force the order of your groups, fix the order in the `label_grouper` function.
+    matplotlib_boxplot_props
+        Additional properties to pass to the `sns.boxplot` function in the matplotlib backend.
+
+    """
+
     cv_results: Dict[str, pd.DataFrame]
     metric: str
     use_aggregation: Literal["fold", "single"] = "single"
     overlay_scatter: bool = True
     force_order: Optional[Sequence[str]] = None
-    label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None
+    label_grouper: Optional[Callable[[pd.Series], pd.Categorical]] = None
     invert_grouping: bool = False
     matplotlib_boxplot_props: Optional[Dict[str, Any]] = None
 
     def bokeh(self):
+        """Create the plot using bokeh.
+
+        This creates a plot object that can be displayed using `bokeh.plotting.show`.
+        """
         return box_plot_bokeh(
             cv_results=self.cv_results,
             metric=self.metric,
@@ -37,6 +91,10 @@ class SingleMetricBoxplot:
         )
 
     def matplotlib(self, ax: Optional[plt.Axes] = None):
+        """Create the plot using matplotlib.
+
+        You can optionally pass an existing matplotlib axes object to plot into.
+        """
         return box_plot_matplotlib(
             cv_results=self.cv_results,
             metric=self.metric,
@@ -51,7 +109,9 @@ class SingleMetricBoxplot:
 
 
 def group_by_data_label(
-    level: [int, str], include_all: Union[bool, str] = True, force_order: Optional[Sequence[str]] = None
+    level: Union[int, str],
+    include_all: Union[bool, str] = True,
+    force_order: Optional[Sequence[str]] = None,
 ):
     """Create a grouper function that groups labels by the data label at the given level.
 
@@ -133,7 +193,13 @@ def _prepare_boxplot_data(
         elif use_aggregation == "single":
             data = list(chain(*v[metric_name]))
             labels = v["test_data_labels"].explode().map(_ensure_label_tuple)
-            all_results[name] = pd.DataFrame({metric: data, "label": labels.to_list(), "fold": labels.index.to_list()})
+            all_results[name] = pd.DataFrame(
+                {
+                    metric: data,
+                    "label": labels.to_list(),
+                    "fold": labels.index.to_list(),
+                }
+            )
         else:
             # We should never get here
             raise ValueError()
@@ -153,13 +219,17 @@ def box_plot_matplotlib(  # noqa: PLR0913
     metric: str,
     use_aggregation: Literal["fold", "single"] = "single",
     overlay_scatter: bool = True,
-    label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
+    label_grouper: Optional[Callable[[pd.Series], pd.Categorical]] = None,
     invert_grouping: bool = False,
     force_order: Optional[Sequence[str]] = None,
     boxplot_props: Optional[Dict[str, Any]] = None,
     *,
     ax=None,
 ):
+    """Create a boxplot using matplotlib from the CV results.
+
+    See :class:`~SingleMetricBoxplot` for details on the parameters.
+    """
     all_results = _prepare_boxplot_data(
         cv_results=cv_results,
         metric=metric,
@@ -228,11 +298,18 @@ def box_plot_bokeh(  # noqa: PLR0913, PLR0915
     use_aggregation: Literal["fold", "single"] = "single",
     force_order: Optional[Sequence[str]] = None,
     overlay_scatter: bool = True,
-    label_grouper: Optional[Callable[[pd.Series], pd.Series]] = None,
+    label_grouper: Optional[Callable[[pd.Series], pd.Categorical]] = None,
     invert_grouping: bool = False,
 ):
+    """Create a boxplot using bokeh from the CV results.
+
+    See :class:`~SingleMetricBoxplot` for details on the parameters.
+    """
     all_results = _prepare_boxplot_data(
-        cv_results=cv_results, metric=metric, use_aggregation=use_aggregation, label_grouper=label_grouper
+        cv_results=cv_results,
+        metric=metric,
+        use_aggregation=use_aggregation,
+        label_grouper=label_grouper,
     )
 
     # We use categorical dtypes to make sorting easier
@@ -260,7 +337,12 @@ def box_plot_bokeh(  # noqa: PLR0913, PLR0915
                 axis=0,
             )
             .reset_index()
-            .astype({"__group": all_results["__group"].dtype, "name": all_results["name"].dtype})
+            .astype(
+                {
+                    "__group": all_results["__group"].dtype,
+                    "name": all_results["name"].dtype,
+                }
+            )
         )
         sort_order = ["__group", "name"] if invert_grouping else ["name", "__group"]
         sorted_factors = (
@@ -304,8 +386,24 @@ def box_plot_bokeh(  # noqa: PLR0913, PLR0915
         color = factor_cmap("__factors", palette=Spectral6, factors=colors, start=1, end=2)
     else:
         color = "blue"
-    p.vbar("__factors", 0.7, "__med", "__q3", source=data, line_color="black", fill_color=color)
-    p.vbar("__factors", 0.7, "__q1", "__med", source=data, line_color="black", fill_color=color)
+    p.vbar(
+        "__factors",
+        0.7,
+        "__med",
+        "__q3",
+        source=data,
+        line_color="black",
+        fill_color=color,
+    )
+    p.vbar(
+        "__factors",
+        0.7,
+        "__q1",
+        "__med",
+        source=data,
+        line_color="black",
+        fill_color=color,
+    )
 
     lowest_element = all_results["__whislo"].min()
     highest_element = all_results["__whishi"].max()

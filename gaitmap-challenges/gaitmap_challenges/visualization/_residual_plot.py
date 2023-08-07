@@ -27,9 +27,7 @@ def _handle_single_or_list(
     return results, value_type
 
 
-def _prepare_residual_plot_data(
-    cv_result, *, prediction_col_name, reference_col_name, label_col_name: Optional[str] = None
-):
+def _prepare_residual_plot_data(cv_result, *, prediction_col_name, reference_col_name):
     labels = cv_result["test_data_labels"].explode().map(_ensure_label_tuple)
     predictions, predictions_type = _handle_single_or_list(cv_result[f"test_single_{prediction_col_name}"])
     references, references_type = _handle_single_or_list(cv_result[f"test_single_{reference_col_name}"])
@@ -37,11 +35,6 @@ def _prepare_residual_plot_data(
     assert predictions_type == references_type, "Predictions and references must be of the same type."
 
     if predictions_type == "list":
-        if label_col_name is not None:
-            inner_labels, _ = _handle_single_or_list(cv_result[f"test_single_{label_col_name}"])
-        else:
-            {k: pd.Series(range(len(v))) for k, v in predictions.items()}
-
         # TODO: Implement this
         raise AssertionError()
     return pd.DataFrame(
@@ -142,12 +135,13 @@ def residual_plot_matplotlib(
     *,
     prediction_col_name,
     reference_col_name,
-    label_col_name: Optional[str] = None,
     metric_name: Optional[str] = None,
     ax=None,
 ):
-    import matplotlib.pyplot as plt
+    """Create a residual plot using matplotlib.
 
+    For more details on the parameters, see :class:`~ResidualPlot`.
+    """
     if ax is None:
         ax = plt.gca()
 
@@ -155,7 +149,6 @@ def residual_plot_matplotlib(
         cv_results,
         prediction_col_name=prediction_col_name,
         reference_col_name=reference_col_name,
-        label_col_name=label_col_name,
     )
 
     x, y = blandaltman_stats(prediction=df["predictions"], reference=df["reference"], x_val="reference")
@@ -180,9 +173,12 @@ def residual_plot_bokeh(
     *,
     prediction_col_name,
     reference_col_name,
-    label_col_name: Optional[str] = None,
     metric_name: Optional[str] = None,
 ):
+    """Create a residual plot using bokeh.
+
+    For more details on the parameters, see :class:`~ResidualPlot`.
+    """
     from bokeh.models import Label, Span
     from bokeh.plotting import figure
 
@@ -190,7 +186,6 @@ def residual_plot_bokeh(
         cv_result,
         prediction_col_name=prediction_col_name,
         reference_col_name=reference_col_name,
-        label_col_name=label_col_name,
     )
 
     df["x"], df["y"] = blandaltman_stats(prediction=df["predictions"], reference=df["reference"], x_val="reference")
@@ -311,27 +306,53 @@ def residual_plot_bokeh(
 
 @dataclass
 class ResidualPlot:
+    """Plot a residual (similar to Blant-Altman) plot to visualize the error dependency.
+
+    Most parameters are shared between both plotting backends.
+    Specific parameters are prefixed with `bokeh_` or `matplotlib_` or are expected to be passed to the method directly.
+
+    To use this visualization, you need to make the "raw" predictions available in the cv_result.
+    This is usually done by including the with the :class:`~tpcp.validate.NoAgg` wrapper in the scorer output.
+
+    Parameters
+    ----------
+    cv_result
+        The CV results of a single algorithm as loaded by `load_run`.
+    prediction_col_name : str
+        The name of the column in the cv_results that contains the predictions.
+    reference_col_name : str
+        The name of the column in the cv_results that contains the reference values.
+    metric_name : str, optional
+        An optional display name for the used metric. If not provided, the column name is used.
+
+    """
+
     cv_result: pd.DataFrame
     prediction_col_name: str
     reference_col_name: str
-    label_col_name: Optional[str] = None
     metric_name: Optional[str] = None
 
     def bokeh(self):
+        """Create the plot using bokeh.
+
+        This creates a plot object that can be displayed using `bokeh.plotting.show`.
+        """
         return residual_plot_bokeh(
             self.cv_result,
             prediction_col_name=self.prediction_col_name,
             reference_col_name=self.reference_col_name,
-            label_col_name=self.label_col_name,
             metric_name=self.metric_name,
         )
 
     def matplotlib(self, ax=None):
+        """Create the plot using matplotlib.
+
+        You can optionally pass an existing matplotlib axes object to plot into.
+        """
         return residual_plot_matplotlib(
             self.cv_result,
             prediction_col_name=self.prediction_col_name,
             reference_col_name=self.reference_col_name,
-            label_col_name=self.label_col_name,
             metric_name=self.metric_name,
             ax=ax,
         )

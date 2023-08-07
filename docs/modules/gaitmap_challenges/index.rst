@@ -10,4 +10,5 @@ This is the API Reference for `gaitmap_challenges`.
     :maxdepth: 1
 
     config
+    visualization
 
