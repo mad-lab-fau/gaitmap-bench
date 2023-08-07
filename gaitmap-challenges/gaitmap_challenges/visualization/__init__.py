@@ -1,3 +1,5 @@
+"""Helper functions to visualize the results of the challenges."""
+
 __all__ = [
     "SingleMetricBoxplot",
     "group_by_data_label",

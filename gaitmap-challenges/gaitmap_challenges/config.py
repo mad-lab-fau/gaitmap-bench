@@ -1,3 +1,5 @@
+"""Manage the global config for challenges."""
+
 import json
 import os
 import warnings
@@ -23,6 +25,29 @@ _ConfigT = TypeVar("_ConfigT", bound="LocalConfig")
 # Note: Frozen dataclasses can be "overwritten" by using the `replace` method.
 @dataclass(frozen=True)
 class LocalConfig:
+    """Local config for challenges.
+
+    This config can be set and modified using the `set_config` method.
+    See this method for more details.
+
+    Parameters
+    ----------
+    tmp_dir : Optional[Path], optional
+        Path to the temporary directory that can be used by challenges/algorithms
+    cache_dir : Optional[Path], optional
+        Path to the cache directory that can be used by challenges/algorithms (e.g. by joblib).
+        Compared to the tmp_dir, there is an expectation that the cache_dir is persistent.
+    results_dir : Optional[Path], optional
+        Path to the directory where results should be stored.
+    n_jobs : Union[int, str], optional
+        A recommendation for the number of jobs the current system can handle.
+    datasets : Optional[DatasetsConfig], optional
+        Config for the datasets.
+        In particular the paths to the datasets can be specified here.
+        For more details see the `gaitmap_datasets` package.
+
+    """
+
     tmp_dir: Optional[Path] = None
     cache_dir: Optional[Path] = None
     results_dir: Optional[Path] = None
@@ -84,7 +109,73 @@ def set_config(
     _config_type: Type[_ConfigT] = LocalConfig,
     _default_config_file: Optional[Union[str, Path]] = None,
 ) -> _ConfigT:
-    """Load the config file."""
+    """Set a global config.
+
+    This config can be set using one of the following methods:
+
+    1. A path to a json file that contains the config.
+    2. An instance of a `LocalConfig` object
+    3. Automatically, via an environmental variable with the path to a json file.
+    4. Get the default config file based on the `_default_config_file` parameter.
+
+    The lookup order is as follows:
+
+    1. If you set the `config_obj_or_path` parameter to a path or a `LocalConfig` object, this will be used.
+    2. If this is None, we will try to load the config path from the environmental variable `GAITMAP_CHALLENGES_CONFIG`.
+    3. If this is None, we will try to load the default config file based on the `_default_config_file` parameter.
+
+    If none of this works, an error will be raised.
+
+    Parameters
+    ----------
+    config_obj_or_path : Optional[Union[str, Path, LocalConfig]], optional
+        The config object or path to the config file.
+    debug : Optional[bool], optional
+        Whether you want to execute a challenge in debug mode.
+        This can also be set using the environmental variable `GAITMAP_CHALLENGES_DEBUG`.
+        If the ENV var is set, it will overwrite the value of this parameter.
+        If neither the ENV var nor this parameter is set, the default value is True.
+
+        The debug setting is primarily used by the `save_run` function to determine how the results should be saved.
+        Note, that setting this to False, will not ensure that results are saved in a non-debug mode.
+        Depending on the used settings for `save_run`, results might still be saved in debug mode.
+    _config_type : Type[LocalConfig], optional
+        The expected settings type.
+        This setting is usually not required, but can be used, if you need to extend the config class to include
+        additional settings.
+        In this case, we would recommend to create your own wrapper around this function, that sets the `_config_type`.
+    _default_config_file
+        The default config file that should be used, if no other config is specified.
+        This is usually not required, but can be used, if you want to provide a fallback config for your application.
+        In this case, we would recommend to create your own wrapper around this function, that sets the
+        `_default_config_file`.
+
+    Notes
+    -----
+    The config concept in this package uses a global variable called `gaitmap_challenges.config._GLOBAL_CONFIG`.
+    This variable is set to the config object resolved when calling the `set_config` method.
+    This means that you can access the config object from anywhere in your code by simply `config()` from
+    `gaitmap_challenges`.
+
+    One caveat of using a global variable is, that by default, the config is not persistent between multiple processes
+    when using multi-processing (e.g. when using `joblib`).
+    We use a
+    `workaround implemented in the tpcp package <https://tpcp.readthedocs.io/en/latest/modules/parallel.html>`_.
+    So ideally, you don't need to worry about this.
+    However, in case you manually call joblib within your algorithms or code, instead of using tpcp methods to run
+    parallel code, you might need to use `tpcp.parallel.delayed` instead of `joblib.delayed` to ensure that the config
+    is correctly restored in the child processes.
+
+
+    See Also
+    --------
+    LocalConfig : The config class that is used for the local config.
+    reset_config : Reset the global config to None, so that it can be set again using this `set_config`
+    create_config_template : Create a config template file that can be used to create a config file.
+    config : Get the global config object.
+
+
+    """
     if _default_config_file is not None and not Path(_default_config_file).exists():
         _default_config_file = None
     look_up_order = (
@@ -157,7 +248,8 @@ def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] 
     _config_type : Type[_ConfigT], optional
         In case you have a custom config structure, you can pass it here, by default LocalConfig.
         Note, that we don't support arbitrary config structures.
-        So this should be considered an internal parameter with no real use outside gaitmap-challenges/bench.
+        So this should be considered an internal parameter with no real use outside gaitmap-challenges/bench or some
+        custom higher-level package that you build.
 
     """
     path = Path(path)
@@ -184,7 +276,7 @@ def create_config_template(path: Union[str, Path], _config_type: Type[_ConfigT] 
 def reset_config():
     """Reset the global config to None.
 
-    Afterwards you can use `set_config` to set a new config (e.g. to change the config file during runtime).
+    Afterwards, you can use `set_config` to set a new config (e.g. to change the config file during runtime).
     """
     global _GLOBAL_CONFIG  # noqa: PLW0603
     _GLOBAL_CONFIG = None
@@ -202,7 +294,7 @@ def config() -> LocalConfig:
 
 
 def is_debug_run() -> Optional[bool]:
-    """Check if the current run is a debug run."""
+    """Check if the current run is a debug run according to the config."""
     return _DEBUG
 
 
@@ -215,6 +307,7 @@ def is_config_set() -> bool:
 # is restored in a worker process spawned by joblib.
 # This will only have an effect if the config is set in the main process and the parallel implementation is using the
 # modified `delayed` function from tpcp.parallel.
+# Learn more about this here: https://tpcp.readthedocs.io/en/latest/modules/parallel.html
 class _RestoreConfig(TypedDict):
     config_obj_or_path: LocalConfig
     debug: Optional[bool]

@@ -9,6 +9,7 @@ gaitmap-bench Docu Overview
 
    Getting Started <README.md>
    Challenges <challenges/index.md>
+   API Reference <modules/index.rst>
    guides/index.rst
 
 Indices and Tables

@@ -22,6 +22,7 @@ HERE = Path(__file__)
 
 sys.path.insert(0, str(HERE.parent))
 sys.path.insert(0, str(HERE.parent.parent))
+sys.path.insert(0, str(HERE.parent.parent / "gaitmap_challenges"))
 
 
 URL = "https://github.com/mad-lab-fau/gaitmap-bench"
@@ -163,6 +164,5 @@ intersphinx_mapping = {
 from sphinxext.githublink import make_linkcode_resolve
 
 linkcode_resolve = make_linkcode_resolve(
-    "gaitmap-challenges",
-    "https://github.com/mad-lab-fau/gaitmap-challenges/blob/{revision}/{package}/{path}#L{lineno}",
+    "https://github.com/mad-lab-fau/gaitmap-bench/blob/{revision}/{package_alt}/{package}/{path}#L{lineno}",
 )

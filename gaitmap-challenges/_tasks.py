@@ -37,7 +37,7 @@ def update_version_strings(file_path, new_version):
     # taken from:
     # https://stackoverflow.com/questions/57108712/replace-updated-version-strings-in-files-via-python
     version_regex = re.compile(r"(^_*?version_*?\s*=\s*\")(\d+\.\d+\.\d+-?\S*)\"", re.M)
-    with open(file_path, "r+") as f:
+    with Path(file_path).open("r+") as f:
         content = f.read()
         f.seek(0)
         f.write(

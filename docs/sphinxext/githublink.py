@@ -24,7 +24,7 @@ def _get_git_revision():
     return revision.decode("utf-8")
 
 
-def _linkcode_resolve(domain, info, package, url_fmt, revision):
+def _linkcode_resolve(domain, info, url_fmt, revision):
     """Determine a link to online source for a class/method/function.
 
     This is called by sphinx.ext.linkcode
@@ -46,6 +46,8 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return None
 
     class_name = info["fullname"].split(".")[0]
+    package = info["module"].split(".")[0]
+    package_alt = package.replace("_", "-")
     module = __import__(info["module"], fromlist=[class_name])
     obj = attrgetter(info["fullname"])(module)
 
@@ -64,16 +66,17 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
             fn = None
     if not fn:
         return None
-
+    print(fn, package_alt)
     fn = os.path.relpath(fn, start=os.path.dirname(__import__(package).__file__))
+
     try:
         lineno = inspect.getsourcelines(obj)[1]
     except Exception:
         lineno = ""
-    return url_fmt.format(revision=revision, package=package, path=fn, lineno=lineno)
+    return url_fmt.format(revision=revision, package=package, path=fn, lineno=lineno, package_alt=package_alt)
 
 
-def make_linkcode_resolve(package, url_fmt):
+def make_linkcode_resolve(url_fmt):
     """Returns a linkcode_resolve function for the given URL format.
 
     revision is a git commit reference (hash or name)
@@ -86,5 +89,5 @@ def make_linkcode_resolve(package, url_fmt):
     """
     revision = _get_git_revision()
     return partial(
-        _linkcode_resolve, revision=revision, package=package, url_fmt=url_fmt
+        _linkcode_resolve, revision=revision, url_fmt=url_fmt
     )
