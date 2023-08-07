@@ -2,9 +2,9 @@ import warnings
 from pathlib import Path
 from typing import Any, Dict, Optional, Sequence, Tuple, TypedDict, Union
 
-from gaitmap_challenges import save_run as challenge_save_run
 from gaitmap_challenges.challenge_base import BaseChallenge
 from gaitmap_challenges.config import is_debug_run
+from gaitmap_challenges.results import save_run as challenge_save_run
 
 from gaitmap_bench._config import MAIN_REPO_ROOT
 

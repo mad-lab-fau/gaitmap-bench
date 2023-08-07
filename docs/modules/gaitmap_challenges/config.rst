@@ -25,8 +25,6 @@ Functions
 Config Base Class
 -----------------
 
-.. currentmodule:: gaitmap_challenges.config
-
 .. autosummary::
    :toctree: generated/challenges/config
    :template: class.rst

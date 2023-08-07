@@ -11,5 +11,6 @@ This is the API Reference for `gaitmap_challenges`.
 
     config
     visualization
+    results
     challenge_base
 
