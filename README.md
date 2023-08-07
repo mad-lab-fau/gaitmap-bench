@@ -1,7 +1,61 @@
-# gaitmap-bench
+# gaitmap-challenges & gaitmap-bench 
+[![Documentation Status](https://readthedocs.org/projects/gaitmap-bench/badge/?version=latest)](https://gaitmap-bench.readthedocs.io/en/latest/?badge=latest)
 
-Repo to collect reproducible benchmarks for human gait analysis
+Reproducible benchmarks for IMU-based gait analysis.
 
-TEST
+This project is part of the gaitmap ecosystem.
+Learn more at TODO.
 
+## gaitmap-challenges
+
+You have developed an algorithm for gait analysis using foot-mounted IMUs? Then you can use gaitmap-challenges to 
+quickly validate your algorithm using multiple different benchmark challenges.
+
+1. Install gaitmap-challenges
+
+```
+pip install gaitmap-challenges
+```
+
+2. Check the list of available challenges
+
+TODO Link
+
+3. Head over to the [`gaitmap_datasets` repository](https://github.com/mad-lab-fau/gaitmap-datasets#datasets) and 
+   download the datasets you need.
+4. Learn you to wrap your algorithm into a `tpcp.Pipeline`: TODO Link
+5. Run the challenge: TODO Link
+6. Inspect the results: TODO Link
+
+Other things you can do with gaitmap-challenges:
+
+- [Create your own challenge](https://gaitmap-challenges.readthedocs.io/en/latest/creating_challenges.html)
+
+## gaitmap-bench
+
+### Viewing the results
+
+You want to see how good existing algorithms perform in the gaitmap-challenges benchmarks?
+This repo contains reproducible scripts and results to create baseline results for the gaitmap algorithms and hopefully
+also for other algorithms in the future.
+
+Find an overview over the results on the 
+[documentation page](https://gaitmap-bench.readthedocs.io/en/latest/challenges/index.html).
+(PS: You can download each result page as a Juptyer notebook to [play around with the results yourself](TODO GUIDE).)
+
+To go deeper, you can find the raw results in the 
+[`results` folder](https://github.com/mad-lab-fau/gaitmap-bench/tree/main/results)
+and the code that generated the results in the 
+[`entries` folder](https://github.com/mad-lab-fau/gaitmap-bench/tree/main/entries/gaitmap_algos)
+
+### Adding new results
+
+You think you can do better? Learn how to add your own algorithms to the gaitmap-bench repository 
+[using this guide](TODO GUIDE).
+
+On that note, you should probably also check out our guides on:
+
+- Ensuring reproducibility: TODO Link
+- Local development: TODO Link
+- Multi-processing: TODO Link
 
