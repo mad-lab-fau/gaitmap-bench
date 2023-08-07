@@ -66,7 +66,6 @@ def _linkcode_resolve(domain, info, url_fmt, revision):
             fn = None
     if not fn:
         return None
-    print(fn, package_alt)
     fn = os.path.relpath(fn, start=os.path.dirname(__import__(package).__file__))
 
     try:
