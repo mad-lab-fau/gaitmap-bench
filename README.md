@@ -59,3 +59,20 @@ On that note, you should probably also check out our guides on:
 - Local development: TODO Link
 - Multi-processing: TODO Link
 
+## Repo Structure
+
+### Folders
+
+This repo is quite complicated and has multiple sub-projects:
+
+- top-level: The top-level folder contains general info files and the config for a "meta" Poetry project that can install all sub-projects at once for development.
+- `gaitmap-challenges`: The `gaitma-challenges` package. The subfolder contains a full python package structure managed by Poetry
+- `gaitmap-bench`: The `gaitmap-bench` package. The subfolder contains a full python package structure managed by Poetry
+- `entries`: Contains the reproducible scripts that were used to create the benchmark results. Each group of algorithm is managed as its own project as well
+- `results`: Contains the raw results of the benchmarks as json and csv files managed by categories.
+- `docs`: The documentation for both packages and the challenge results.
+- `gaitmap-paper`: Some source files to generate the plots in the gaitmap paper.
+
+### Python Environments
+
+Learn more about how to handle this during development in [this guide](https://gaitmap-bench.readthedocs.io/en/latest/guides/dev_setup.html).

@@ -1,9 +1,9 @@
 Development Setup
 =================
 
-.. warning:: This is intended for developers that want to add a new challenge or make other changes to either gaitmap-bench or
-   gaitmap-challenges.
-   If you want to add a new entry to an existing challenge, check out this `guide <new_challenge>`_.
+.. warning:: This is intended for developers that want to add a new challenge or make other changes to either the
+   gaitmap-bench or gaitmap-challenges code bases.
+   If you want to add a new entry to an existing challenge, check out this `guide <new_entry>`_.
 
 The project is split into multiple python projects that all manage their own dependencies using poetry.
 This can become messy fast, when you want to change
