@@ -64,6 +64,9 @@ _format_black = "black ."
 _format_ruff = "ruff . --fix-only --exit-zero"
 format = ["_format_black", "_format_ruff", "_format_black"]
 lint = { cmd = "ruff gaitmap-challenges gaitmap-bench entries --fix", help = "Lint all files with ruff." }
+_lint_ci = "ruff gaitmap-challenges gaitmap-bench entries --format=github"
+_check_black = "black . --check"
+ci_check = { sequence = ["_check_black", "_lint_ci"], help = "Check all potential format and linting issues." }
 test_challenges = { cmd = "pytest --cov=gaitmap-challenges --cov-report=term-missing --cov-report=xml", help = "Run Pytest with coverage on challenges package.", cwd="gaitmap-challenges" }
 test_bench = { cmd = "pytest --cov=gaitmap-bench --cov-report=term-missing --cov-report=xml", help = "Run Pytest with coverage on challenges package.", cwd="gaitmap-bench" }
 conf_jupyter = { cmd = "python -m ipykernel install --user --name gaitmap_bench", help = "Add a new jupyter kernel for the project." }

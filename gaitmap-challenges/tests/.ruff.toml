@@ -1,11 +1,5 @@
 extend = "../../.ruff.toml"
 
-ignore = [
-    # We don't enforce docstrings
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-
+# This disables all lint checks for the tests
+select = [
 ]
