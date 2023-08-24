@@ -54,6 +54,30 @@ class BaseChallenge(BaseTpcpObject):
     within your implementation of the `run` method to measure the execution time of an algorithm.
     This will automatically set a number of results attributes about the start/end and runtime of the execution.
 
+    Attributes
+    ----------
+    run_start_datetime_utc_timestamp_
+        The start time of the execution of the challenge in UTC timestamp format.
+    run_start_datetime_
+        The start time of the execution of the challenge in ISO format.
+    end_start_datetime_utc_timestamp_
+        The end time of the execution of the challenge in UTC timestamp format.
+    end_start_datetime_
+        The end time of the execution of the challenge in ISO format.
+    runtime_
+        The runtime of the execution of the challenge in seconds.
+    dataset_
+        The instance of the dataset class actually used in the challenge.
+        This is usually a copy of the dataset class instance supplied to the challenge and has potentially some
+        parameters overwritten to ensure that the challenge is executed as expected.
+
+    Other Parameters
+    ----------------
+    VERSION
+        (Class Constant) The version of the challenge. In case of breaking changes, this should be increased.
+    optimizer
+        The optimizer passed to the `run` method.
+
     """
 
     run_start_datetime_utc_timestamp_: float = field(init=False)
@@ -65,7 +89,6 @@ class BaseChallenge(BaseTpcpObject):
 
     optimizer: BaseOptimize = field(init=False)
 
-    NAME: ClassVar[str]
     VERSION: ClassVar[str]
 
     @property
