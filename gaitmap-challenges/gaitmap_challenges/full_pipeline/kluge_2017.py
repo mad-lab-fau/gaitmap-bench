@@ -1,3 +1,49 @@
+"""A challenge to test the performance of a full gaitanalysis pipeline on laboratory 4x10m gait tests.
+
+Comparisons are performed on the calculated means of spatial temporal parameters over the entire gait test.
+Reference gait parameters are provided by a marker-less motion capture system that covers the center of the walking
+section.
+The entire validation is run as a 5-fold cross-validation to allow the algorithms to optimize parameters on an
+independent train set.
+
+General Information
+-------------------
+
+Dataset
+    The `Kluge 2017 <dataset info>`_  dataset [1]_
+    (`usage example <datasets example>`_, `download <dataset download>`_) contains 4x10m gait tests of 20 TODO
+Sensor System
+    Two IMU sensors (Shimmer 3, 102.4 Hz) are attached laterally to the shoes of the participants.
+Reference System
+    A marker-less motion capture system (Simi Motion, 100 Hz) is used to track the foot and ankle trajectory.
+    For this challenge, we use the trajectory of the ankle marker to calculate stride length.
+    Heel strikes were labeled manually based on the video data.
+
+Implementation Recommendations
+------------------------------
+As the MoCap system does not cover the turns at the end of each 10m section algorithms should also cut of all turning
+strides (recommendation: turning angle > 20 deg) before calculating the mean and the variance.
+Otherwise, calculated results will have a considerable bias.
+
+Notes
+-----
+The comparison here is fundamentally different that the validation performed in the original paper [1]_.
+There, parameters were compared on a per-stride basis, while here the mean over the entire gait test is used.
+Hence, error values are not directly comparable.
+
+References
+----------
+.. [1] Kluge, Felix, Heiko Gaßner, Julius Hannink, Cristian Pasluosta, Jochen Klucken, and Björn M. Eskofier.
+     “Towards Mobile Gait Analysis: Concurrent Validity and Test-Retest Reliability of an Inertial Measurement System
+     for the Assessment of Spatio-Temporal Gait Parameters.” Sensors 17, no. 7 (July 2017): 1522.
+     https://doi.org/10.3390/s17071522.
+
+.. _dataset info: https://www.mad.tf.fau.de/research/datasets/#collapse_13
+.. _datasets example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/kluge_2017.html
+.. _dataset download: https://osf.io/cfb7e/
+
+"""
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterator, Optional, TypedDict, Union
@@ -23,10 +69,26 @@ from gaitmap_challenges.challenge_base import (
 )
 from gaitmap_challenges.full_pipeline._utils import ParameterErrors
 
+__all__ = ["Challenge", "ChallengeDataset", "final_scorer", "ResultType"]
+
 ChallengeDataset = Kluge2017
 
 
-def _final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
+def final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
+    """Score a pipeline build for the Kluge2017 challenge on a single datapoint.
+
+    It compares the mean gait parameters of the entire gait test between the pipeline and the reference.
+
+    Parameters
+    ----------
+    pipeline
+        The pipeline to score.
+        This is expected to have the attribute `aggregated_gait_parameters_` after running.
+        It should contain the aggregated gait parameters for the entire gait test.
+    datapoint
+        A datapoint of the Kluge2017 dataset.
+
+    """
     results = pipeline.safe_run(datapoint)
 
     aggregated_paras = results.aggregated_gait_parameters_
@@ -53,6 +115,29 @@ class ResultType(TypedDict):
 
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
+    """The Kluge2017 Challenge.
+
+    Parameters
+    ----------
+    dataset
+        A instance of :class:`~gaitmap_datasets.Kluge2017` or a path to a directory containing the dataset.
+    cv_iterator
+        A cross-validation iterator or the number of folds to use.
+    cv_params
+        Additional parameters to pass to the tpcp cross-validation function.
+
+    Attributes
+    ----------
+    cv_results_
+        The results of the cross-validation.
+        This can be passed directly to the pandas DataFrame constructor to get a dataframe with the results.
+
+    See Also
+    --------
+    gaitmap_challenges.challenge_base.BaseChallenge : For common parameters and attributes of all challenges.
+
+    """
+
     dataset: Optional[Union[str, Path, ChallengeDataset]]
     cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = StratifiedGroupKFold(n_splits=5)
     cv_params: Optional[Dict] = None
@@ -91,7 +176,7 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_scorer(cls):
-        return _final_scorer
+        return final_scorer
 
     @classmethod
     def get_imu_data(
@@ -105,7 +190,8 @@ class Challenge(BaseChallenge):
         fake_events = {k: ev.assign(min_vel=pd.NA) for k, ev in datapoint.mocap_events_.items()}
 
         tp = TemporalParameterCalculation(expected_stride_type="ic").calculate(
-            stride_event_list=fake_events, sampling_rate_hz=datapoint.mocap_sampling_rate_hz_
+            stride_event_list=fake_events,
+            sampling_rate_hz=datapoint.mocap_sampling_rate_hz_,
         )
 
         per_stride_trajectory = {k: v["ankle"][GF_POS] for k, v in datapoint.marker_position_per_stride_.items()}
@@ -124,7 +210,10 @@ class Challenge(BaseChallenge):
         return pd.concat(cls.get_ground_truth_parameter(datapoint)).mean()
 
     def get_core_results(self) -> ResultType:
-        return {"cv_results": collect_cv_results(self.cv_results_), "cv_metadata": collect_cv_metadata(self.dataset)}
+        return {
+            "cv_results": collect_cv_results(self.cv_results_),
+            "cv_metadata": collect_cv_metadata(self.dataset),
+        }
 
     def save_core_results(self, folder_path) -> None:
         core_results = self.get_core_results()

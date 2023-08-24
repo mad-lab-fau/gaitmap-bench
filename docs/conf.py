@@ -91,7 +91,7 @@ else:
     extensions.append("sphinx.ext.mathjax")
     mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/" "tex-chtml.js"
 
-autodoc_default_options = {"members": True, "inherited-members": True, "special_members": True}
+autodoc_default_options = {"members": True, "inherited-members": False, "special_members": True}
 # autodoc_typehints = 'description'  # Does not work as expected. Maybe try at future date again
 
 # Add any paths that contain templates here, relative to this directory.
@@ -138,6 +138,9 @@ intersphinx_module_mapping = {
     "matplotlib": ("https://matplotlib.org/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
+    "tpcp": ("https://tpcp.readthedocs.io/en/latest/", None),
+    "gaitmap": ("https://gaitmap.readthedocs.io/en/latest/", None),
+    "gaitmap-datasets": ("https://mad-lab-fau.github.io/gaitmap-datasets/", None),
 }
 
 user_agent = "Mozilla/5.0 (X11; Linux x86_64; rv:25.0) Gecko/20100101 Firefox/25.0"
