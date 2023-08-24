@@ -1,3 +1,57 @@
+"""A challenge to test the perfomance of a full pipeline on various laboratory tests.
+
+Comparisons are performed by comparing the mean spatial and temporal gait parameters of the entire gait test.
+Reference gait parameters are prvovided using a marker based motion capture system in combination with hand labeled
+stride borders.
+The entire validation is run as a 5-fold cross-validation to allow the algorithms to optimize parameters on an
+independent train set.
+
+General Information
+-------------------
+
+Dataset
+    The `Sensor Position Comparison 2019 <dataset info>`_ dataset [1]_
+    (`usage example <datasets example>`_, `download <dataset download>`_) contains 4x10m, 2x20m and a long walk (5 min)
+    gait tests of 14 participants.
+    The 4x10m and 2x20m tests are performed at 3 different speeds (slow, normal, fast).
+    The dataset uses sensors at 6 different positions of each foot.
+    However, for this challenge only the instep sensors are used.
+Sensor System
+    The instep sensors are NilsPod IMU sensors (204.8 Hz).
+    The two sensors are synchronized with each other and the motion capture system with sub-sample accuracy.
+Reference System
+    A marker-based motion capture system by Qualisys (Opus 700+ Qualisys, 28 cameras, 20x30 m capture volume) at 100 Hz
+    is used to track the foot position using 4 markers per foot (at the calcaneus (CAL), at the tip of the shoe (TOE),
+    and on top of the first and the fifth metatarsal (MET1 and MET5).
+    For this challenge the marker at the calcaneus is used to calculate stride length.
+
+Implementation Recommendations
+------------------------------
+
+The strides of the Mocap system include ALL strides (including turns).
+This means these strides should also be included in the algorithms output to get comparable results.
+At the beginning and end of the gait test, the participants was supposed to be standing still.
+However, some participants move slightly during this period.
+Hence, it is recommended to validate the static period at the beginning, if this required for the algorithm and not
+just assume it is there.
+
+Notes
+-----
+The way the results are presented at the moment, each gait test is considered one datapoint.
+However, due to the vastly different length of the tests, this might not lead to a full fair comparison.
+We recommend digging deeper into the results, in case the average results for an algorithm are not as expected.
+
+References
+----------
+.. [1] Küderle, Arne, Nils Roth, Jovana Zlatanovic, Markus Zrenner, Bjoern Eskofier, and Felix Kluge. “The Placement of
+   Foot-Mounted IMU Sensors Does Affect the Accuracy of Spatial Parameters during Regular Walking.” PLOS ONE 17, no. 6
+   (June 9, 2022): e0269567. https://doi.org/10.1371/journal.pone.0269567.
+
+.. _dataset info: https://zenodo.org/record/5747173
+.. _datasets example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/sensor_position_comparison_2019.html
+.. _dataset download: https://zenodo.org/record/5747173
+
+"""
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar, Dict, Iterator, Literal, Optional, TypedDict, Union
@@ -39,7 +93,20 @@ def _get_data_subset(
     }
 
 
-def _final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
+def final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
+    """Score a pipeline build for the SensorPositionComparison challenge on a single datapoint.
+
+    It compares the mean gait parameters of the entire gait test between the pipeline and the reference.
+
+    Parameters
+    ----------
+    pipeline
+        The pipeline to score.
+        This is expected to have the attribute `aggregated_gait_parameters_` after running.
+        It should contain the aggregated gait parameters for the entire gait test.
+    datapoint
+        A datapoint of the Kluge2017 dataset.
+    """
     results = pipeline.safe_run(datapoint)
 
     aggregated_paras = results.aggregated_gait_parameters_
@@ -66,6 +133,40 @@ class ResultType(TypedDict):
 
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
+    """The SensorPositionComparison Challenge.
+
+    Parameters
+    ----------
+    dataset
+        A instance of :class:`~gaitmap_datasets.SensorPositionComparison2019Mocap` or a path to a directory containing
+        the dataset.
+    cv_iterator
+        A cross-validation iterator or the number of folds to use.
+    cv_params
+        Additional parameters to pass to the tpcp cross-validation function.
+
+    Other Parameters
+    ----------------
+    ground_truth_marker
+        (Class Constant) The marker used to calculate the ground truth stride borders.
+    data_padding_s
+        (Class Constant) The amount of padding in seconds to add before and after each gait tests.
+        This ensures that sufficient resting data is available before and after the gait test.
+    sensor_pos
+        (Class Constant) The sensor position to use for the challenge.
+
+    Attributes
+    ----------
+    cv_results_
+        The results of the cross-validation.
+        This can be passed directly to the pandas DataFrame constructor to get a dataframe with the results.
+
+    See Also
+    --------
+    gaitmap_challenges.challenge_base.BaseChallenge : For common parameters and attributes of all challenges.
+
+    """
+
     dataset: Optional[Union[str, Path, ChallengeDataset]]
     cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = GroupKFold(n_splits=5)
     cv_params: Optional[Dict] = None
@@ -105,7 +206,7 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_scorer(cls):
-        return _final_scorer
+        return final_scorer
 
     @classmethod
     def get_imu_data(
@@ -158,3 +259,6 @@ class Challenge(BaseChallenge):
     def load_core_results(cls, folder_path) -> ResultType:
         cv_results = load_cv_results(folder_path)
         return {"cv_results": cv_results[0], "cv_metadata": cv_results[1]}
+
+
+__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames", "final_scorer"]
