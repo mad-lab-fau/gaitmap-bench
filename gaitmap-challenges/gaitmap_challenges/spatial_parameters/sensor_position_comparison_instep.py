@@ -33,6 +33,7 @@ The pipeline should also not calculate parameters for these strides.
 To correctly handle these shifts in stride definition, you can use
 :func:`~gaitmap.utils.stride_list_conversion.convert_segmented_stride_list` or check the stride ids in the calculated
 ground truth parameters to remove strides without ground truth from your calculations.
+Further check the `dataset example <datasets_example_>`_ for more guidance on this.
 The final calculated parameters should match the provided stride list and should have the same stride ids.
 Note, that we assume that parameters are calculated for each stride.
 Missing strides are not handled by the evaluation.
@@ -47,7 +48,7 @@ References
    (June 9, 2022): e0269567. https://doi.org/10.1371/journal.pone.0269567.
 .. [2] Barth, Jens, Cäcilia Oberndorfer, Cristian Pasluosta, Samuel Schülein, Heiko Gassner, Samuel Reinfelder,
    Patrick Kugler, et al. “Stride Segmentation during Free Walk Movements Using Multi-Dimensional Subsequence Dynamic
-   Time Warping on Inertial Sensor Data.” Sensors (Switzerland) 15, no. 3 (March 17, 2015): 6419–40.
+   Time Warping on Inertial Sensor Data.” Sensors (Switzerland) 15, no. 3 (March 17, 2015): 6419-40.
    https://doi.org/10.3390/s150306419.
 
 

@@ -34,6 +34,7 @@ The pipeline should also not calculate parameters for these strides.
 To correctly handle these shifts in stride definition, you can use
 :func:`~gaitmap.utils.stride_list_conversion.convert_segmented_stride_list` or check the stride ids in the calculated
 ground truth parameters to remove strides without ground truth from your calculations.
+Further check the `dataset example <datasets_example_>`_ for more guidance on this.
 The final calculated parameters should match the provided stride list and should have the same stride ids.
 Note, that we assume that parameters are calculated for each stride.
 Missing strides are not handled by the evaluation.
@@ -47,10 +48,10 @@ References
 .. [1] Kanzler, Christoph M., Jens Barth, Alexander Rampp, Heiko Schlarb, Franz Rott, Jochen Klucken, and
    Bjoern M. Eskofier. “Inertial Sensor Based and Shoe Size Independent Gait Analysis Including Heel and Toe Clearance
    Estimation.” Proceedings of the Annual International Conference of the IEEE Engineering in Medicine and Biology
-   Society, EMBS 2015-Novem (2015): 5424–27. https://doi.org/10.1109/EMBC.2015.7319618.
+   Society, EMBS 2015-Novem (2015): 5424-27. https://doi.org/10.1109/EMBC.2015.7319618.
 .. [2] Barth, Jens, Cäcilia Oberndorfer, Cristian Pasluosta, Samuel Schülein, Heiko Gassner, Samuel Reinfelder,
    Patrick Kugler, et al. “Stride Segmentation during Free Walk Movements Using Multi-Dimensional Subsequence Dynamic
-   Time Warping on Inertial Sensor Data.” Sensors (Switzerland) 15, no. 3 (March 17, 2015): 6419–40.
+   Time Warping on Inertial Sensor Data.” Sensors (Switzerland) 15, no. 3 (March 17, 2015): 6419-40.
    https://doi.org/10.3390/s150306419.
 
 .. _dataset_info: https://osf.io/qjm8y/
@@ -167,6 +168,7 @@ class Challenge(BaseChallenge):
     gaitmap_challenges.challenge_base.BaseChallenge : For common parameters and attributes of all challenges.
 
     """
+
     dataset: Optional[Union[str, Path, ChallengeDataset]]
     cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = GroupKFold(n_splits=5)
     cv_params: Optional[Dict] = None
