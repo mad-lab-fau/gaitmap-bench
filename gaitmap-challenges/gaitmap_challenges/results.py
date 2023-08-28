@@ -544,7 +544,7 @@ def save_run(  # noqa: PLR0912, PLR0915, C901
         debug_run = config_debug_run
 
     if debug_run is None:
-        debug_run = False
+        debug_run = True
 
     # We use the import path of the challenge class as the name of the challenge
     challenge_name = challenge.__class__.__module__ + "." + challenge.__class__.__name__
