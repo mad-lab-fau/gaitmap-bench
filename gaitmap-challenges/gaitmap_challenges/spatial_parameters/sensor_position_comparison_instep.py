@@ -112,7 +112,7 @@ def _get_data_subset(
 def final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
     """Score a pipeline build for the SensorPositionComparison Spatial Parameter challenge on a single datapoint.
 
-    It compares the the stride length on a stride-by-stride bases calculating common error metrics.
+    It compares the stride length on a stride-by-stride bases calculating common error metrics.
 
     Parameters
     ----------
