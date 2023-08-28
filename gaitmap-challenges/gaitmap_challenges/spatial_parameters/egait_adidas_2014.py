@@ -31,10 +31,7 @@ ChallengeDataset = EgaitAdidas2014
 SensorNames = Literal["left_sensor", "right_sensor"]
 
 
-def _final_scorer(
-    pipeline: Pipeline,
-    datapoint: ChallengeDataset,
-):
+def final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
     results = pipeline.safe_run(datapoint)
     predicted = {k: v[["stride_length"]] for k, v in results.parameters_.items()}
     reference = {k: v[["stride_length"]] for k, v in datapoint.mocap_parameters_.items()}
@@ -77,7 +74,6 @@ class Challenge(BaseChallenge):
     cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = GroupKFold(n_splits=5)
     cv_params: Optional[Dict] = None
 
-    # Update the version, when the challenge_class is changed in a relevant way
     VERSION = "1.0.0"
 
     cv_results_: Dict = field(init=False)
@@ -105,7 +101,7 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_scorer(cls):
-        return _final_scorer
+        return final_scorer
 
     @classmethod
     def get_imu_data(
@@ -123,7 +119,7 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_ground_truth_parameter(
-        self, datapoint: ChallengeDataset
+        cls, datapoint: ChallengeDataset
     ) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
         return datapoint.mocap_parameters_
 
@@ -170,4 +166,4 @@ class Challenge(BaseChallenge):
         }
 
 
-__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames"]
+__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames", "final_scorer"]
