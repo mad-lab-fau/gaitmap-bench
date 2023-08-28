@@ -4,8 +4,8 @@ General Information
 -------------------
 
 Dataset
-    The `Sensor Position Comparison 2019 <dataset info>`_ dataset [1]_
-    (`usage example <datasets example>`_, `download <dataset download>`_) contains 4x10m, 2x20m and a long walk (5 min)
+    The `Sensor Position Comparison 2019 <dataset_info_>`_ dataset [1]_
+    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m, 2x20m and a long walk (5 min)
     gait tests of 14 participants.
     The 4x10m and 2x20m tests are performed at 3 different speeds (slow, normal, fast).
     The dataset uses sensors at 6 different positions of each foot.
@@ -51,9 +51,9 @@ References
    https://doi.org/10.3390/s150306419.
 
 
-.. _dataset info: https://zenodo.org/record/5747173
-.. _datasets example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/sensor_position_comparison_2019.html
-.. _dataset download: https://zenodo.org/record/5747173
+.. _dataset_info: https://zenodo.org/record/5747173
+.. _datasets_example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/sensor_position_comparison_2019.html
+.. _dataset_download: https://zenodo.org/record/5747173
 
 """
 from dataclasses import dataclass, field

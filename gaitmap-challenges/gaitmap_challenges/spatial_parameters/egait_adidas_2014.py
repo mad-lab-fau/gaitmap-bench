@@ -4,8 +4,8 @@ General Information
 -------------------
 
 Dataset
-    The `Egait Adidas 2014 <dataset info>`_ dataset [1]_
-    (`usage example <datasets example>`_, `download <dataset download>`_) contains data from 20 participants
+    The `Egait Adidas 2014 <dataset_info_>`_ dataset [1]_
+    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains data from 20 participants
     with motion capture reference.
     Each participant performed multiple trials with different self-selected stride lengths and speed.
 Sensor System
@@ -53,9 +53,9 @@ References
    Time Warping on Inertial Sensor Data.” Sensors (Switzerland) 15, no. 3 (March 17, 2015): 6419–40.
    https://doi.org/10.3390/s150306419.
 
-.. _dataset info: https://osf.io/qjm8y/
-.. _datasets example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/egait_adidas_2014.html
-.. _dataset download: https://osf.io/qjm8y/
+.. _dataset_info: https://osf.io/qjm8y/
+.. _datasets_example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/egait_adidas_2014.html
+.. _dataset_download: https://osf.io/qjm8y/
 
 """
 from dataclasses import dataclass, field

@@ -10,8 +10,8 @@ General Information
 -------------------
 
 Dataset
-    The `Kluge 2017 <dataset info>`_  dataset [1]_
-    (`usage example <datasets example>`_, `download <dataset download>`_) contains 4x10m gait tests of 20 TODO
+    The `Kluge 2017 <dataset_info_>`_  dataset [1]_
+    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m gait tests of 20 TODO
 Sensor System
     Two IMU sensors (Shimmer 3, 102.4 Hz) are attached laterally to the shoes of the participants.
 Reference System
@@ -38,9 +38,9 @@ References
      for the Assessment of Spatio-Temporal Gait Parameters.” Sensors 17, no. 7 (July 2017): 1522.
      https://doi.org/10.3390/s17071522.
 
-.. _dataset info: https://www.mad.tf.fau.de/research/datasets/#collapse_13
-.. _datasets example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/kluge_2017.html
-.. _dataset download: https://osf.io/cfb7e/
+.. _dataset_info: https://www.mad.tf.fau.de/research/datasets/#collapse_13
+.. _datasets_example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/kluge_2017.html
+.. _dataset_download: https://osf.io/cfb7e/
 
 """
 
