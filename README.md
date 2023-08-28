@@ -17,15 +17,11 @@ quickly validate your algorithm using multiple different benchmark challenges.
 pip install gaitmap-challenges
 ```
 
-2. Check the list of available challenges
-
-TODO Link
-
+2. Check the [list of available challenges](https://gaitmap-bench.readthedocs.io/en/latest/challenges/index.html)
 3. Head over to the [`gaitmap_datasets` repository](https://github.com/mad-lab-fau/gaitmap-datasets#datasets) and 
    download the datasets you need.
-4. Learn you to wrap your algorithm into a `tpcp.Pipeline`: TODO Link
-5. Run the challenge: TODO Link
-6. Inspect the results: TODO Link
+4. Learn you to wrap your algorithm into a `tpcp.Pipeline` and run a challenge: [Guide](https://gaitmap-bench.readthedocs.io/en/latest/guides/running_challenges.html)
+5. Inspect the results: TODO Link
 
 Other things you can do with gaitmap-challenges:
 
@@ -51,7 +47,7 @@ and the code that generated the results in the
 ### Adding new results
 
 You think you can do better? Learn how to add your own algorithms to the gaitmap-bench repository 
-[using this guide](TODO GUIDE).
+[using this guide](https://gaitmap-bench.readthedocs.io/en/latest/guides/add_new_entry.html).
 
 On that note, you should probably also check out our guides on:
 
