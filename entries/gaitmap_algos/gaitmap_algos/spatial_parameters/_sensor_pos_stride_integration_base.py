@@ -43,6 +43,8 @@ class StrideIntegrationBase(Pipeline[ChallengeDataset]):
 
         # 1. We only have segmented strides -> we need to find the min_vel for each stride. For this we use Rampp
         # Event Detection, but only calculate the min_vel.
+        # The final event list has fewer strides, as we need to remove the first stride at the beginning and after each
+        # break to follow the stride list conventions, but this matches the way the ground truth is defined.
         self.event_list_ = (
             RamppEventDetection(detect_only=("min_vel",))
             .detect(data_bf, stride_list, sampling_rate_hz=sampling_rate_hz)
@@ -50,7 +52,6 @@ class StrideIntegrationBase(Pipeline[ChallengeDataset]):
         )
 
         # 2. We now have the strides defined as min_vel -> min_vel. We can integrate the data over these strides.
-
         traj = StrideLevelTrajectory(ori_method=self.ori_method, pos_method=self.pos_method).estimate(
             data, self.event_list_, sampling_rate_hz=sampling_rate_hz
         )

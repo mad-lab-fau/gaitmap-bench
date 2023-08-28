@@ -1,7 +1,7 @@
-"""A challenge to test the perfomance of a full pipeline on various laboratory tests.
+"""A challenge to test the performance of a full pipeline on various laboratory tests.
 
 Comparisons are performed by comparing the mean spatial and temporal gait parameters of the entire gait test.
-Reference gait parameters are prvovided using a marker based motion capture system in combination with hand labeled
+Reference gait parameters are provided using a marker based motion capture system in combination with hand labeled
 stride borders.
 The entire validation is run as a 5-fold cross-validation to allow the algorithms to optimize parameters on an
 independent train set.
@@ -28,6 +28,7 @@ Reference System
 Implementation Recommendations
 ------------------------------
 
+A pipeline should only use the raw data of each datapoint and not further annotations provided by the dataset.
 The strides of the Mocap system include ALL strides (including turns).
 This means these strides should also be included in the algorithms output to get comparable results.
 At the beginning and end of the gait test, the participants was supposed to be standing still.
@@ -94,7 +95,7 @@ def _get_data_subset(
 
 
 def final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
-    """Score a pipeline build for the SensorPositionComparison challenge on a single datapoint.
+    """Score a pipeline build for the SensorPositionComparison Full Pipeline challenge on a single datapoint.
 
     It compares the mean gait parameters of the entire gait test between the pipeline and the reference.
 
@@ -105,7 +106,8 @@ def final_scorer(pipeline: Pipeline, datapoint: ChallengeDataset):
         This is expected to have the attribute `aggregated_gait_parameters_` after running.
         It should contain the aggregated gait parameters for the entire gait test.
     datapoint
-        A datapoint of the Kluge2017 dataset.
+        A datapoint of the SensorPositionComparison2019Mocap dataset.
+
     """
     results = pipeline.safe_run(datapoint)
 
@@ -133,7 +135,7 @@ class ResultType(TypedDict):
 
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
-    """The SensorPositionComparison Challenge.
+    """The SensorPositionComparison Full-Pipeline Challenge.
 
     Parameters
     ----------

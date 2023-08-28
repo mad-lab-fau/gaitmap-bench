@@ -48,6 +48,8 @@ class RegionIntegrationBase(Pipeline[ChallengeDataset]):
         )
 
         # 2. We now have the strides defined as min_vel -> min_vel. We can integrate the data over these strides.
+        # The final event list has fewer strides, as we need to remove the first stride at the beginning and after each
+        # break to follow the stride list conventions, but this matches the way the ground truth is defined.
         # For the Kalman Filter we need to integrate over multiple strides to actually get the benefits of the Kalman
         # smoothing.
         # Hence, we create a fake roi list to pass as region to the trajectory reconstruction.
