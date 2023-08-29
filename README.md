@@ -13,9 +13,9 @@ quickly validate your algorithm using multiple different benchmark challenges.
 
 1. Install gaitmap-challenges
 
-```
-pip install gaitmap-challenges
-```
+   ```
+   pip install gaitmap-challenges
+   ```
 
 2. Check the [list of available challenges](https://gaitmap-bench.readthedocs.io/en/latest/challenges/index.html)
 3. Head over to the [`gaitmap_datasets` repository](https://github.com/mad-lab-fau/gaitmap-datasets#datasets) and 
@@ -37,7 +37,7 @@ also for other algorithms in the future.
 
 Find an overview over the results on the 
 [documentation page](https://gaitmap-bench.readthedocs.io/en/latest/challenges/index.html).
-(PS: You can download each result page as a Juptyer notebook to [play around with the results yourself](TODO GUIDE).)
+(PS: You can download each result page as a Jupyter notebook to [play around with the results yourself](TODO GUIDE).)
 
 To go deeper, you can find the raw results in the 
 [`results` folder](https://github.com/mad-lab-fau/gaitmap-bench/tree/main/results)
