@@ -5,8 +5,8 @@ General Information
 
 Dataset
     The `Sensor Position Comparison 2019 <dataset_info_>`_ dataset [1]_
-    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m, 2x20m and a long walk (5 min)
-    gait tests of 14 participants.
+    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m, 2x20m and a long walk
+    (5 min) gait tests of 14 participants.
     The 4x10m and 2x20m tests are performed at 3 different speeds (slow, normal, fast).
     The dataset uses sensors at 6 different positions of each foot.
     However, for this challenge only the instep sensors are used.
@@ -22,7 +22,8 @@ Reference System
 Implementation Recommendations
 ------------------------------
 The pipeline should use the raw data and the segmented stride list provided by the dataset.
-The start and end value of each stride in the provided segmented stride list follow the stride definitions by Barth et al. [2]_.
+The start and end value of each stride in the provided segmented stride list follow the stride definitions by Barth et
+gal. [2]_.
 This means the start and end-values are defined by the minimum in the gyr_ml axis right before the toe-off.
 The ground truth stride length is calculated from the marker position at the calcaneus (CAL) by calculating the distance
 traveled by this marker in the ground plane between the heel strike right before a stride and the heel strike within
