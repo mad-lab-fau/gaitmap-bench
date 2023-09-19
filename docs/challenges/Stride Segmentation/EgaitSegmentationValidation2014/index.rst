@@ -1,5 +1,5 @@
-EgaitAdidas2014 - Spatial Parameters
-====================================
+EgaitSegmentationValidation2014
+===============================
 
 .. toctree::
    :glob:
@@ -7,14 +7,14 @@ EgaitAdidas2014 - Spatial Parameters
 
    Link to Result Page <results>
 
-.. automodule:: gaitmap_challenges.spatial_parameters.egait_adidas_2014
+.. automodule:: gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014
     :no-members:
     :no-inherited-members:
 
 Code Objects
 ------------
 
-.. currentmodule:: gaitmap_challenges.spatial_parameters.egait_adidas_2014
+.. currentmodule:: gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014
 
 .. autosummary::
    :toctree: generated/
