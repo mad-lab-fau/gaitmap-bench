@@ -85,9 +85,11 @@ def get_all_result_paths(
         ) from e
 
     entries = {}
+    versions = {}
     for run in folder.rglob("metadata.json"):
         meta = load_run_metadata(run.parent)
         entries.setdefault(tuple(meta["entry_name"]), []).append(run.parent)
+        versions.setdefault(tuple(meta["entry_name"]), []).append(meta["challenge_version"])
 
     if len(entries) == 0:
         raise ValueError(
@@ -97,16 +99,22 @@ def get_all_result_paths(
 
     sorted_entries = {}
     for name, entry_list in entries.items():
-        parents = {e.parent for e in entry_list}
-        if len(parents) > 1:
-            warnings.warn(
-                f"We found results from the same entry name ({name}) in different folders. "
-                "This could indicate that you forgot to correctly name one of your entries when you saved a "
-                "run, or that files/folders where manually copied around. "
-                "Both can lead to issues. "
-                "Please double check your results folder.",
-                stacklevel=2,
-            )
+        versions_per_entry = versions[name]
+        parents_per_version = {}
+        for version, entry in zip(versions_per_entry, entry_list):
+            parents_per_version.setdefault(version, []).append(entry.parent)
+
+        for version, parents in parents_per_version.items():
+            if len(set(parents)) > 1:
+                warnings.warn(
+                    f"We found results from the same entry name ({name}) for the same challenge version "
+                    f"({version}) in different folders. "
+                    "This could indicate that you forgot to correctly name one of your entries when you saved a "
+                    "run, or that files/folders where manually copied around. "
+                    "Both can lead to issues. "
+                    "Please double check your results folder.",
+                    stacklevel=1,
+                )
         sorted_entries[name] = sorted(entry_list, key=lambda e: e.name, reverse=False)
 
     return entries
