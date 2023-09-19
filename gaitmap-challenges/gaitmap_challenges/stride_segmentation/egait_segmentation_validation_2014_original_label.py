@@ -94,7 +94,14 @@ class Challenge(BaseChallenge):
     gaitmap_challenges.stride_segmentation.egait_segmentation_validation_2014.Challenge : The same challenge, but with
         the new labels
 
+    Notes
+    -----
+    Version History:
+        - 1.0.0: Original Version, which had a major bug, that the scorer was still using the new labels.
+        - 2.0.0 (2023-09-19): Fixed the bug, that the scorer was still using the new labels.
+
     """
+    VERSION = "2.0.0"
 
     use_original_labels = True
 
