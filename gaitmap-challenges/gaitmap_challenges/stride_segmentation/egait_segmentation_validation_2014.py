@@ -197,6 +197,7 @@ class Challenge(BaseChallenge):
     use_original_labels: ClassVar[bool] = False
 
     # Update the version, when the challenge_class is changed in a relevant way
+    # Note: Remember to update the version in the original_label class as well.
     VERSION = "1.0.0"
 
     cv_results_: Dict = field(init=False)
