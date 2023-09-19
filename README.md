@@ -1,12 +1,17 @@
-# gaitmap-challenges & gaitmap-bench 
+<img src="./docs/_static/logo/combined_logo_with_text.png" width="700">
+
 [![Documentation Status](https://readthedocs.org/projects/gaitmap-bench/badge/?version=latest)](https://gaitmap-bench.readthedocs.io/en/latest/?badge=latest)
+
+# gaitmap-challenges & gaitmap-bench 
 
 Reproducible benchmarks for IMU-based gait analysis.
 
 This project is part of the gaitmap ecosystem.
-Learn more at TODO.
+[Learn more](https://gaitmap.readthedocs.io/en/latest/source/user_guide/gaitmap_ecosystem.html)
 
 ## gaitmap-challenges
+<img src="./docs/_static/logo/challenges_logo_with_text.png" height="75">
+
 
 You have developed an algorithm for gait analysis using foot-mounted IMUs? Then you can use gaitmap-challenges to 
 quickly validate your algorithm using multiple different benchmark challenges.
@@ -28,6 +33,7 @@ Other things you can do with gaitmap-challenges:
 - [Create your own challenge](https://gaitmap-challenges.readthedocs.io/en/latest/creating_challenges.html)
 
 ## gaitmap-bench
+<img src="./docs/_static/logo/bench_logo_with_text.png" height="90">
 
 ### Viewing the results
 

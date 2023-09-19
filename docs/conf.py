@@ -42,6 +42,7 @@ copyright = f"2023 - {datetime.now().year}, MaD Lab, FAU"
 HERE = Path(__file__).parent
 with (HERE.parent / "README.md").open() as f:
     out = f.read()
+out = out.replace("./docs/_static/logo/combined_logo_with_text.png", "./_static/logo/combined_logo_with_text.png")
 with (HERE / "README.md").open("w+") as f:
     f.write(out)
 #
@@ -121,6 +122,8 @@ add_function_parentheses = False
 #
 # Activate the theme.
 html_theme = "sphinx_book_theme"
+html_favicon = "_static/logo/combined.ico"
+html_logo = "_static/logo/combined_logo.png"
 html_theme_options = {"repository_url": URL, "use_repository_button": True, "show_prev_next": False}
 
 # Add any paths that contain custom static files (such as style sheets) here,
