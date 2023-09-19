@@ -23,7 +23,8 @@ This means usually, the signal starts mid-movement and there is no resting phase
 The motion capture system only covers a small part within each trial (usually 2-3 strides).
 The provided segmented stride list also only covers this part.
 The pipeline is only expected to return results for these strides.
-The start and end value of each stride in the provided segmented stride list follow the stride definitions by Barth et al. [2]_.
+The start and end value of each stride in the provided segmented stride list follow the stride definitions by Barth et
+al. [2]_.
 This means the start and end-values are defined by the minimum in the gyr_ml axis right before the toe-off.
 The ground truth stride length is calculated from the marker position at the heel marker by calculating the distance
 traveled by this marker in the ground plane between the heel strike right before a stride and the heel strike within

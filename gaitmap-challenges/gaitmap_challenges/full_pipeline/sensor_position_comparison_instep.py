@@ -11,8 +11,8 @@ General Information
 
 Dataset
     The `Sensor Position Comparison 2019 <dataset_info_>`_ dataset [1]_
-    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m, 2x20m and a long walk (5 min)
-    gait tests of 14 participants.
+    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m, 2x20m and a long walk
+    (5 min) gait tests of 14 participants.
     The 4x10m and 2x20m tests are performed at 3 different speeds (slow, normal, fast).
     The dataset uses sensors at 6 different positions of each foot.
     However, for this challenge only the instep sensors are used.
