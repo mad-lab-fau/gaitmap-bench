@@ -4,27 +4,11 @@ EgaitParameterValidation2013 - Spatial Parameters
 .. toctree::
    :glob:
    :maxdepth: 1
+   :caption: Further Links:
 
-   Link to Result Page <results>
+   Results <results>
+   Code Objects <code_objects>
 
 .. automodule:: gaitmap_challenges.spatial_parameters.egait_parameter_validation_2013
     :no-members:
     :no-inherited-members:
-
-Code Objects
-------------
-
-.. currentmodule:: gaitmap_challenges.spatial_parameters.egait_parameter_validation_2013
-
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-
-    Challenge
-    ChallengeDataset
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-    final_scorer

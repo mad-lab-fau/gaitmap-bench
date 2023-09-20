@@ -1,3 +1,48 @@
+"""A challenge for stride segmentation on long @lab gait tests of healthy participants.
+
+General Information
+-------------------
+
+Dataset
+    The `Sensor Position Comparison 2019 <dataset_info_>`_ dataset [1]_
+    (`usage example <datasets_example_>`_, `download <dataset_download_>`_) contains 4x10m, 2x20m and a long walk
+    (5 min) gait tests of 14 participants.
+    The 4x10m and 2x20m tests are performed at 3 different speeds (slow, normal, fast).
+    However, for this challenge, we consider all tests together as a single recording.
+    This recording also contains potential walking and shuffling of the participants in between the tests.
+    The dataset uses sensors at 6 different positions of each foot.
+    However, for this challenge only the instep sensors are used.
+Sensor System
+    The instep sensors are NilsPod IMU sensors (204.8 Hz).
+    The two sensors are synchronized with each other and the motion capture system with sub-sample accuracy.
+Reference System
+    The stride borders within the raw IMU data was labeled manually by an expert using the stride definition by [2]_.
+
+Implementation Recommendations
+------------------------------
+For each participant, we only have a single recording that contains all tests.
+This recording also contains all walking and movement between the tests.
+Before each test, the participant was also jumping 3 times in place as a marker for the start of the test.
+Further, some participants had to do some tests twice, because they did not follow the instructions.
+All of this is included in the recording and all strides are labeled.
+
+This means the algorithms should search for all strides (straight and turns) in the recording independent of everything.
+
+References
+----------
+.. [1] Küderle, Arne, Nils Roth, Jovana Zlatanovic, Markus Zrenner, Bjoern Eskofier, and Felix Kluge. “The Placement of
+   Foot-Mounted IMU Sensors Does Affect the Accuracy of Spatial Parameters during Regular Walking.” PLOS ONE 17, no. 6
+   (June 9, 2022): e0269567. https://doi.org/10.1371/journal.pone.0269567.
+.. [2] Barth, Jens, Cäcilia Oberndorfer, Cristian Pasluosta, Samuel Schülein, Heiko Gassner, Samuel Reinfelder,
+   Patrick Kugler, et al. “Stride Segmentation during Free Walk Movements Using Multi-Dimensional Subsequence Dynamic
+   Time Warping on Inertial Sensor Data.” Sensors (Switzerland) 15, no. 3 (March 17, 2015): 6419-40.
+   https://doi.org/10.3390/s150306419.
+
+
+.. _dataset_info: https://zenodo.org/record/5747173
+.. _datasets_example: https://mad-lab-fau.github.io/gaitmap-datasets/auto_examples/sensor_position_comparison_2019.html
+.. _dataset_download: https://zenodo.org/record/5747173
+"""
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
@@ -37,12 +82,40 @@ def _get_data_subset(
     }
 
 
-def _final_scorer(
+def final_scorer(
     pipeline: Pipeline,
     datapoint: SensorPositionComparison2019Segmentation,
     tolerance_s: float = 0.03,
     sensor_pos: str = "instep",
 ):
+    """Score a pipeline build for segmentation challenges of the SensorPositionComparison2019 dataset.
+
+    It compares the reference stride list (either the original or the new one) with the stride list returned by the
+    pipeline via the `stride_list_` attribute.
+
+    It calculates the precision, recall and f1 score for the stride segmentation.
+
+    Parameters
+    ----------
+    pipeline
+        The pipeline to score.
+        The pipeline needs to have a `stride_list_` attribute that contains the segmented stride list after running.
+    datapoint
+        The datapoint of the EgaitSegmentationValidation2014 dataset.
+    tolerance_s
+        The tolerance in seconds that is allowed between the calculated stride borders and the reference stride
+        borders.
+        Both, start and end labels need to be within the tolerance to be considered a match.
+    sensor_pos
+        The sensor position to use for the scoring.
+        This will not affect the evaluation, as the dataset stores the same ground truth for all sensor positions,
+        but we include the active selection of the sensor position for completeness.
+
+    See Also
+    --------
+    gaitmap.evaluation_utils.evaluate_segmented_stride_list
+
+    """
     results = pipeline.safe_run(datapoint)
 
     assert hasattr(results, "stride_list_"), "The pipeline must provide its results as a `stride_list_` attribute."
@@ -71,6 +144,37 @@ class ResultType(TypedDict):
 
 @dataclass(repr=False)
 class Challenge(BaseChallenge):
+    """The SensorPositionComparison Stride Segmentaion Validation Challenge.
+
+    Parameters
+    ----------
+    dataset
+        A instance of :class:`~gaitmap_datasets.SensorPositionComparison2019Segmentation` or a path to a directory containing
+        the dataset.
+    cv_iterator
+        A cross-validation iterator or the number of folds to use.
+    cv_params
+        Additional parameters to pass to the tpcp cross-validation function.
+
+    Other Parameters
+    ----------------
+    match_tolerance_s
+        (Class Constant) The tolerance in seconds that is allowed between the calculated stride borders and the
+        reference stride borders.
+    sensor_pos
+        (Class Constant) The sensor position to use for the challenge.
+
+    Attributes
+    ----------
+    cv_results_
+        The results of the cross-validation.
+        This can be passed directly to the pandas DataFrame constructor to get a dataframe with the results.
+
+    See Also
+    --------
+    gaitmap_challenges.challenge_base.BaseChallenge : For common parameters and attributes of all challenges.
+
+    """
     dataset: Optional[Union[str, Path, ChallengeDataset]]
     cv_iterator: Optional[Union[int, BaseCrossValidator, Iterator]] = 5
     cv_params: Optional[Dict] = None
@@ -105,7 +209,7 @@ class Challenge(BaseChallenge):
 
     @classmethod
     def get_scorer(cls):
-        return partial(_final_scorer, tolerance_s=cls.match_tolerance_s, sensor_pos=cls.sensor_pos)
+        return partial(final_scorer, tolerance_s=cls.match_tolerance_s, sensor_pos=cls.sensor_pos)
 
     @classmethod
     def get_imu_data(cls, datapoint: ChallengeDataset) -> Dict[Literal["left_sensor", "right_sensor"], pd.DataFrame]:
@@ -141,4 +245,4 @@ class Challenge(BaseChallenge):
         }
 
 
-__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames"]
+__all__ = ["Challenge", "ChallengeDataset", "ResultType", "SensorNames", "final_scorer"]

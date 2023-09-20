@@ -4,27 +4,11 @@ EgaitAdidas2014 - Spatial Parameters
 .. toctree::
    :glob:
    :maxdepth: 1
+   :caption: Further Links:
 
-   Link to Result Page <results>
+   Results <results>
+   Code Objects <code_objects>
 
 .. automodule:: gaitmap_challenges.spatial_parameters.egait_adidas_2014
     :no-members:
     :no-inherited-members:
-
-Code Objects
-------------
-
-.. currentmodule:: gaitmap_challenges.spatial_parameters.egait_adidas_2014
-
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-
-    Challenge
-    ChallengeDataset
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-    final_scorer
